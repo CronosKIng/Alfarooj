@@ -1,0 +1,173 @@
+name: Build APK and EXE
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Chagua aina ya build'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - apk
+          - exe
+          - both
+
+jobs:
+  # Job 1: Build APK (Android)
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.inputs.build_type == 'apk' || github.event.inputs.build_type == 'both'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          build-tools: 34.0.0
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x app/gradlew
+      
+      - name: Build Debug APK
+        run: |
+          cd app
+          ./gradlew assembleDebug --no-daemon
+      
+      - name: Build Release APK
+        run: |
+          cd app
+          ./gradlew assembleRelease --no-daemon
+      
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Alfarooj-Debug-APK
+          path: app/build/outputs/apk/debug/*.apk
+      
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Alfarooj-Release-APK
+          path: app/build/outputs/apk/release/*.apk
+
+  # Job 2: Build EXE (Windows)
+  build-exe:
+    name: Build Windows EXE
+    runs-on: windows-latest
+    if: github.event_name == 'push' || github.event.inputs.build_type == 'exe' || github.event.inputs.build_type == 'both'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Setup Gradle
+        run: |
+          cd app
+          ./gradlew.bat build --no-daemon
+      
+      - name: Create Desktop Launcher
+        run: |
+          mkdir -p app/src/main/java/com/alfarooj/timetable/desktop
+          echo "package com.alfarooj.timetable.desktop;" > app/src/main/java/com/alfarooj/timetable/desktop/DesktopLauncher.java
+          echo "import com.alfarooj.timetable.activities.LoginActivity;" >> app/src/main/java/com/alfarooj/timetable/desktop/DesktopLauncher.java
+          echo "public class DesktopLauncher {" >> app/src/main/java/com/alfarooj/timetable/desktop/DesktopLauncher.java
+          echo "    public static void main(String[] args) {" >> app/src/main/java/com/alfarooj/timetable/desktop/DesktopLauncher.java
+          echo "        System.out.println(\"AL FAROOJ AL SHAMI TIME TABLE\");" >> app/src/main/java/com/alfarooj/timetable/desktop/DesktopLauncher.java
+          echo "        System.out.println(\"Windows application starting...\");" >> app/src/main/java/com/alfarooj/timetable/desktop/DesktopLauncher.java
+          echo "    }" >> app/src/main/java/com/alfarooj/timetable/desktop/DesktopLauncher.java
+          echo "}" >> app/src/main/java/com/alfarooj/timetable/desktop/DesktopLauncher.java
+      
+      - name: Build JAR
+        run: |
+          cd app
+          ./gradlew.bat jar --no-daemon
+      
+      - name: Create EXE with jpackage
+        run: |
+          cd app
+          mkdir -p build/exe
+          jpackage --type app-image `
+            --name "AlfaroojTimeTable" `
+            --input build/libs `
+            --main-jar app.jar `
+            --main-class com.alfarooj.timetable.desktop.DesktopLauncher `
+            --dest build/exe `
+            --win-console
+          
+          Compress-Archive -Path "build/exe/AlfaroojTimeTable" -DestinationPath "Alfarooj-Windows.zip"
+      
+      - name: Upload Windows EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Alfarooj-Windows-EXE
+          path: app/build/exe/Alfarooj-Windows.zip
+
+  # Job 3: Create Release
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-apk, build-exe]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      
+      - name: List artifacts
+        run: |
+          ls -la artifacts/
+          ls -la artifacts/Alfarooj-Debug-APK/ || true
+          ls -la artifacts/Alfarooj-Release-APK/ || true
+          ls -la artifacts/Alfarooj-Windows-EXE/ || true
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Release v1.0.${{ github.run_number }}
+          body: |
+            ## AL FAROOJ AL SHAMI TIME TABLE
+            
+            ### Features:
+            - Multi-language support (English, Kiswahili, Arabic, Hindi, Chinese)
+            - Location-based attendance tracking
+            - Role-based access control
+            - SQLite local database
+            
+            ### Super Admin Credentials:
+            - Username: `AL FAROOJ AL SHAMI MUWAILEH`
+            - Password: `097321494`
+            
+            ### Downloads:
+            - Android APK (Debug & Release)
+            - Windows EXE (Zipped)
+          
+          files: |
+            artifacts/Alfarooj-Debug-APK/*.apk
+            artifacts/Alfarooj-Release-APK/*.apk
+            artifacts/Alfarooj-Windows-EXE/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

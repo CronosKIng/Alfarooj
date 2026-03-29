@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AL FAROOJ AL SHAMI TIME TABLE</string>
+    <string name="login">Login</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="break_start">Break Start</string>
+    <string name="break_end">Break End</string>
+    <string name="delivery_go">Delivery Go</string>
+    <string name="delivery_return">Delivery Return</string>
+    <string name="welcome">Welcome</string>
+    <string name="kitchen">Kitchen</string>
+    <string name="waiters">Waiters</string>
+    <string name="delivery">Delivery</string>
+    <string name="managers">Managers</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="logout">Logout</string>
+    <string name="history">History</string>
+    <string name="create_user">Create User</string>
+    <string name="create_admin">Create Admin</string>
+    <string name="delete">Delete</string>
+    <string name="location_error">You are not allowed to sign! Make sure you are at the work location.</string>
+    <string name="success">Success</string>
+    <string name="error">Error</string>
+    <string name="select_language">Select Language</string>
+    <string name="english">English</string>
+    <string name="swahili">Kiswahili</string>
+    <string name="arabic">العربية</string>
+    <string name="hindi">हिन्दी</string>
+    <string name="chinese">中文</string>
+</resources>
