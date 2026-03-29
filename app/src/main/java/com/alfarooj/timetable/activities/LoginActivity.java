@@ -40,14 +40,16 @@ public class LoginActivity extends BaseActivity {
         btnLogin = findViewById(R.id.btnLogin);
         tvError = findViewById(R.id.tvError);
         
-        checkLocationPermission();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
+        }
         
         btnLogin.setOnClickListener(v -> {
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
             
             if (username.isEmpty() || password.isEmpty()) {
-                tvError.setText(getString(R.string.error));
+                tvError.setText("Please fill all fields");
                 return;
             }
             
@@ -58,15 +60,9 @@ public class LoginActivity extends BaseActivity {
                     navigateToDashboard();
                 }
             } else {
-                tvError.setText(getString(R.string.error));
+                tvError.setText("Invalid username or password");
             }
         });
-    }
-    
-    private void checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
-        }
     }
     
     private void navigateToDashboard() {

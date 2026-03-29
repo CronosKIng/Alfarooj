@@ -2,100 +2,53 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    android:orientation="vertical"
+    android:padding="16dp">
+    
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+    
+    <TextView
+        android:id="@+id/tvStatus"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/purple"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
-
-    <LinearLayout
+        android:layout_height="wrap_content"
+        android:text="Not signed in"
+        android:padding="12dp"
+        android:background="#E0E0E0"
+        android:layout_marginVertical="16dp"/>
+    
+    <Button
+        android:id="@+id/btnSignIn"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/tvWelcome"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
-
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Hujasign bado"
-            android:padding="12dp"
-            android:background="#E0E0E0"
-            android:layout_marginBottom="16dp"/>
-
-        <Button
-            android:id="@+id/btnSignIn"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="SIGN IN"
-            android:backgroundTint="#4CAF50"
-            android:layout_marginBottom="8dp"/>
-
-        <Button
-            android:id="@+id/btnBreakStart"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="BREAK START"
-            android:backgroundTint="#FF9800"
-            android:layout_marginBottom="8dp"/>
-
-        <Button
-            android:id="@+id/btnBreakEnd"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="BREAK END"
-            android:backgroundTint="#FF9800"
-            android:layout_marginBottom="8dp"/>
-
-        <Button
-            android:id="@+id/btnDeliveryGo"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="DELIVERY GO"
-            android:backgroundTint="#2196F3"
-            android:layout_marginBottom="8dp"/>
-
-        <Button
-            android:id="@+id/btnDeliveryReturn"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="DELIVERY RETURN"
-            android:backgroundTint="#2196F3"
-            android:layout_marginBottom="8dp"/>
-
-        <Button
-            android:id="@+id/btnSignOut"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="SIGN OUT"
-            android:backgroundTint="#F44336"
-            android:layout_marginBottom="8dp"/>
-
-        <Button
-            android:id="@+id/btnViewHistory"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="VIEW HISTORY"
-            android:backgroundTint="#9C27B0"
-            android:layout_marginBottom="8dp"/>
-
-        <Button
-            android:id="@+id/btnLogout"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="LOGOUT"
-            android:backgroundTint="#795548"/>
-
-    </LinearLayout>
+        android:layout_height="56dp"
+        android:text="SIGN IN"
+        android:backgroundTint="#4CAF50"
+        android:layout_marginBottom="8dp"/>
+    
+    <Button
+        android:id="@+id/btnSignOut"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="SIGN OUT"
+        android:backgroundTint="#F44336"
+        android:layout_marginBottom="8dp"/>
+    
+    <Button
+        android:id="@+id/btnViewHistory"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="HISTORY"
+        android:backgroundTint="#9C27B0"
+        android:layout_marginBottom="8dp"/>
+    
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="LOGOUT"
+        android:backgroundTint="#795548"/>
 </LinearLayout>

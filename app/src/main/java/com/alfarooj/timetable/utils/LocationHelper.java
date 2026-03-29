@@ -1,15 +1,11 @@
 package com.alfarooj.timetable.utils;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Looper;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -25,7 +21,6 @@ public class LocationHelper {
     
     private Context context;
     private FusedLocationProviderClient fusedLocationClient;
-    private LocationCallback locationCallback;
     
     public interface LocationResultCallback {
         void onLocationSuccess(double latitude, double longitude, String address);
@@ -39,7 +34,7 @@ public class LocationHelper {
     
     public void getCurrentLocation(LocationResultCallback callback) {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            callback.onLocationFailed("Hakuna ruhusa ya location. Tafadhali ruhusu location kwenye settings.");
+            callback.onLocationFailed("Hakuna ruhusa ya location");
             return;
         }
         
@@ -47,15 +42,15 @@ public class LocationHelper {
             .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
             .build();
         
-        locationCallback = new LocationCallback() {
+        LocationCallback locationCallback = new LocationCallback() {
             @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
+            public void onLocationResult(LocationResult locationResult) {
                 if (locationResult.getLastLocation() != null) {
                     Location location = locationResult.getLastLocation();
-                    fusedLocationClient.removeLocationUpdates(locationCallback);
-                    callback.onLocationSuccess(location.getLatitude(), location.getLongitude(), getAddressFromLocation(location.getLatitude(), location.getLongitude()));
+                    fusedLocationClient.removeLocationUpdates(this);
+                    callback.onLocationSuccess(location.getLatitude(), location.getLongitude(), "Location: " + location.getLatitude() + ", " + location.getLongitude());
                 } else {
-                    callback.onLocationFailed("Haiwezi kupata location yako. Hakikisha GPS imewashwa.");
+                    callback.onLocationFailed("Haiwezi kupata location");
                 }
             }
         };
@@ -69,10 +64,6 @@ public class LocationHelper {
         return results[0] <= ALLOWED_RADIUS_METERS;
     }
     
-    private String getAddressFromLocation(double lat, double lng) {
-        return String.format("Lat: %.6f, Lng: %.6f", lat, lng);
-    }
-    
     public void checkLocationAndProceed(LocationResultCallback callback, Runnable onSuccess) {
         getCurrentLocation(new LocationResultCallback() {
             @Override
@@ -80,7 +71,7 @@ public class LocationHelper {
                 if (isWithinWorkLocation(latitude, longitude)) {
                     onSuccess.run();
                 } else {
-                    callback.onLocationFailed("Hauruhusiwi kusign! Hakikisha uko Muwai leh. Unao umbali wa zaidi ya meta 100 kutoka eneo la kazi.");
+                    callback.onLocationFailed("Hauruhusiwi kusign! Hakikisha uko eneo la kazi.");
                 }
             }
             

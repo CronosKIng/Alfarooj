@@ -42,24 +42,16 @@ public class BaseActivity extends AppCompatActivity {
     }
     
     private void showLanguageDialog() {
-        String[] languages = {"English", "Kiswahili", "العربية", "हिन्दी", "中文"};
-        String[] languageCodes = {LanguageUtils.ENGLISH, LanguageUtils.SWAHILI, LanguageUtils.ARABIC, LanguageUtils.HINDI, LanguageUtils.CHINESE};
+        String[] languages = {"English", "Kiswahili"};
+        String[] languageCodes = {LanguageUtils.ENGLISH, LanguageUtils.SWAHILI};
         
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.select_language);
+        builder.setTitle("Select Language");
         builder.setItems(languages, (dialog, which) -> {
-            String selectedCode = languageCodes[which];
-            LanguageUtils.setLocale(this, selectedCode);
-            Toast.makeText(this, "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
+            LanguageUtils.setLocale(this, languageCodes[which]);
+            Toast.makeText(this, "Language changed", Toast.LENGTH_SHORT).show();
             recreate();
         });
         builder.show();
-    }
-    
-    protected void restartApp() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
     }
 }

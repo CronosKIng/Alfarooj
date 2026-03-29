@@ -38,14 +38,4 @@ public class AttendanceLog {
     public double getLatitude() { return latitude; }
     public double getLongitude() { return longitude; }
     public String getTimestamp() { return timestamp; }
-    
-    public String getDepartmentDisplay() {
-        switch(department) {
-            case "kitchen": return "Jikoni";
-            case "waiters": return "Wahudumu";
-            case "delivery": return "Delivery";
-            case "managers": return "Viongozi";
-            default: return department;
-        }
-    }
 }

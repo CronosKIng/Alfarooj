@@ -24,7 +24,7 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         AttendanceLog log = logList.get(position);
-        holder.text1.setText(log.getEventName() + " - " + log.getFullName() + " (" + log.getDepartmentDisplay() + ")");
+        holder.text1.setText(log.getEventName() + " - " + log.getFullName());
         holder.text2.setText(log.getTimestamp() + " | " + log.getLocation());
     }
     
