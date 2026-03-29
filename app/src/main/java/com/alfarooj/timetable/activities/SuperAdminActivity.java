@@ -1,5 +1,6 @@
 package com.alfarooj.timetable.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
@@ -31,11 +32,16 @@ public class SuperAdminActivity extends BaseActivity {
         
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
-        btnViewLogs.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
+        btnViewLogs.setOnClickListener(v -> {
+            Intent intent = new Intent(SuperAdminActivity.this, HistoryActivity.class);
+            startActivity(intent);
+        });
+        
         btnLogout.setOnClickListener(v -> {
             session.logout();
+            Intent intent = new Intent(SuperAdminActivity.this, LoginActivity.class);
+            startActivity(intent);
             finish();
-            startActivity(new Intent(this, LoginActivity.class));
         });
         
         loadUsers();

@@ -32,11 +32,16 @@ public class AdminActivity extends BaseActivity {
         
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
-        btnViewLogs.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
+        btnViewLogs.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminActivity.this, HistoryActivity.class);
+            startActivity(intent);
+        });
+        
         btnLogout.setOnClickListener(v -> {
             session.logout();
+            Intent intent = new Intent(AdminActivity.this, LoginActivity.class);
+            startActivity(intent);
             finish();
-            startActivity(new Intent(this, LoginActivity.class));
         });
         
         loadUsers();

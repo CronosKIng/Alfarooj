@@ -46,6 +46,8 @@ public class HistoryActivity extends BaseActivity {
     
     private void loadLogs() {
         logList = db.getAllAttendanceLogs();
+        LogAdapter adapter = new LogAdapter(logList);
+        recyclerView.setAdapter(adapter);
         Toast.makeText(this, "Logs: " + logList.size(), Toast.LENGTH_SHORT).show();
     }
 }

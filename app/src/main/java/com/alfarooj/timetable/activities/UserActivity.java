@@ -40,11 +40,15 @@ public class UserActivity extends BaseActivity {
         
         btnSignIn.setOnClickListener(v -> logEvent("sign_in", "Sign In"));
         btnSignOut.setOnClickListener(v -> logEvent("sign_out", "Sign Out"));
-        btnViewHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
+        btnViewHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(UserActivity.this, HistoryActivity.class);
+            startActivity(intent);
+        });
         btnLogout.setOnClickListener(v -> {
             session.logout();
+            Intent intent = new Intent(UserActivity.this, LoginActivity.class);
+            startActivity(intent);
             finish();
-            startActivity(new Intent(this, LoginActivity.class));
         });
     }
     
