@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alfarooj.timetable.database.DatabaseHelper;
 import com.alfarooj.timetable.models.User;
+import com.alfarooj.timetable.R;
 import java.util.ArrayList;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
@@ -29,15 +30,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_2, parent, false);
-        Button btnDelete = new Button(view.getContext());
-        btnDelete.setText("Delete");
-        return new ViewHolder(view, btnDelete);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         User user = userList.get(position);
+        
         String departmentDisplay = "";
         switch(user.getDepartment()) {
             case "kitchen":
@@ -56,8 +56,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                 departmentDisplay = user.getDepartment();
         }
         
-        holder.text1.setText(user.getFullName() + " (" + user.getUsername() + ")");
-        holder.text2.setText("Department: " + departmentDisplay + " | Role: " + user.getRole());
+        holder.tvFullName.setText("Name: " + user.getFullName());
+        holder.tvUsername.setText("Username: " + user.getUsername());
+        holder.tvPassword.setText("Password: ******");
+        holder.tvDepartment.setText("Department: " + departmentDisplay);
+        holder.tvRole.setText("Role: " + user.getRole());
 
         holder.btnDelete.setOnClickListener(v -> {
             DatabaseHelper db = new DatabaseHelper(context);
@@ -76,14 +79,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView text1, text2;
+        TextView tvFullName, tvUsername, tvPassword, tvDepartment, tvRole;
         Button btnDelete;
 
-        public ViewHolder(View itemView, Button btnDelete) {
+        public ViewHolder(View itemView) {
             super(itemView);
-            text1 = itemView.findViewById(android.R.id.text1);
-            text2 = itemView.findViewById(android.R.id.text2);
-            this.btnDelete = btnDelete;
+            tvFullName = itemView.findViewById(R.id.tvFullName);
+            tvUsername = itemView.findViewById(R.id.tvUsername);
+            tvPassword = itemView.findViewById(R.id.tvPassword);
+            tvDepartment = itemView.findViewById(R.id.tvDepartment);
+            tvRole = itemView.findViewById(R.id.tvRole);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
 }

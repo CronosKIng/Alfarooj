@@ -7,11 +7,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.models.AttendanceLog;
+import com.alfarooj.timetable.utils.PasswordUtils;
 import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "alfarooj.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 6;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -45,8 +46,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_ATTENDANCE_TABLE);
 
         // Insert SUPER ADMIN
+        String hashedPassword = PasswordUtils.hashPassword("097321494");
         String INSERT_SUPER_ADMIN = "INSERT INTO users (full_name, username, password, role, department) VALUES " +
-            "('AL FAROOJ AL SHAMI', 'ALFAROOJ', '097321494', 'super_admin', 'admin')";
+            "('AL FAROOJ AL SHAMI', 'ALFAROOJ', '" + hashedPassword + "', 'super_admin', 'admin')";
         db.execSQL(INSERT_SUPER_ADMIN);
     }
 
@@ -59,8 +61,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public boolean login(String username, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE username = ? AND password = ?", new String[]{username, password});
-        boolean isValid = cursor.getCount() > 0;
+        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE username = ?", new String[]{username});
+        
+        boolean isValid = false;
+        if (cursor.moveToFirst()) {
+            String hashedPassword = cursor.getString(3);
+            isValid = PasswordUtils.verifyPassword(password, hashedPassword);
+        }
         cursor.close();
         db.close();
         return isValid;
@@ -69,6 +76,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public User getUser(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM users WHERE username = ?", new String[]{username});
+        User user = null;
+        if (cursor.moveToFirst()) {
+            user = new User(cursor.getInt(0), cursor.getString(1), cursor.getString(2), 
+                cursor.getString(3), cursor.getString(4), cursor.getString(5), 
+                cursor.getInt(6), cursor.getString(7));
+        }
+        cursor.close();
+        db.close();
+        return user;
+    }
+
+    public User getUserById(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE id = ?", new String[]{String.valueOf(userId)});
         User user = null;
         if (cursor.moveToFirst()) {
             user = new User(cursor.getInt(0), cursor.getString(1), cursor.getString(2), 
@@ -99,7 +120,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("full_name", fullName);
         values.put("username", username);
-        values.put("password", password);
+        values.put("password", PasswordUtils.hashPassword(password));
         values.put("role", role);
         values.put("department", department);
         values.put("created_by", createdBy);
@@ -136,7 +157,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public ArrayList<AttendanceLog> getAllAttendanceLogs() {
         ArrayList<AttendanceLog> logs = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs ORDER BY id DESC LIMIT 100", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs ORDER BY id DESC LIMIT 200", null);
         while (cursor.moveToNext()) {
             logs.add(new AttendanceLog(
                 cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
@@ -152,8 +173,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public ArrayList<AttendanceLog> getAttendanceLogsByDepartment(String department) {
         ArrayList<AttendanceLog> logs = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs WHERE department = ? ORDER BY id DESC LIMIT 100", 
+        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs WHERE department = ? ORDER BY id DESC LIMIT 200", 
             new String[]{department});
+        while (cursor.moveToNext()) {
+            logs.add(new AttendanceLog(
+                cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
+                cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7),
+                cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)
+            ));
+        }
+        cursor.close();
+        db.close();
+        return logs;
+    }
+
+    public ArrayList<AttendanceLog> getTodayAttendanceLogs() {
+        ArrayList<AttendanceLog> logs = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs WHERE date(timestamp) = date('now', 'localtime') ORDER BY id DESC", null);
         while (cursor.moveToNext()) {
             logs.add(new AttendanceLog(
                 cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),

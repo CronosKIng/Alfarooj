@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alfarooj.timetable.models.AttendanceLog;
+import com.alfarooj.timetable.R;
 import java.util.ArrayList;
 
 public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
@@ -17,7 +18,7 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_2, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_log, parent, false);
         return new ViewHolder(view);
     }
 
@@ -43,8 +44,10 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
                 departmentDisplay = log.getDepartment();
         }
         
-        holder.text1.setText(log.getEventName() + " - " + log.getFullName() + " (" + departmentDisplay + ")");
-        holder.text2.setText(log.getTimestamp() + " | " + log.getLocation());
+        holder.tvUser.setText(log.getFullName() + " (" + log.getUsername() + ")");
+        holder.tvEvent.setText("Event: " + log.getEventName());
+        holder.tvDepartment.setText("Department: " + departmentDisplay);
+        holder.tvTime.setText("Time: " + log.getTimestamp());
     }
 
     @Override
@@ -53,11 +56,14 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView text1, text2;
+        TextView tvUser, tvEvent, tvDepartment, tvTime;
+        
         public ViewHolder(View itemView) {
             super(itemView);
-            text1 = itemView.findViewById(android.R.id.text1);
-            text2 = itemView.findViewById(android.R.id.text2);
+            tvUser = itemView.findViewById(R.id.tvUser);
+            tvEvent = itemView.findViewById(R.id.tvEvent);
+            tvDepartment = itemView.findViewById(R.id.tvDepartment);
+            tvTime = itemView.findViewById(R.id.tvTime);
         }
     }
 }

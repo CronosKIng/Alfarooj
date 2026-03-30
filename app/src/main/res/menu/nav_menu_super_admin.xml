@@ -3,17 +3,12 @@
     
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_create_admin"
-            android:title="Create Admin"
-            android:icon="@android:drawable/ic_menu_add" />
+            android:id="@+id/nav_today_attendance"
+            android:title="Today's Attendance"
+            android:icon="@android:drawable/ic_menu_today" />
         
         <item
-            android:id="@+id/nav_create_user"
-            android:title="Create User"
-            android:icon="@android:drawable/ic_menu_add" />
-        
-        <item
-            android:id="@+id/nav_history"
+            android:id="@+id/nav_all_history"
             android:title="All History"
             android:icon="@android:drawable/ic_menu_view" />
         
@@ -36,6 +31,16 @@
             android:id="@+id/nav_manager_history"
             android:title="Manager History"
             android:icon="@android:drawable/ic_menu_edit" />
+        
+        <item
+            android:id="@+id/nav_create_admin"
+            android:title="Create Admin"
+            android:icon="@android:drawable/ic_menu_add" />
+        
+        <item
+            android:id="@+id/nav_create_user"
+            android:title="Create User"
+            android:icon="@android:drawable/ic_menu_add" />
         
         <item
             android:id="@+id/nav_users"

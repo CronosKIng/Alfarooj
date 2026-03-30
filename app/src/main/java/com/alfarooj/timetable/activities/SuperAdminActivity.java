@@ -51,7 +51,6 @@ public class SuperAdminActivity extends BaseActivity {
             toolbar = findViewById(R.id.toolbar);
             contentFrame = findViewById(R.id.contentFrame);
 
-            // Setup toolbar
             setSupportActionBar(toolbar);
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -71,7 +70,9 @@ public class SuperAdminActivity extends BaseActivity {
                     showCreateUserDialog("admin");
                 } else if (id == R.id.nav_create_user) {
                     showCreateUserDialog("user");
-                } else if (id == R.id.nav_history) {
+                } else if (id == R.id.nav_today_attendance) {
+                    loadTodayAttendance();
+                } else if (id == R.id.nav_all_history) {
                     loadAllHistory();
                 } else if (id == R.id.nav_kitchen_history) {
                     loadHistoryByDepartment("kitchen");
@@ -138,7 +139,6 @@ public class SuperAdminActivity extends BaseActivity {
             builder.show();
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -167,10 +167,25 @@ public class SuperAdminActivity extends BaseActivity {
         }
     }
 
+    private void loadTodayAttendance() {
+        try {
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Today's Attendance");
+            }
+            logList = db.getTodayAttendanceLogs();
+            if (logList.isEmpty()) {
+                Toast.makeText(this, "No attendance records for today", Toast.LENGTH_SHORT).show();
+            }
+            showHistoryList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void loadAllHistory() {
         try {
             if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle("All Attendance History");
+                getSupportActionBar().setTitle("All History");
             }
             logList = db.getAllAttendanceLogs();
             showHistoryList();
