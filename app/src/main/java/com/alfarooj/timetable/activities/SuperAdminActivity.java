@@ -7,6 +7,7 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -87,7 +88,6 @@ public class SuperAdminActivity extends BaseActivity {
             return true;
         });
 
-        // Default view - show users
         loadUsers();
     }
 
@@ -133,7 +133,6 @@ public class SuperAdminActivity extends BaseActivity {
         setTitle("Manage Users");
         userList = db.getAllUsers();
         
-        // Create new layout for users if not exists
         if (contentFrame.getChildCount() > 0) {
             contentFrame.removeAllViews();
         }
@@ -155,7 +154,8 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadHistoryByDepartment(String department) {
-        setTitle(department.toUpperCase() + " History");
+        String title = department.substring(0, 1).toUpperCase() + department.substring(1);
+        setTitle(title + " History");
         logList = db.getAttendanceLogsByDepartment(department);
         showHistoryList();
     }
