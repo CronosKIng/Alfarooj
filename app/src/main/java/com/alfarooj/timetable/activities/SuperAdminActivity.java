@@ -3,27 +3,40 @@ package com.alfarooj.timetable.activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alfarooj.timetable.adapters.UserAdapter;
+import com.alfarooj.timetable.adapters.LogAdapter;
 import com.alfarooj.timetable.database.DatabaseHelper;
 import com.alfarooj.timetable.models.User;
+import com.alfarooj.timetable.models.AttendanceLog;
 import com.alfarooj.timetable.utils.SessionManager;
 import com.alfarooj.timetable.R;
+import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
 
 public class SuperAdminActivity extends BaseActivity {
-    private RecyclerView recyclerView;
-    private Button btnCreateAdmin, btnCreateUser, btnViewLogs, btnLogout;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private Toolbar toolbar;
+    private FrameLayout contentFrame;
     private DatabaseHelper db;
     private SessionManager session;
+    private RecyclerView recyclerView;
     private ArrayList<User> userList;
-    private UserAdapter adapter;
+    private ArrayList<AttendanceLog> logList;
+    private UserAdapter userAdapter;
+    private LogAdapter logAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,26 +46,48 @@ public class SuperAdminActivity extends BaseActivity {
         db = new DatabaseHelper(this);
         session = new SessionManager(this);
 
-        recyclerView = findViewById(R.id.recyclerView);
-        btnCreateAdmin = findViewById(R.id.btnCreateAdmin);
-        btnCreateUser = findViewById(R.id.btnCreateUser);
-        btnViewLogs = findViewById(R.id.btnViewLogs);
-        btnLogout = findViewById(R.id.btnLogout);
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navView);
+        toolbar = findViewById(R.id.toolbar);
+        contentFrame = findViewById(R.id.contentFrame);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        setSupportActionBar(toolbar);
 
-        btnCreateAdmin.setOnClickListener(v -> showCreateUserDialog("admin"));
-        btnCreateUser.setOnClickListener(v -> showCreateUserDialog("user"));
-        btnViewLogs.setOnClickListener(v -> {
-            Intent intent = new Intent(SuperAdminActivity.this, HistoryActivity.class);
-            startActivity(intent);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+            this, drawerLayout, toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_create_admin) {
+                showCreateUserDialog("admin");
+            } else if (id == R.id.nav_create_user) {
+                showCreateUserDialog("user");
+            } else if (id == R.id.nav_history) {
+                loadAllHistory();
+            } else if (id == R.id.nav_kitchen_history) {
+                loadHistoryByDepartment("kitchen");
+            } else if (id == R.id.nav_waiter_history) {
+                loadHistoryByDepartment("waiter");
+            } else if (id == R.id.nav_delivery_history) {
+                loadHistoryByDepartment("delivery");
+            } else if (id == R.id.nav_manager_history) {
+                loadHistoryByDepartment("manager");
+            } else if (id == R.id.nav_users) {
+                loadUsers();
+            } else if (id == R.id.nav_logout) {
+                session.logout();
+                startActivity(new Intent(this, LoginActivity.class));
+                finish();
+            }
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         });
-        btnLogout.setOnClickListener(v -> {
-            session.logout();
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
-        });
 
+        // Default view - show users
         loadUsers();
     }
 
@@ -95,8 +130,48 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadUsers() {
+        setTitle("Manage Users");
         userList = db.getAllUsers();
-        adapter = new UserAdapter(userList, this, () -> loadUsers());
-        recyclerView.setAdapter(adapter);
+        
+        // Create new layout for users if not exists
+        if (contentFrame.getChildCount() > 0) {
+            contentFrame.removeAllViews();
+        }
+        
+        android.view.View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        
+        userAdapter = new UserAdapter(userList, this, () -> loadUsers());
+        recyclerView.setAdapter(userAdapter);
+        
+        contentFrame.addView(view);
+    }
+
+    private void loadAllHistory() {
+        setTitle("All Attendance History");
+        logList = db.getAllAttendanceLogs();
+        showHistoryList();
+    }
+
+    private void loadHistoryByDepartment(String department) {
+        setTitle(department.toUpperCase() + " History");
+        logList = db.getAttendanceLogsByDepartment(department);
+        showHistoryList();
+    }
+
+    private void showHistoryList() {
+        if (contentFrame.getChildCount() > 0) {
+            contentFrame.removeAllViews();
+        }
+        
+        android.view.View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        
+        logAdapter = new LogAdapter(logList);
+        recyclerView.setAdapter(logAdapter);
+        
+        contentFrame.addView(view);
     }
 }

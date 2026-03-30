@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "alfarooj.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -44,7 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "timestamp TEXT DEFAULT (datetime('now', 'localtime')))";
         db.execSQL(CREATE_ATTENDANCE_TABLE);
 
-        // Insert SUPER ADMIN - Username: ALFAROOJ, Password: 097321494
+        // Insert SUPER ADMIN
         String INSERT_SUPER_ADMIN = "INSERT INTO users (full_name, username, password, role, department) VALUES " +
             "('AL FAROOJ AL SHAMI', 'ALFAROOJ', '097321494', 'super_admin', 'admin')";
         db.execSQL(INSERT_SUPER_ADMIN);
@@ -136,7 +136,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public ArrayList<AttendanceLog> getAllAttendanceLogs() {
         ArrayList<AttendanceLog> logs = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs ORDER BY id DESC", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs ORDER BY id DESC LIMIT 100", null);
+        while (cursor.moveToNext()) {
+            logs.add(new AttendanceLog(
+                cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
+                cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7),
+                cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)
+            ));
+        }
+        cursor.close();
+        db.close();
+        return logs;
+    }
+
+    public ArrayList<AttendanceLog> getAttendanceLogsByDepartment(String department) {
+        ArrayList<AttendanceLog> logs = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs WHERE department = ? ORDER BY id DESC LIMIT 100", 
+            new String[]{department});
         while (cursor.moveToNext()) {
             logs.add(new AttendanceLog(
                 cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
