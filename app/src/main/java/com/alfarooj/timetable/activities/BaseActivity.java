@@ -36,22 +36,6 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        
-        // Translate menu item based on current language
-        String currentLang = LanguageUtils.getSavedLanguage(this);
-        if (!currentLang.equals("en")) {
-            TranslationUtils.translate("Change Language", currentLang, new TranslationUtils.TranslateCallback() {
-                @Override
-                public void onResult(String translatedText) {
-                    MenuItem item = menu.findItem(R.id.action_language);
-                    if (item != null) {
-                        item.setTitle(translatedText);
-                    }
-                }
-                @Override
-                public void onError(String error) {}
-            });
-        }
         return true;
     }
 
@@ -69,29 +53,11 @@ public class BaseActivity extends AppCompatActivity {
         String[] languageCodes = LanguageUtils.getAllLanguageCodes();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        
-        // Translate dialog title
-        String currentLang = LanguageUtils.getSavedLanguage(this);
-        if (!currentLang.equals("en")) {
-            TranslationUtils.translate("Select Language", currentLang, new TranslationUtils.TranslateCallback() {
-                @Override
-                public void onResult(String translatedText) {
-                    builder.setTitle(translatedText);
-                }
-                @Override
-                public void onError(String error) {
-                    builder.setTitle("Select Language");
-                }
-            });
-        } else {
-            builder.setTitle("Select Language");
-        }
-        
+        builder.setTitle("Select Language");
         builder.setItems(languages, (dialog, which) -> {
             String selectedCode = languageCodes[which];
             LanguageUtils.setLocale(this, selectedCode);
-            String message = languages[which];
-            Toast.makeText(this, "Language changed to " + message, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Language changed", Toast.LENGTH_SHORT).show();
             recreate();
         });
         builder.show();
