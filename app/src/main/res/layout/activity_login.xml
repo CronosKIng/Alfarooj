@@ -19,6 +19,7 @@
             android:layout_marginBottom="24dp"/>
 
         <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="AL FAROOJ AL SHAMI"
@@ -28,6 +29,7 @@
             android:gravity="center"/>
 
         <TextView
+            android:id="@+id/tvSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TIME TABLE SYSTEM"
@@ -36,20 +38,39 @@
             android:layout_marginBottom="48dp"
             android:gravity="center"/>
 
+        <TextView
+            android:id="@+id/tvUsernameLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Username"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp"
+            android:textSize="14sp"/>
+
         <EditText
             android:id="@+id/etUsername"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:hint="Username"
-            android:textColorHint="@android:color/white"
+            android:hint="Enter your username"
+            android:textColorHint="#CCFFFFFF"
             android:textColor="@android:color/white"
             android:background="@android:drawable/editbox_background"
             android:padding="16dp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/tvPasswordLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Password"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp"
+            android:textSize="14sp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:orientation="horizontal"
             android:background="@android:drawable/editbox_background"
             android:layout_marginBottom="24dp">
@@ -57,19 +78,20 @@
             <EditText
                 android:id="@+id/etPassword"
                 android:layout_width="0dp"
-                android:layout_height="56dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:hint="Password"
-                android:textColorHint="@android:color/white"
+                android:hint="Enter your password"
+                android:textColorHint="#CCFFFFFF"
                 android:textColor="@android:color/white"
                 android:inputType="textPassword"
                 android:background="@null"
-                android:padding="16dp"/>
+                android:padding="16dp"
+                android:textSize="16sp"/>
 
             <ImageButton
                 android:id="@+id/btnTogglePassword"
                 android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_height="match_parent"
                 android:src="@drawable/ic_eye"
                 android:background="@null"
                 android:scaleType="center"/>
@@ -86,10 +108,14 @@
 
         <TextView
             android:id="@+id/tvError"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#FF5722"
-            android:layout_marginTop="16dp"/>
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:background="#33FF5722"/>
             
         <TextView
             android:id="@+id/tvAppVersion"

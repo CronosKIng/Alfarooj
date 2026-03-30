@@ -21,7 +21,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.alfarooj.timetable.database.DatabaseHelper;
 import com.alfarooj.timetable.models.User;
+import com.alfarooj.timetable.utils.LanguageUtils;
 import com.alfarooj.timetable.utils.SessionManager;
+import com.alfarooj.timetable.utils.TranslationUtils;
 import com.alfarooj.timetable.R;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -33,10 +35,10 @@ public class LoginActivity extends BaseActivity {
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ImageButton btnTogglePassword;
-    private TextView tvError;
+    private TextView tvError, tvTitle, tvSubtitle, tvUsernameLabel, tvPasswordLabel, tvVersion;
+    private ImageView ivLogo;
     private DatabaseHelper db;
     private SessionManager session;
-    private ImageView ivLogo;
     private boolean isPasswordVisible = false;
     private static final int LOCATION_PERMISSION_REQUEST = 100;
 
@@ -53,58 +55,133 @@ public class LoginActivity extends BaseActivity {
             return;
         }
 
+        // Initialize views
         ivLogo = findViewById(R.id.ivLogo);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnTogglePassword = findViewById(R.id.btnTogglePassword);
         tvError = findViewById(R.id.tvError);
+        tvTitle = findViewById(R.id.tvTitle);
+        tvSubtitle = findViewById(R.id.tvSubtitle);
+        tvUsernameLabel = findViewById(R.id.tvUsernameLabel);
+        tvPasswordLabel = findViewById(R.id.tvPasswordLabel);
+        tvVersion = findViewById(R.id.tvAppVersion);
 
-        // Load logo from URL
+        // Load logo
         loadLogoFromUrl("https://i.ibb.co/MxRVbVR0/IMG-20260322-WA0016-1.jpg");
 
-        // Toggle password visibility
+        // Translate UI based on current language
+        translateUI();
+
+        // Password toggle
         btnTogglePassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 btnTogglePassword.setImageResource(R.drawable.ic_eye);
+                isPasswordVisible = false;
             } else {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
                 btnTogglePassword.setImageResource(R.drawable.ic_eye_off);
+                isPasswordVisible = true;
             }
-            isPasswordVisible = !isPasswordVisible;
             etPassword.setSelection(etPassword.getText().length());
         });
 
-        // Check and request location permission
-        checkLocationPermission();
-
-        btnLogin.setOnClickListener(v -> {
-            String username = etUsername.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
-
-            if (username.isEmpty() || password.isEmpty()) {
-                tvError.setText("Please fill all fields");
-                return;
-            }
-
-            if (db.login(username, password)) {
-                User user = db.getUser(username);
-                if (user != null) {
-                    session.createLoginSession(user.getId(), user.getUsername(), user.getFullName(), user.getRole(), user.getDepartment());
-                    navigateToDashboard();
-                }
-            } else {
-                tvError.setText("Invalid username or password");
-            }
-        });
-    }
-
-    private void checkLocationPermission() {
+        // Location permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, 
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 
                 LOCATION_PERMISSION_REQUEST);
+        }
+
+        // Login button
+        btnLogin.setOnClickListener(v -> {
+            String username = etUsername.getText().toString().trim();
+            String password = etPassword.getText().toString().trim();
+
+            tvError.setText("");
+            
+            if (username.isEmpty()) {
+                translateAndSetText(tvError, "Please enter username");
+                etUsername.requestFocus();
+                return;
+            }
+            
+            if (password.isEmpty()) {
+                translateAndSetText(tvError, "Please enter password");
+                etPassword.requestFocus();
+                return;
+            }
+
+            btnLogin.setText("LOGGING IN...");
+            btnLogin.setEnabled(false);
+
+            new Handler().postDelayed(() -> {
+                if (db.login(username, password)) {
+                    User user = db.getUser(username);
+                    if (user != null) {
+                        session.createLoginSession(user.getId(), user.getUsername(), user.getFullName(), user.getRole(), user.getDepartment());
+                        String welcomeMsg = "Welcome " + user.getFullName() + "!";
+                        translateAndToast(welcomeMsg);
+                        navigateToDashboard();
+                    } else {
+                        translateAndSetText(tvError, "User not found!");
+                        btnLogin.setText("LOGIN");
+                        btnLogin.setEnabled(true);
+                    }
+                } else {
+                    translateAndSetText(tvError, "Invalid username or password!");
+                    btnLogin.setText("LOGIN");
+                    btnLogin.setEnabled(true);
+                    etPassword.setText("");
+                    etPassword.requestFocus();
+                }
+            }, 500);
+        });
+    }
+
+    private void translateUI() {
+        String currentLang = LanguageUtils.getSavedLanguage(this);
+        if (currentLang.equals("en")) {
+            tvTitle.setText("AL FAROOJ AL SHAMI");
+            tvSubtitle.setText("TIME TABLE SYSTEM");
+            tvUsernameLabel.setText("Username");
+            tvPasswordLabel.setText("Password");
+            etUsername.setHint("Enter your username");
+            etPassword.setHint("Enter your password");
+            btnLogin.setText("LOGIN");
+            tvVersion.setText("Version 2.0");
+            return;
+        }
+        
+        // Translate each text
+        TranslationUtils.translate("AL FAROOJ AL SHAMI", currentLang, result -> tvTitle.setText(result));
+        TranslationUtils.translate("TIME TABLE SYSTEM", currentLang, result -> tvSubtitle.setText(result));
+        TranslationUtils.translate("Username", currentLang, result -> tvUsernameLabel.setText(result));
+        TranslationUtils.translate("Password", currentLang, result -> tvPasswordLabel.setText(result));
+        TranslationUtils.translate("Enter your username", currentLang, result -> etUsername.setHint(result));
+        TranslationUtils.translate("Enter your password", currentLang, result -> etPassword.setHint(result));
+        TranslationUtils.translate("LOGIN", currentLang, result -> btnLogin.setText(result));
+        TranslationUtils.translate("Version 2.0", currentLang, result -> tvVersion.setText(result));
+    }
+    
+    private void translateAndSetText(TextView textView, String text) {
+        String currentLang = LanguageUtils.getSavedLanguage(this);
+        if (currentLang.equals("en")) {
+            textView.setText(text);
+        } else {
+            TranslationUtils.translate(text, currentLang, result -> textView.setText(result));
+        }
+    }
+    
+    private void translateAndToast(String message) {
+        String currentLang = LanguageUtils.getSavedLanguage(this);
+        if (currentLang.equals("en")) {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        } else {
+            TranslationUtils.translate(message, currentLang, result -> 
+                Toast.makeText(LoginActivity.this, result, Toast.LENGTH_SHORT).show());
         }
     }
 
@@ -113,9 +190,9 @@ public class LoginActivity extends BaseActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+                translateAndToast("Location permission granted");
             } else {
-                Toast.makeText(this, "Location permission required for sign in/out", Toast.LENGTH_LONG).show();
+                translateAndToast("Location permission required for attendance!");
             }
         }
     }
@@ -129,6 +206,8 @@ public class LoginActivity extends BaseActivity {
                 URL url = new URL(urlString);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
                 connection.connect();
                 InputStream input = connection.getInputStream();
                 Bitmap bitmap = BitmapFactory.decodeStream(input);

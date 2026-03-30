@@ -3,7 +3,6 @@ package com.alfarooj.timetable.activities;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,8 +10,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.alfarooj.timetable.utils.LanguageUtils;
+import com.alfarooj.timetable.utils.TranslationUtils;
 import com.alfarooj.timetable.R;
-import java.util.Locale;
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -37,6 +36,22 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        
+        // Translate menu item based on current language
+        String currentLang = LanguageUtils.getSavedLanguage(this);
+        if (!currentLang.equals("en")) {
+            TranslationUtils.translate("Change Language", currentLang, new TranslationUtils.TranslateCallback() {
+                @Override
+                public void onResult(String translatedText) {
+                    MenuItem item = menu.findItem(R.id.action_language);
+                    if (item != null) {
+                        item.setTitle(translatedText);
+                    }
+                }
+                @Override
+                public void onError(String error) {}
+            });
+        }
         return true;
     }
 
@@ -54,11 +69,29 @@ public class BaseActivity extends AppCompatActivity {
         String[] languageCodes = LanguageUtils.getAllLanguageCodes();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Change Language");
+        
+        // Translate dialog title
+        String currentLang = LanguageUtils.getSavedLanguage(this);
+        if (!currentLang.equals("en")) {
+            TranslationUtils.translate("Select Language", currentLang, new TranslationUtils.TranslateCallback() {
+                @Override
+                public void onResult(String translatedText) {
+                    builder.setTitle(translatedText);
+                }
+                @Override
+                public void onError(String error) {
+                    builder.setTitle("Select Language");
+                }
+            });
+        } else {
+            builder.setTitle("Select Language");
+        }
+        
         builder.setItems(languages, (dialog, which) -> {
             String selectedCode = languageCodes[which];
             LanguageUtils.setLocale(this, selectedCode);
-            Toast.makeText(this, "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
+            String message = languages[which];
+            Toast.makeText(this, "Language changed to " + message, Toast.LENGTH_SHORT).show();
             recreate();
         });
         builder.show();
