@@ -9,8 +9,8 @@ import android.os.LocaleList;
 import java.util.Locale;
 
 public class LanguageUtils {
-    private static final String PREF_NAME = "lang_pref";
-    private static final String KEY_LANG = "language";
+    private static final String PREF_NAME = "language_pref";
+    private static final String KEY_LANGUAGE = "selected_language";
 
     public static void setLocale(Context context, String languageCode) {
         Locale locale = new Locale(languageCode);
@@ -21,22 +21,33 @@ public class LanguageUtils {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             config.setLocale(locale);
-            config.setLocales(new LocaleList(locale));
+            LocaleList localeList = new LocaleList(locale);
+            LocaleList.setDefault(localeList);
+            config.setLocales(localeList);
         } else {
             config.locale = locale;
         }
         resources.updateConfiguration(config, resources.getDisplayMetrics());
 
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putString(KEY_LANG, languageCode).apply();
+        prefs.edit().putString(KEY_LANGUAGE, languageCode).apply();
     }
 
     public static String getSavedLanguage(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(KEY_LANG, "en");
+        return prefs.getString(KEY_LANGUAGE, "en");
     }
 
     public static void applyLanguage(Context context) {
-        setLocale(context, getSavedLanguage(context));
+        String languageCode = getSavedLanguage(context);
+        setLocale(context, languageCode);
+    }
+    
+    public static String[] getAllLanguages() {
+        return new String[]{"English", "Kiswahili", "Arabic"};
+    }
+    
+    public static String[] getAllLanguageCodes() {
+        return new String[]{"en", "sw", "ar"};
     }
 }
