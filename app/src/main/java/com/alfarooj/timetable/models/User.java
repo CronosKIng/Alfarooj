@@ -9,7 +9,7 @@ public class User {
     private String department;
     private int createdBy;
     private String createdAt;
-    
+
     public User(int id, String fullName, String username, String password, String role, String department, int createdBy, String createdAt) {
         this.id = id;
         this.fullName = fullName;
@@ -20,7 +20,7 @@ public class User {
         this.createdBy = createdBy;
         this.createdAt = createdAt;
     }
-    
+
     public int getId() { return id; }
     public String getFullName() { return fullName; }
     public String getUsername() { return username; }
@@ -29,14 +29,14 @@ public class User {
     public String getDepartment() { return department; }
     public int getCreatedBy() { return createdBy; }
     public String getCreatedAt() { return createdAt; }
-    
+
     public String getDepartmentDisplay() {
         if (department == null) return "-";
         switch(department) {
-            case "kitchen": return "Jikoni";
-            case "waiters": return "Wahudumu";
+            case "kitchen": return "Kitchen";
+            case "waiter": return "Waiter";
             case "delivery": return "Delivery";
-            case "managers": return "Viongozi";
+            case "manager": return "Manager";
             default: return department;
         }
     }

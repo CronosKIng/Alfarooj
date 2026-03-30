@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.models.AttendanceLog;
-import com.alfarooj.timetable.utils.PasswordUtils;
 import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -45,10 +44,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "timestamp TEXT DEFAULT (datetime('now', 'localtime')))";
         db.execSQL(CREATE_ATTENDANCE_TABLE);
 
-        // Insert SUPER ADMIN
-        String hashedPassword = PasswordUtils.hashPassword("097321494");
+        // Insert SUPER ADMIN (plain password for now)
         String INSERT_SUPER_ADMIN = "INSERT INTO users (full_name, username, password, role, department) VALUES " +
-            "('AL FAROOJ AL SHAMI', 'ALFAROOJ', '" + hashedPassword + "', 'super_admin', 'admin')";
+            "('AL FAROOJ AL SHAMI', 'ALFAROOJ', '097321494', 'super_admin', 'admin')";
         db.execSQL(INSERT_SUPER_ADMIN);
     }
 
@@ -61,13 +59,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public boolean login(String username, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE username = ?", new String[]{username});
-        
-        boolean isValid = false;
-        if (cursor.moveToFirst()) {
-            String hashedPassword = cursor.getString(3);
-            isValid = PasswordUtils.verifyPassword(password, hashedPassword);
-        }
+        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE username = ? AND password = ?", new String[]{username, password});
+        boolean isValid = cursor.getCount() > 0;
         cursor.close();
         db.close();
         return isValid;
@@ -120,7 +113,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("full_name", fullName);
         values.put("username", username);
-        values.put("password", PasswordUtils.hashPassword(password));
+        values.put("password", password);
         values.put("role", role);
         values.put("department", department);
         values.put("created_by", createdBy);
