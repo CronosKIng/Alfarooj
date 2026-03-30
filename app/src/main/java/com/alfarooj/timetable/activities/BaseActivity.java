@@ -10,7 +10,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.alfarooj.timetable.utils.LanguageUtils;
-import com.alfarooj.timetable.utils.TranslationUtils;
 import com.alfarooj.timetable.R;
 
 public class BaseActivity extends AppCompatActivity {
@@ -49,15 +48,14 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void showLanguageDialog() {
-        String[] languages = LanguageUtils.getAllLanguages();
-        String[] languageCodes = LanguageUtils.getAllLanguageCodes();
+        String[] languages = {"English", "Kiswahili", "Arabic"};
+        String[] languageCodes = {"en", "sw", "ar"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select Language");
         builder.setItems(languages, (dialog, which) -> {
-            String selectedCode = languageCodes[which];
-            LanguageUtils.setLocale(this, selectedCode);
-            Toast.makeText(this, "Language changed", Toast.LENGTH_SHORT).show();
+            LanguageUtils.setLocale(this, languageCodes[which]);
+            Toast.makeText(this, "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
             recreate();
         });
         builder.show();

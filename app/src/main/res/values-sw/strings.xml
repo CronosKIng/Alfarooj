@@ -1,33 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AL FAROOJ AL SHAMI RATIBA YA MUDA</string>
+    <string name="app_name">AL FAROOJ AL SHAMI RATIBA</string>
     <string name="login">Ingia</string>
     <string name="username">Jina la mtumiaji</string>
     <string name="password">Nywila</string>
     <string name="sign_in">Ingia Kazini</string>
     <string name="sign_out">Toka Kazini</string>
-    <string name="break_start">Anza Mapumziko</string>
-    <string name="break_end">Maliza Mapumziko</string>
-    <string name="delivery_go">Nenda Delivery</string>
-    <string name="delivery_return">Rudi Delivery</string>
     <string name="welcome">Karibu</string>
-    <string name="kitchen">Jikoni</string>
-    <string name="waiters">Wahudumu</string>
-    <string name="delivery">Delivery</string>
-    <string name="managers">Viongozi</string>
-    <string name="dashboard">Dashibodi</string>
     <string name="logout">Toka</string>
     <string name="history">Historia</string>
     <string name="create_user">Undaa Mtumiaji</string>
     <string name="create_admin">Undaa Admin</string>
     <string name="delete">Futa</string>
-    <string name="location_error">Hauruhusiwi kusign! Hakikisha uko eneo la kazi.</string>
-    <string name="success">Imefanikiwa</string>
-    <string name="error">Hitilafu</string>
-    <string name="select_language">Chagua Lugha</string>
-    <string name="english">English</string>
-    <string name="swahili">Kiswahili</string>
-    <string name="arabic">العربية</string>
-    <string name="hindi">हिन्दी</string>
-    <string name="chinese">中文</string>
+    <string name="kitchen">Jikoni</string>
+    <string name="waiters">Wahudumu</string>
+    <string name="delivery">Delivery</string>
+    <string name="managers">Viongozi</string>
 </resources>
