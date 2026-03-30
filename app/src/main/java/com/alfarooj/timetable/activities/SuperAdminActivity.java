@@ -51,7 +51,12 @@ public class SuperAdminActivity extends BaseActivity {
             toolbar = findViewById(R.id.toolbar);
             contentFrame = findViewById(R.id.contentFrame);
 
+            // Setup toolbar
             setSupportActionBar(toolbar);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setHomeButtonEnabled(true);
+            }
 
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar,
@@ -139,7 +144,9 @@ public class SuperAdminActivity extends BaseActivity {
 
     private void loadUsers() {
         try {
-            setTitle("Manage Users");
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Manage Users");
+            }
             userList = db.getAllUsers();
             
             if (contentFrame.getChildCount() > 0) {
@@ -162,7 +169,9 @@ public class SuperAdminActivity extends BaseActivity {
 
     private void loadAllHistory() {
         try {
-            setTitle("All Attendance History");
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("All Attendance History");
+            }
             logList = db.getAllAttendanceLogs();
             showHistoryList();
         } catch (Exception e) {
@@ -173,7 +182,9 @@ public class SuperAdminActivity extends BaseActivity {
     private void loadHistoryByDepartment(String department) {
         try {
             String title = department.substring(0, 1).toUpperCase() + department.substring(1);
-            setTitle(title + " History");
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(title + " History");
+            }
             logList = db.getAttendanceLogsByDepartment(department);
             showHistoryList();
         } catch (Exception e) {

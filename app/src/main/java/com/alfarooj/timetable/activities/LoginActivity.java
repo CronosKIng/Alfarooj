@@ -63,8 +63,7 @@ public class LoginActivity extends BaseActivity {
         // Load logo from URL
         loadLogoFromUrl("https://i.ibb.co/MxRVbVR0/IMG-20260322-WA0016-1.jpg");
 
-        // Password toggle with icons - Fix icon color
-        btnTogglePassword.setColorFilter(0xFFFFFFFF); // White color
+        // Password toggle with black icons
         btnTogglePassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -106,7 +105,6 @@ public class LoginActivity extends BaseActivity {
             btnLogin.setText("LOGGING IN...");
             btnLogin.setEnabled(false);
 
-            // Check login directly without delay
             if (db.login(username, password)) {
                 User user = db.getUser(username);
                 if (user != null) {
