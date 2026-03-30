@@ -11,12 +11,12 @@ import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "alfarooj.db";
-    private static final int DATABASE_VERSION = 1;
-    
+    private static final int DATABASE_VERSION = 2;
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
-    
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         String CREATE_USERS_TABLE = "CREATE TABLE users (" +
@@ -29,7 +29,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "created_by INTEGER," +
                 "created_at TEXT DEFAULT (datetime('now', 'localtime')))";
         db.execSQL(CREATE_USERS_TABLE);
-        
+
         String CREATE_ATTENDANCE_TABLE = "CREATE TABLE attendance_logs (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "user_id INTEGER," +
@@ -43,18 +43,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "longitude REAL," +
                 "timestamp TEXT DEFAULT (datetime('now', 'localtime')))";
         db.execSQL(CREATE_ATTENDANCE_TABLE);
-        
-        String INSERT_SUPER_ADMIN = "INSERT INTO users (full_name, username, password, role) VALUES ('AL FAROOJ AL SHAMI MUWAILEH', 'AL FAROOJ AL SHAMI MUWAILEH', '097321494', 'super_admin')";
+
+        // Insert SUPER ADMIN - Username: ALFAROOJ, Password: 097321494
+        String INSERT_SUPER_ADMIN = "INSERT INTO users (full_name, username, password, role, department) VALUES " +
+            "('AL FAROOJ AL SHAMI', 'ALFAROOJ', '097321494', 'super_admin', 'admin')";
         db.execSQL(INSERT_SUPER_ADMIN);
     }
-    
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS users");
         db.execSQL("DROP TABLE IF EXISTS attendance_logs");
         onCreate(db);
     }
-    
+
     public boolean login(String username, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM users WHERE username = ? AND password = ?", new String[]{username, password});
@@ -63,31 +65,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return isValid;
     }
-    
+
     public User getUser(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM users WHERE username = ?", new String[]{username});
         User user = null;
         if (cursor.moveToFirst()) {
-            user = new User(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getInt(6), cursor.getString(7));
+            user = new User(cursor.getInt(0), cursor.getString(1), cursor.getString(2), 
+                cursor.getString(3), cursor.getString(4), cursor.getString(5), 
+                cursor.getInt(6), cursor.getString(7));
         }
         cursor.close();
         db.close();
         return user;
     }
-    
+
     public ArrayList<User> getAllUsers() {
         ArrayList<User> users = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM users WHERE role != 'super_admin' ORDER BY id DESC", null);
         while (cursor.moveToNext()) {
-            users.add(new User(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getInt(6), cursor.getString(7)));
+            users.add(new User(cursor.getInt(0), cursor.getString(1), cursor.getString(2), 
+                cursor.getString(3), cursor.getString(4), cursor.getString(5), 
+                cursor.getInt(6), cursor.getString(7)));
         }
         cursor.close();
         db.close();
         return users;
     }
-    
+
     public boolean createUser(String fullName, String username, String password, String role, String department, int createdBy) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -101,15 +107,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return result != -1;
     }
-    
+
     public boolean deleteUser(int userId) {
         SQLiteDatabase db = this.getWritableDatabase();
         int result = db.delete("users", "id = ?", new String[]{String.valueOf(userId)});
         db.close();
         return result > 0;
     }
-    
-    public boolean insertAttendanceLog(int userId, String username, String fullName, String department, String eventType, String eventName, String location, double lat, double lng) {
+
+    public boolean insertAttendanceLog(int userId, String username, String fullName, String department, 
+                                       String eventType, String eventName, String location, double latitude, double longitude) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("user_id", userId);
@@ -119,31 +126,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("event_type", eventType);
         values.put("event_name", eventName);
         values.put("location", location);
-        values.put("latitude", lat);
-        values.put("longitude", lng);
+        values.put("latitude", latitude);
+        values.put("longitude", longitude);
         long result = db.insert("attendance_logs", null, values);
         db.close();
         return result != -1;
     }
-    
+
     public ArrayList<AttendanceLog> getAllAttendanceLogs() {
         ArrayList<AttendanceLog> logs = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs ORDER BY id DESC", null);
         while (cursor.moveToNext()) {
-            logs.add(new AttendanceLog(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7), cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)));
-        }
-        cursor.close();
-        db.close();
-        return logs;
-    }
-    
-    public ArrayList<AttendanceLog> getTodayAttendanceLogs() {
-        ArrayList<AttendanceLog> logs = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs WHERE date(timestamp) = date('now', 'localtime') ORDER BY id DESC", null);
-        while (cursor.moveToNext()) {
-            logs.add(new AttendanceLog(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7), cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)));
+            logs.add(new AttendanceLog(
+                cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
+                cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7),
+                cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)
+            ));
         }
         cursor.close();
         db.close();

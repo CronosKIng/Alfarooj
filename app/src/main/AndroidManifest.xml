@@ -11,18 +11,21 @@
         android:icon="@android:drawable/ic_dialog_info"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
-        
+
         <activity android:name=".activities.LoginActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <activity android:name=".activities.SuperAdminActivity" android:exported="false" />
         <activity android:name=".activities.AdminActivity" android:exported="false" />
-        <activity android:name=".activities.UserActivity" android:exported="false" />
+        <activity android:name=".activities.KitchenActivity" android:exported="false" />
+        <activity android:name=".activities.WaiterActivity" android:exported="false" />
+        <activity android:name=".activities.DeliveryActivity" android:exported="false" />
+        <activity android:name=".activities.ManagerActivity" android:exported="false" />
         <activity android:name=".activities.HistoryActivity" android:exported="false" />
-        
+
     </application>
 </manifest>
