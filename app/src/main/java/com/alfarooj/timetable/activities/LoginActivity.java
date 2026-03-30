@@ -3,7 +3,11 @@ package com.alfarooj.timetable.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -15,6 +19,11 @@ import com.alfarooj.timetable.database.DatabaseHelper;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.utils.SessionManager;
 import com.alfarooj.timetable.R;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class LoginActivity extends BaseActivity {
     private EditText etUsername, etPassword;
@@ -43,8 +52,8 @@ public class LoginActivity extends BaseActivity {
         btnLogin = findViewById(R.id.btnLogin);
         tvError = findViewById(R.id.tvError);
 
-        // Set default logo (will be loaded from URL in background)
-        ivLogo.setImageResource(android.R.drawable.ic_dialog_info);
+        // Load logo from URL
+        loadLogoFromUrl("https://i.ibb.co/MxRVbVR0/IMG-20260322-WA0016-1.jpg");
 
         // Request location permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -68,6 +77,33 @@ public class LoginActivity extends BaseActivity {
                 }
             } else {
                 tvError.setText("Invalid username or password");
+            }
+        });
+    }
+
+    private void loadLogoFromUrl(String urlString) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        
+        executor.execute(() -> {
+            try {
+                URL url = new URL(urlString);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                InputStream input = connection.getInputStream();
+                Bitmap bitmap = BitmapFactory.decodeStream(input);
+                
+                handler.post(() -> {
+                    if (bitmap != null) {
+                        ivLogo.setImageBitmap(bitmap);
+                    } else {
+                        ivLogo.setImageResource(R.drawable.ic_app_icon_aar);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                handler.post(() -> ivLogo.setImageResource(R.drawable.ic_app_icon_aar));
             }
         });
     }
