@@ -3,6 +3,7 @@ package com.alfarooj.timetable.activities;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.alfarooj.timetable.utils.LanguageUtils;
 import com.alfarooj.timetable.R;
+import java.util.Locale;
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -24,6 +26,12 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         LanguageUtils.applyLanguage(this);
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LanguageUtils.applyLanguage(this);
     }
 
     @Override
@@ -46,9 +54,10 @@ public class BaseActivity extends AppCompatActivity {
         String[] languageCodes = LanguageUtils.getAllLanguageCodes();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Language / Chagua Lugha");
+        builder.setTitle("Change Language");
         builder.setItems(languages, (dialog, which) -> {
-            LanguageUtils.setLocale(this, languageCodes[which]);
+            String selectedCode = languageCodes[which];
+            LanguageUtils.setLocale(this, selectedCode);
             Toast.makeText(this, "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
             recreate();
         });
