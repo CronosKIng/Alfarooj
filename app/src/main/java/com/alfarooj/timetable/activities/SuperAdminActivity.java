@@ -36,142 +36,167 @@ public class SuperAdminActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private ArrayList<User> userList;
     private ArrayList<AttendanceLog> logList;
-    private UserAdapter userAdapter;
-    private LogAdapter logAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_super_admin);
 
-        db = new DatabaseHelper(this);
-        session = new SessionManager(this);
+        try {
+            db = new DatabaseHelper(this);
+            session = new SessionManager(this);
 
-        drawerLayout = findViewById(R.id.drawerLayout);
-        navigationView = findViewById(R.id.navView);
-        toolbar = findViewById(R.id.toolbar);
-        contentFrame = findViewById(R.id.contentFrame);
+            drawerLayout = findViewById(R.id.drawerLayout);
+            navigationView = findViewById(R.id.navView);
+            toolbar = findViewById(R.id.toolbar);
+            contentFrame = findViewById(R.id.contentFrame);
 
-        setSupportActionBar(toolbar);
+            setSupportActionBar(toolbar);
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-            this, drawerLayout, toolbar,
-            R.string.navigation_drawer_open,
-            R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
+            drawerLayout.addDrawerListener(toggle);
+            toggle.syncState();
 
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_create_admin) {
-                showCreateUserDialog("admin");
-            } else if (id == R.id.nav_create_user) {
-                showCreateUserDialog("user");
-            } else if (id == R.id.nav_history) {
-                loadAllHistory();
-            } else if (id == R.id.nav_kitchen_history) {
-                loadHistoryByDepartment("kitchen");
-            } else if (id == R.id.nav_waiter_history) {
-                loadHistoryByDepartment("waiter");
-            } else if (id == R.id.nav_delivery_history) {
-                loadHistoryByDepartment("delivery");
-            } else if (id == R.id.nav_manager_history) {
-                loadHistoryByDepartment("manager");
-            } else if (id == R.id.nav_users) {
-                loadUsers();
-            } else if (id == R.id.nav_logout) {
-                session.logout();
-                startActivity(new Intent(this, LoginActivity.class));
-                finish();
-            }
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
+            navigationView.setNavigationItemSelectedListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.nav_create_admin) {
+                    showCreateUserDialog("admin");
+                } else if (id == R.id.nav_create_user) {
+                    showCreateUserDialog("user");
+                } else if (id == R.id.nav_history) {
+                    loadAllHistory();
+                } else if (id == R.id.nav_kitchen_history) {
+                    loadHistoryByDepartment("kitchen");
+                } else if (id == R.id.nav_waiter_history) {
+                    loadHistoryByDepartment("waiter");
+                } else if (id == R.id.nav_delivery_history) {
+                    loadHistoryByDepartment("delivery");
+                } else if (id == R.id.nav_manager_history) {
+                    loadHistoryByDepartment("manager");
+                } else if (id == R.id.nav_users) {
+                    loadUsers();
+                } else if (id == R.id.nav_logout) {
+                    session.logout();
+                    startActivity(new Intent(this, LoginActivity.class));
+                    finish();
+                }
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            });
 
-        loadUsers();
+            loadUsers();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void showCreateUserDialog(String role) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(role.equals("admin") ? "Create Admin" : "Create User");
+        try {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(role.equals("admin") ? "Create Admin" : "Create User");
 
-        android.view.View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
-        EditText etFullName = view.findViewById(R.id.etFullName);
-        EditText etUsername = view.findViewById(R.id.etUsername);
-        EditText etPassword = view.findViewById(R.id.etPassword);
-        Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
+            android.view.View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
+            EditText etFullName = view.findViewById(R.id.etFullName);
+            EditText etUsername = view.findViewById(R.id.etUsername);
+            EditText etPassword = view.findViewById(R.id.etPassword);
+            Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
 
-        String[] departments = {"kitchen", "waiter", "delivery", "manager"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departments);
-        spinnerDepartment.setAdapter(adapter);
+            String[] departments = {"kitchen", "waiter", "delivery", "manager"};
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departments);
+            spinnerDepartment.setAdapter(adapter);
 
-        builder.setView(view);
-        builder.setPositiveButton("Create", (dialog, which) -> {
-            String fullName = etFullName.getText().toString().trim();
-            String username = etUsername.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
-            String department = spinnerDepartment.getSelectedItem().toString();
+            builder.setView(view);
+            builder.setPositiveButton("Create", (dialog, which) -> {
+                String fullName = etFullName.getText().toString().trim();
+                String username = etUsername.getText().toString().trim();
+                String password = etPassword.getText().toString().trim();
+                String department = spinnerDepartment.getSelectedItem().toString();
 
-            if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            boolean success = db.createUser(fullName, username, password, role, department, session.getUserId());
-            if (success) {
-                Toast.makeText(this, "User created successfully!", Toast.LENGTH_SHORT).show();
-                loadUsers();
-            } else {
-                Toast.makeText(this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
-            }
-        });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
+                boolean success = db.createUser(fullName, username, password, role, department, session.getUserId());
+                if (success) {
+                    Toast.makeText(this, "User created successfully!", Toast.LENGTH_SHORT).show();
+                    loadUsers();
+                } else {
+                    Toast.makeText(this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
+                }
+            });
+            builder.setNegativeButton("Cancel", null);
+            builder.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadUsers() {
-        setTitle("Manage Users");
-        userList = db.getAllUsers();
-        
-        if (contentFrame.getChildCount() > 0) {
-            contentFrame.removeAllViews();
+        try {
+            setTitle("Manage Users");
+            userList = db.getAllUsers();
+            
+            if (contentFrame.getChildCount() > 0) {
+                contentFrame.removeAllViews();
+            }
+            
+            android.view.View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
+            recyclerView = view.findViewById(R.id.recyclerView);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            
+            UserAdapter userAdapter = new UserAdapter(userList, this, () -> loadUsers());
+            recyclerView.setAdapter(userAdapter);
+            
+            contentFrame.addView(view);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error loading users: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-        
-        android.view.View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
-        recyclerView = view.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        
-        userAdapter = new UserAdapter(userList, this, () -> loadUsers());
-        recyclerView.setAdapter(userAdapter);
-        
-        contentFrame.addView(view);
     }
 
     private void loadAllHistory() {
-        setTitle("All Attendance History");
-        logList = db.getAllAttendanceLogs();
-        showHistoryList();
+        try {
+            setTitle("All Attendance History");
+            logList = db.getAllAttendanceLogs();
+            showHistoryList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadHistoryByDepartment(String department) {
-        String title = department.substring(0, 1).toUpperCase() + department.substring(1);
-        setTitle(title + " History");
-        logList = db.getAttendanceLogsByDepartment(department);
-        showHistoryList();
+        try {
+            String title = department.substring(0, 1).toUpperCase() + department.substring(1);
+            setTitle(title + " History");
+            logList = db.getAttendanceLogsByDepartment(department);
+            showHistoryList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void showHistoryList() {
-        if (contentFrame.getChildCount() > 0) {
-            contentFrame.removeAllViews();
+        try {
+            if (contentFrame.getChildCount() > 0) {
+                contentFrame.removeAllViews();
+            }
+            
+            android.view.View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
+            recyclerView = view.findViewById(R.id.recyclerView);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            
+            LogAdapter logAdapter = new LogAdapter(logList);
+            recyclerView.setAdapter(logAdapter);
+            
+            contentFrame.addView(view);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        
-        android.view.View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
-        recyclerView = view.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        
-        logAdapter = new LogAdapter(logList);
-        recyclerView.setAdapter(logAdapter);
-        
-        contentFrame.addView(view);
     }
 }

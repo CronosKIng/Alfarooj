@@ -45,91 +45,98 @@ public class LoginActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        try {
-            db = new DatabaseHelper(this);
-            session = new SessionManager(this);
+        db = new DatabaseHelper(this);
+        session = new SessionManager(this);
 
-            if (session.isLoggedIn()) {
-                navigateToDashboard();
+        if (session.isLoggedIn()) {
+            navigateToDashboard();
+            return;
+        }
+
+        ivLogo = findViewById(R.id.ivLogo);
+        etUsername = findViewById(R.id.etUsername);
+        etPassword = findViewById(R.id.etPassword);
+        btnLogin = findViewById(R.id.btnLogin);
+        btnTogglePassword = findViewById(R.id.btnTogglePassword);
+        tvError = findViewById(R.id.tvError);
+
+        // Load logo from URL
+        loadLogoFromUrl("https://i.ibb.co/MxRVbVR0/IMG-20260322-WA0016-1.jpg");
+
+        // Password toggle with icons - Fix icon color
+        btnTogglePassword.setColorFilter(0xFFFFFFFF); // White color
+        btnTogglePassword.setOnClickListener(v -> {
+            if (isPasswordVisible) {
+                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                btnTogglePassword.setImageResource(R.drawable.ic_eye);
+                isPasswordVisible = false;
+            } else {
+                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                btnTogglePassword.setImageResource(R.drawable.ic_eye_off);
+                isPasswordVisible = true;
+            }
+            etPassword.setSelection(etPassword.getText().length());
+        });
+
+        // Location permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, 
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 
+                LOCATION_PERMISSION_REQUEST);
+        }
+
+        btnLogin.setOnClickListener(v -> {
+            String username = etUsername.getText().toString().trim();
+            String password = etPassword.getText().toString().trim();
+
+            tvError.setText("");
+            
+            if (username.isEmpty()) {
+                tvError.setText("Please enter username");
+                etUsername.requestFocus();
+                return;
+            }
+            
+            if (password.isEmpty()) {
+                tvError.setText("Please enter password");
+                etPassword.requestFocus();
                 return;
             }
 
-            ivLogo = findViewById(R.id.ivLogo);
-            etUsername = findViewById(R.id.etUsername);
-            etPassword = findViewById(R.id.etPassword);
-            btnLogin = findViewById(R.id.btnLogin);
-            btnTogglePassword = findViewById(R.id.btnTogglePassword);
-            tvError = findViewById(R.id.tvError);
+            btnLogin.setText("LOGGING IN...");
+            btnLogin.setEnabled(false);
 
-            // Load logo
-            loadLogoFromUrl("https://i.ibb.co/MxRVbVR0/IMG-20260322-WA0016-1.jpg");
-
-            // Password toggle
-            btnTogglePassword.setOnClickListener(v -> {
-                if (isPasswordVisible) {
-                    etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    btnTogglePassword.setImageResource(R.drawable.ic_eye);
-                    isPasswordVisible = false;
+            // Check login directly without delay
+            if (db.login(username, password)) {
+                User user = db.getUser(username);
+                if (user != null) {
+                    session.createLoginSession(user.getId(), user.getUsername(), user.getFullName(), user.getRole(), user.getDepartment());
+                    Toast.makeText(LoginActivity.this, "Welcome " + user.getFullName() + "!", Toast.LENGTH_SHORT).show();
+                    navigateToDashboard();
                 } else {
-                    etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                    btnTogglePassword.setImageResource(R.drawable.ic_eye_off);
-                    isPasswordVisible = true;
-                }
-                etPassword.setSelection(etPassword.getText().length());
-            });
-
-            // Location permission
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, 
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 
-                    LOCATION_PERMISSION_REQUEST);
-            }
-
-            btnLogin.setOnClickListener(v -> {
-                String username = etUsername.getText().toString().trim();
-                String password = etPassword.getText().toString().trim();
-
-                tvError.setText("");
-                
-                if (username.isEmpty()) {
-                    tvError.setText("Please enter username");
-                    return;
-                }
-                
-                if (password.isEmpty()) {
-                    tvError.setText("Please enter password");
-                    return;
-                }
-
-                btnLogin.setEnabled(false);
-                btnLogin.setText("LOGGING IN...");
-
-                try {
-                    if (db.login(username, password)) {
-                        User user = db.getUser(username);
-                        if (user != null) {
-                            session.createLoginSession(user.getId(), user.getUsername(), user.getFullName(), user.getRole(), user.getDepartment());
-                            Toast.makeText(LoginActivity.this, "Welcome " + user.getFullName(), Toast.LENGTH_SHORT).show();
-                            navigateToDashboard();
-                        } else {
-                            tvError.setText("User not found!");
-                            btnLogin.setEnabled(true);
-                            btnLogin.setText("LOGIN");
-                        }
-                    } else {
-                        tvError.setText("Invalid username or password!");
-                        btnLogin.setEnabled(true);
-                        btnLogin.setText("LOGIN");
-                        etPassword.setText("");
-                    }
-                } catch (Exception e) {
-                    tvError.setText("Error: " + e.getMessage());
-                    btnLogin.setEnabled(true);
+                    tvError.setText("User not found!");
                     btnLogin.setText("LOGIN");
+                    btnLogin.setEnabled(true);
                 }
-            });
-        } catch (Exception e) {
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            } else {
+                tvError.setText("Invalid username or password!");
+                btnLogin.setText("LOGIN");
+                btnLogin.setEnabled(true);
+                etPassword.setText("");
+                etPassword.requestFocus();
+            }
+        });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Location permission required!", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -159,35 +166,28 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Location permission required!", Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
     private void navigateToDashboard() {
         String role = session.getRole();
         Intent intent;
-        if (role.equals("super_admin")) {
-            intent = new Intent(this, SuperAdminActivity.class);
-        } else if (role.equals("admin")) {
-            intent = new Intent(this, AdminActivity.class);
-        } else if (role.equals("kitchen")) {
-            intent = new Intent(this, KitchenActivity.class);
-        } else if (role.equals("waiter")) {
-            intent = new Intent(this, WaiterActivity.class);
-        } else if (role.equals("delivery")) {
-            intent = new Intent(this, DeliveryActivity.class);
-        } else {
-            intent = new Intent(this, ManagerActivity.class);
+        try {
+            if (role.equals("super_admin")) {
+                intent = new Intent(this, SuperAdminActivity.class);
+            } else if (role.equals("admin")) {
+                intent = new Intent(this, AdminActivity.class);
+            } else if (role.equals("kitchen")) {
+                intent = new Intent(this, KitchenActivity.class);
+            } else if (role.equals("waiter")) {
+                intent = new Intent(this, WaiterActivity.class);
+            } else if (role.equals("delivery")) {
+                intent = new Intent(this, DeliveryActivity.class);
+            } else {
+                intent = new Intent(this, ManagerActivity.class);
+            }
+            startActivity(intent);
+            finish();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-        startActivity(intent);
-        finish();
     }
 }
