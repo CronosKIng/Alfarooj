@@ -6,7 +6,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.LocaleList;
-import androidx.appcompat.app.AppCompatDelegate;
 import java.util.Locale;
 
 public class LanguageUtils {
@@ -30,8 +29,6 @@ public class LanguageUtils {
 
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_LANG, languageCode).apply();
-
-        AppCompatDelegate.setApplicationLocales(new LocaleList(locale));
     }
 
     public static String getSavedLanguage(Context context) {
