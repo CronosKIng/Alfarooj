@@ -66,11 +66,7 @@ public class SuperAdminActivity extends BaseActivity {
 
             navigationView.setNavigationItemSelectedListener(item -> {
                 int id = item.getItemId();
-                if (id == R.id.nav_create_admin) {
-                    showCreateUserDialog("admin");
-                } else if (id == R.id.nav_create_user) {
-                    showCreateUserDialog("user");
-                } else if (id == R.id.nav_today_attendance) {
+                if (id == R.id.nav_today_attendance) {
                     loadTodayAttendance();
                 } else if (id == R.id.nav_all_history) {
                     loadAllHistory();
@@ -82,6 +78,10 @@ public class SuperAdminActivity extends BaseActivity {
                     loadHistoryByDepartment("delivery");
                 } else if (id == R.id.nav_manager_history) {
                     loadHistoryByDepartment("manager");
+                } else if (id == R.id.nav_create_admin) {
+                    showCreateUserDialog("admin");
+                } else if (id == R.id.nav_create_user) {
+                    showCreateUserDialog("user");
                 } else if (id == R.id.nav_users) {
                     loadUsers();
                 } else if (id == R.id.nav_logout) {
@@ -145,7 +145,7 @@ public class SuperAdminActivity extends BaseActivity {
     private void loadUsers() {
         try {
             if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle("Manage Users");
+                getSupportActionBar().setTitle("Users List");
             }
             userList = db.getAllUsers();
             

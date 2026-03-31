@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "alfarooj.db";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -81,20 +81,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return user;
     }
 
-    public User getUserById(int userId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE id = ?", new String[]{String.valueOf(userId)});
-        User user = null;
-        if (cursor.moveToFirst()) {
-            user = new User(cursor.getInt(0), cursor.getString(1), cursor.getString(2), 
-                cursor.getString(3), cursor.getString(4), cursor.getString(5), 
-                cursor.getInt(6), cursor.getString(7));
-        }
-        cursor.close();
-        db.close();
-        return user;
-    }
-
     public ArrayList<User> getAllUsers() {
         ArrayList<User> users = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -143,7 +129,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("location", location);
         values.put("latitude", latitude);
         values.put("longitude", longitude);
-        // Use UAE time
         values.put("timestamp", TimeHelper.getCurrentDateTime());
         long result = db.insert("attendance_logs", null, values);
         db.close();

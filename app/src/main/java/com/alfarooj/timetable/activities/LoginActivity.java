@@ -60,10 +60,10 @@ public class LoginActivity extends BaseActivity {
         btnTogglePassword = findViewById(R.id.btnTogglePassword);
         tvError = findViewById(R.id.tvError);
 
-        // Load logo from URL only - NO BACKUP ICON
+        // Load logo from URL only - NO AAR ICON
         loadLogoFromUrl("https://i.ibb.co/MxRVbVR0/IMG-20260322-WA0016-1.jpg");
 
-        // Password toggle with black icons
+        // Password toggle
         btnTogglePassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -133,7 +133,7 @@ public class LoginActivity extends BaseActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Location permission required for attendance!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Location permission required!", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -157,11 +157,9 @@ public class LoginActivity extends BaseActivity {
                     if (bitmap != null) {
                         ivLogo.setImageBitmap(bitmap);
                     }
-                    // No backup icon - if fails, image remains empty
                 });
             } catch (Exception e) {
                 e.printStackTrace();
-                // Logo fails to load - nothing shown
             }
         });
     }

@@ -44,7 +44,8 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
                 departmentDisplay = log.getDepartment();
         }
         
-        holder.tvUser.setText(log.getFullName() + " (" + log.getUsername() + ")");
+        holder.tvFullName.setText("Name: " + log.getFullName());
+        holder.tvUsername.setText("Username: " + log.getUsername());
         holder.tvEvent.setText("Event: " + log.getEventName());
         holder.tvDepartment.setText("Department: " + departmentDisplay);
         holder.tvTime.setText("Time: " + log.getTimestamp());
@@ -56,11 +57,12 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvUser, tvEvent, tvDepartment, tvTime;
+        TextView tvFullName, tvUsername, tvEvent, tvDepartment, tvTime;
         
         public ViewHolder(View itemView) {
             super(itemView);
-            tvUser = itemView.findViewById(R.id.tvUser);
+            tvFullName = itemView.findViewById(R.id.tvFullName);
+            tvUsername = itemView.findViewById(R.id.tvUsername);
             tvEvent = itemView.findViewById(R.id.tvEvent);
             tvDepartment = itemView.findViewById(R.id.tvDepartment);
             tvTime = itemView.findViewById(R.id.tvTime);
