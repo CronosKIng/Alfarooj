@@ -13,8 +13,9 @@
 
         <ImageView
             android:id="@+id/ivLogo"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:src="@drawable/ic_app_icon"
             android:layout_marginBottom="24dp"/>
 
         <TextView
@@ -37,6 +38,7 @@
             android:layout_marginBottom="48dp"
             android:gravity="center"/>
 
+        <!-- Username Field -->
         <TextView
             android:id="@+id/tvUsernameLabel"
             android:layout_width="match_parent"
@@ -44,7 +46,8 @@
             android:text="Username"
             android:textColor="@android:color/white"
             android:layout_marginBottom="8dp"
-            android:textSize="14sp"/>
+            android:textSize="14sp"
+            android:textStyle="bold"/>
 
         <EditText
             android:id="@+id/etUsername"
@@ -53,11 +56,14 @@
             android:hint="Enter your username"
             android:textColorHint="#CCFFFFFF"
             android:textColor="@android:color/white"
+            android:textSize="16sp"
             android:background="@android:drawable/editbox_background"
             android:padding="16dp"
             android:layout_marginBottom="16dp"
-            android:textSize="16sp"/>
+            android:inputType="text"
+            android:text=""/>
 
+        <!-- Password Field -->
         <TextView
             android:id="@+id/tvPasswordLabel"
             android:layout_width="match_parent"
@@ -65,7 +71,8 @@
             android:text="Password"
             android:textColor="@android:color/white"
             android:layout_marginBottom="8dp"
-            android:textSize="14sp"/>
+            android:textSize="14sp"
+            android:textStyle="bold"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -82,10 +89,11 @@
                 android:hint="Enter your password"
                 android:textColorHint="#CCFFFFFF"
                 android:textColor="@android:color/white"
+                android:textSize="16sp"
                 android:inputType="textPassword"
                 android:background="@null"
                 android:padding="16dp"
-                android:textSize="16sp"/>
+                android:text=""/>
 
             <ImageButton
                 android:id="@+id/btnTogglePassword"
@@ -96,6 +104,7 @@
                 android:scaleType="center"/>
         </LinearLayout>
 
+        <!-- Login Button -->
         <Button
             android:id="@+id/btnLogin"
             android:layout_width="match_parent"
@@ -105,6 +114,7 @@
             android:textSize="16sp"
             android:textStyle="bold"/>
 
+        <!-- Error Message -->
         <TextView
             android:id="@+id/tvError"
             android:layout_width="match_parent"
@@ -114,13 +124,15 @@
             android:gravity="center"
             android:layout_marginTop="16dp"
             android:padding="8dp"
-            android:background="#33FF5722"/>
+            android:background="#33FF5722"
+            android:text=""/>
             
+        <!-- Version -->
         <TextView
             android:id="@+id/tvAppVersion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Version 2.0"
+            android:text="Version 3.0"
             android:textColor="#CCFFFFFF"
             android:textSize="12sp"
             android:layout_marginTop="32dp"/>
