@@ -14,8 +14,6 @@ import java.util.Map;
 public class MLKitTranslation {
     private static final String PREF_NAME = "translation_cache";
     private static Map<String, String> cache = new HashMap<>();
-    private static Translator translator;
-    private static String currentTargetLang = "en";
     
     public interface TranslationCallback {
         void onSuccess(String translatedText);
@@ -41,16 +39,22 @@ public class MLKitTranslation {
             return;
         }
         
-        // Initialize translator
-        String sourceLang = "en";
-        String mlKitTargetLang = getMLKitLanguageCode(targetLang);
+        // Get language codes
+        TranslateLanguage sourceLanguage = getLanguageCode("en");
+        TranslateLanguage targetLanguage = getLanguageCode(targetLang);
         
+        if (sourceLanguage == null || targetLanguage == null) {
+            callback.onSuccess(text);
+            return;
+        }
+        
+        // Initialize translator
         TranslatorOptions options = new TranslatorOptions.Builder()
-                .setSourceLanguage(TranslateLanguage.fromLanguageCode(sourceLang))
-                .setTargetLanguage(TranslateLanguage.fromLanguageCode(mlKitTargetLang))
+                .setSourceLanguage(sourceLanguage)
+                .setTargetLanguage(targetLanguage)
                 .build();
         
-        translator = Translation.getClient(options);
+        Translator translator = Translation.getClient(options);
         
         // Download model if needed
         DownloadConditions conditions = new DownloadConditions.Builder()
@@ -63,13 +67,16 @@ public class MLKitTranslation {
                             .addOnSuccessListener(translatedText -> {
                                 cache.put(cacheKey, translatedText);
                                 callback.onSuccess(translatedText);
+                                translator.close();
                             })
                             .addOnFailureListener(e -> {
                                 callback.onFailure(e.getMessage());
+                                translator.close();
                             });
                 })
                 .addOnFailureListener(e -> {
                     callback.onFailure("Model download failed: " + e.getMessage());
+                    translator.close();
                 });
     }
     
@@ -87,21 +94,22 @@ public class MLKitTranslation {
         });
     }
     
-    private static String getMLKitLanguageCode(String langCode) {
+    private static TranslateLanguage getLanguageCode(String langCode) {
         switch (langCode) {
-            case "sw": return "sw";
-            case "ar": return "ar";
-            case "fr": return "fr";
-            case "es": return "es";
-            case "de": return "de";
-            case "it": return "it";
-            case "pt": return "pt";
-            case "ru": return "ru";
-            case "zh": return "zh";
-            case "ja": return "ja";
-            case "ko": return "ko";
-            case "hi": return "hi";
-            default: return "en";
+            case "en": return TranslateLanguage.ENGLISH;
+            case "sw": return TranslateLanguage.SWAHILI;
+            case "ar": return TranslateLanguage.ARABIC;
+            case "fr": return TranslateLanguage.FRENCH;
+            case "es": return TranslateLanguage.SPANISH;
+            case "de": return TranslateLanguage.GERMAN;
+            case "it": return TranslateLanguage.ITALIAN;
+            case "pt": return TranslateLanguage.PORTUGUESE;
+            case "ru": return TranslateLanguage.RUSSIAN;
+            case "zh": return TranslateLanguage.CHINESE;
+            case "ja": return TranslateLanguage.JAPANESE;
+            case "ko": return TranslateLanguage.KOREAN;
+            case "hi": return TranslateLanguage.HINDI;
+            default: return null;
         }
     }
 }
