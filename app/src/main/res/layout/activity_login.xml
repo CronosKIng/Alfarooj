@@ -11,6 +11,24 @@
         android:id="@+id/ivLogo"
         android:layout_width="150dp"
         android:layout_height="150dp"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="AL FAROOJ AL SHAMI"
+        android:textSize="22sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TIME TABLE SYSTEM"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
         android:layout_marginBottom="48dp"/>
 
     <EditText
@@ -18,10 +36,10 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:hint="Username"
-        android:textColorHint="#888888"
+        android:textColorHint="#999999"
         android:textColor="#000000"
         android:textSize="16sp"
-        android:background="@android:drawable/editbox_background"
+        android:background="#FFFFFF"
         android:padding="16dp"
         android:layout_marginBottom="16dp"
         android:inputType="text"/>
@@ -30,7 +48,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:orientation="horizontal"
-        android:background="@android:drawable/editbox_background"
+        android:background="#FFFFFF"
         android:layout_marginBottom="24dp">
 
         <EditText
@@ -39,7 +57,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:hint="Password"
-            android:textColorHint="#888888"
+            android:textColorHint="#999999"
             android:textColor="#000000"
             android:textSize="16sp"
             android:inputType="textPassword"
@@ -74,6 +92,7 @@
         android:gravity="center"
         android:layout_marginTop="16dp"
         android:padding="8dp"
+        android:background="#33FF5722"
         android:visibility="gone"/>
 
 </LinearLayout>
