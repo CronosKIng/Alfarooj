@@ -11,6 +11,23 @@
         android:id="@+id/ivLogo"
         android:layout_width="150dp"
         android:layout_height="150dp"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="AL FAROOJ AL SHAMI"
+        android:textSize="22sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TIME TABLE SYSTEM"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
         android:layout_marginBottom="48dp"/>
 
     <EditText
@@ -74,6 +91,7 @@
         android:gravity="center"
         android:layout_marginTop="16dp"
         android:padding="8dp"
+        android:background="#33FF5722"
         android:visibility="gone"/>
 
 </LinearLayout>
