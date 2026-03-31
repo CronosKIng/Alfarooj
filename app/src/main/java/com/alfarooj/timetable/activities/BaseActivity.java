@@ -8,7 +8,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.alfarooj.timetable.utils.LanguageUtils;
-import com.alfarooj.timetable.utils.MLKitTranslation;
 import com.alfarooj.timetable.R;
 
 public class BaseActivity extends AppCompatActivity {
@@ -47,15 +46,15 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void showLanguageDialog() {
-        String[] languages = {"English", "Kiswahili", "Arabic", "French", "Spanish", "German", "Italian", "Portuguese", "Russian", "Chinese", "Japanese", "Korean", "Hindi"};
-        String[] languageCodes = {"en", "sw", "ar", "fr", "es", "de", "it", "pt", "ru", "zh", "ja", "ko", "hi"};
+        String[] languages = LanguageUtils.getAllLanguages();
+        String[] languageCodes = LanguageUtils.getAllLanguageCodes();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Language");
+        builder.setTitle("Select Language / Chagua Lugha");
         builder.setItems(languages, (dialog, which) -> {
             String selectedCode = languageCodes[which];
             LanguageUtils.setLocale(this, selectedCode);
-            Toast.makeText(this, "Language changed. Please wait for translation...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
             recreate();
         });
         builder.show();

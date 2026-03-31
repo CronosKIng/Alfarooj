@@ -21,9 +21,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.alfarooj.timetable.database.DatabaseHelper;
 import com.alfarooj.timetable.models.User;
-import com.alfarooj.timetable.utils.LanguageUtils;
 import com.alfarooj.timetable.utils.SessionManager;
-import com.alfarooj.timetable.utils.MLKitTranslation;
 import com.alfarooj.timetable.R;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -35,10 +33,10 @@ public class LoginActivity extends BaseActivity {
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ImageButton btnTogglePassword;
-    private TextView tvError, tvTitle, tvSubtitle, tvUsernameLabel, tvPasswordLabel, tvVersion;
-    private ImageView ivLogo;
+    private TextView tvError;
     private DatabaseHelper db;
     private SessionManager session;
+    private ImageView ivLogo;
     private boolean isPasswordVisible = false;
     private static final int LOCATION_PERMISSION_REQUEST = 100;
 
@@ -55,31 +53,21 @@ public class LoginActivity extends BaseActivity {
             return;
         }
 
-        // Initialize views
         ivLogo = findViewById(R.id.ivLogo);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnTogglePassword = findViewById(R.id.btnTogglePassword);
         tvError = findViewById(R.id.tvError);
-        tvTitle = findViewById(R.id.tvTitle);
-        tvSubtitle = findViewById(R.id.tvSubtitle);
-        tvUsernameLabel = findViewById(R.id.tvUsernameLabel);
-        tvPasswordLabel = findViewById(R.id.tvPasswordLabel);
-        tvVersion = findViewById(R.id.tvAppVersion);
 
         // Load logo from URL
         loadLogoFromUrl("https://i.ibb.co/MxRVbVR0/IMG-20260322-WA0016-1.jpg");
 
-        // Make text visible - set text colors
+        // Make text visible
         etUsername.setTextColor(0xFFFFFFFF);
         etUsername.setHintTextColor(0xCCFFFFFF);
         etPassword.setTextColor(0xFFFFFFFF);
         etPassword.setHintTextColor(0xCCFFFFFF);
-        
-        // Set initial text
-        etUsername.setText("");
-        etPassword.setText("");
 
         // Password toggle
         btnTogglePassword.setOnClickListener(v -> {
@@ -151,7 +139,7 @@ public class LoginActivity extends BaseActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Location permission required for attendance!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Location permission required!", Toast.LENGTH_LONG).show();
             }
         }
     }

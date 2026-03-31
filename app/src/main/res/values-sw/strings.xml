@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AL FAROOJ AL SHAMI RATIBA</string>
+    <string name="app_name">AL FAROOJ AL SHAMI RATIBA YA MUDA</string>
+    <string name="navigation_drawer_open">Fungua menyu</string>
+    <string name="navigation_drawer_close">Funga menyu</string>
+    <string name="select_language">Chagua Lugha</string>
+    <string name="change_language">Badilisha Lugha</string>
     <string name="login">Ingia</string>
     <string name="username">Jina la mtumiaji</string>
     <string name="password">Nywila</string>
@@ -9,9 +13,6 @@
     <string name="welcome">Karibu</string>
     <string name="logout">Toka</string>
     <string name="history">Historia</string>
-    <string name="create_user">Undaa Mtumiaji</string>
-    <string name="create_admin">Undaa Admin</string>
-    <string name="delete">Futa</string>
     <string name="kitchen">Jikoni</string>
     <string name="waiters">Wahudumu</string>
     <string name="delivery">Delivery</string>
