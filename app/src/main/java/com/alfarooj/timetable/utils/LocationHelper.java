@@ -15,70 +15,76 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 
 public class LocationHelper {
-    // Target location from Google Maps link
-    private static final double TARGET_LATITUDE = -6.160000;
-    private static final double TARGET_LONGITUDE = 35.740000;
+
+    // AL FAROOJ AL SHAMI RESTAURANT – SHARJAH, UAE (MUWAILEH)
+    private static final double WORK_LATITUDE = 25.360722;
+    private static final double WORK_LONGITUDE = 55.422792;
     private static final float ALLOWED_RADIUS_METERS = 100;
 
     private Context context;
-    private FusedLocationProviderClient fusedLocationClient;
+    private FusedLocationProviderClient fusedClient;
 
     public interface LocationResultCallback {
-        void onLocationSuccess(double latitude, double longitude, String address);
+        void onLocationSuccess(double lat, double lon, String address);
         void onLocationFailed(String error);
     }
 
-    public LocationHelper(Context context) {
-        this.context = context;
-        this.fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+    public LocationHelper(Context ctx) {
+        this.context = ctx;
+        this.fusedClient = LocationServices.getFusedLocationProviderClient(ctx);
     }
 
     public void getCurrentLocation(LocationResultCallback callback) {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            callback.onLocationFailed("Location permission not granted");
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            callback.onLocationFailed("Ruhusa ya eneo haijatolewa. Tafadhali iwashe.");
             return;
         }
 
-        LocationRequest locationRequest = new LocationRequest.Builder(10000)
-            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .build();
+        LocationRequest request = new LocationRequest.Builder(8000)
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build();
 
         LocationCallback locationCallback = new LocationCallback() {
             @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult.getLastLocation() != null) {
-                    Location location = locationResult.getLastLocation();
-                    fusedLocationClient.removeLocationUpdates(this);
-                    callback.onLocationSuccess(location.getLatitude(), location.getLongitude(), 
-                        "Location: " + location.getLatitude() + ", " + location.getLongitude());
-                } else {
-                    callback.onLocationFailed("Cannot get location");
+            public void onLocationResult(LocationResult result) {
+                if (result == null || result.getLastLocation() == null) {
+                    callback.onLocationFailed("Haiwezi kupata eneo lako. Jaribu tena.");
+                    return;
                 }
+                Location loc = result.getLastLocation();
+                fusedClient.removeLocationUpdates(this);
+                callback.onLocationSuccess(loc.getLatitude(), loc.getLongitude(),
+                        "Lat: " + loc.getLatitude() + ", Lon: " + loc.getLongitude());
             }
         };
-
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+        fusedClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper());
     }
 
-    public boolean isWithinWorkLocation(double latitude, double longitude) {
-        float[] results = new float[1];
-        Location.distanceBetween(latitude, longitude, TARGET_LATITUDE, TARGET_LONGITUDE, results);
-        return results[0] <= ALLOWED_RADIUS_METERS;
+    public boolean isWithinWorkLocation(double lat, double lon) {
+        float[] dist = new float[1];
+        Location.distanceBetween(lat, lon, WORK_LATITUDE, WORK_LONGITUDE, dist);
+        return dist[0] <= ALLOWED_RADIUS_METERS;
     }
 
     public void checkLocationAndProceed(LocationResultCallback callback, Runnable onSuccess) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            callback.onLocationFailed("Ruhusa ya eneo haijatolewa. Wezesha kwenye mipangilio.");
+            return;
+        }
         getCurrentLocation(new LocationResultCallback() {
             @Override
-            public void onLocationSuccess(double latitude, double longitude, String address) {
-                if (isWithinWorkLocation(latitude, longitude)) {
+            public void onLocationSuccess(double lat, double lon, String addr) {
+                if (isWithinWorkLocation(lat, lon)) {
                     onSuccess.run();
                 } else {
-                    callback.onLocationFailed("You are not allowed to sign! Make sure you are at the work location.");
+                    callback.onLocationFailed("HUPO ENEO LA KAZI! Unaruhusiwi kusign. Tafadhali nenda Al Farooj Al Shami Restaurant (Sharjah, UAE).");
                 }
             }
             @Override
-            public void onLocationFailed(String error) {
-                callback.onLocationFailed(error);
+            public void onLocationFailed(String err) {
+                callback.onLocationFailed(err);
             }
         });
     }

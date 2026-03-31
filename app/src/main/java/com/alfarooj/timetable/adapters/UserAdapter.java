@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,44 +31,33 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_user, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        User user = userList.get(position);
-        
-        String departmentDisplay = "";
-        switch(user.getDepartment()) {
-            case "kitchen":
-                departmentDisplay = "Kitchen";
-                break;
-            case "waiter":
-                departmentDisplay = "Waiter";
-                break;
-            case "delivery":
-                departmentDisplay = "Delivery";
-                break;
-            case "manager":
-                departmentDisplay = "Manager";
-                break;
-            default:
-                departmentDisplay = user.getDepartment();
-        }
-        
+    public void onBindViewHolder(ViewHolder holder, int pos) {
+        User user = userList.get(pos);
+        String dept = user.getDepartmentDisplay();
+
         holder.tvFullName.setText("Name: " + user.getFullName());
         holder.tvUsername.setText("Username: " + user.getUsername());
         holder.tvPassword.setText("Password: ******");
-        holder.tvDepartment.setText("Department: " + departmentDisplay);
+        holder.tvDepartment.setText("Department: " + dept);
         holder.tvRole.setText("Role: " + user.getRole());
+
+        // Show password when eye button clicked
+        holder.btnShowPassword.setOnClickListener(v -> {
+            Toast.makeText(context, "Password for " + user.getUsername() + " is: " + user.getPassword(),
+                    Toast.LENGTH_LONG).show();
+        });
 
         holder.btnDelete.setOnClickListener(v -> {
             DatabaseHelper db = new DatabaseHelper(context);
             if (db.deleteUser(user.getId())) {
-                userList.remove(position);
-                notifyItemRemoved(position);
-                Toast.makeText(context, "User deleted successfully", Toast.LENGTH_SHORT).show();
+                userList.remove(pos);
+                notifyItemRemoved(pos);
+                Toast.makeText(context, "User deleted", Toast.LENGTH_SHORT).show();
                 if (deleteListener != null) deleteListener.onUserDeleted();
             }
         });
@@ -80,6 +70,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvFullName, tvUsername, tvPassword, tvDepartment, tvRole;
+        ImageButton btnShowPassword;
         Button btnDelete;
 
         public ViewHolder(View itemView) {
@@ -89,6 +80,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             tvPassword = itemView.findViewById(R.id.tvPassword);
             tvDepartment = itemView.findViewById(R.id.tvDepartment);
             tvRole = itemView.findViewById(R.id.tvRole);
+            btnShowPassword = itemView.findViewById(R.id.btnShowPassword);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }

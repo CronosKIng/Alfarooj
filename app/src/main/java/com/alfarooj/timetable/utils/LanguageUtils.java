@@ -6,47 +6,48 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.LocaleList;
+import androidx.appcompat.app.AppCompatDelegate;
 import java.util.Locale;
 
 public class LanguageUtils {
-    private static final String PREF_NAME = "language_pref";
-    private static final String KEY_LANGUAGE = "selected_language";
+    private static final String PREF_NAME = "multilang_pref";
+    private static final String KEY_LANG = "app_language";
 
     public static void setLocale(Context context, String languageCode) {
         Locale locale = new Locale(languageCode);
         Locale.setDefault(locale);
 
-        Resources resources = context.getResources();
-        Configuration config = resources.getConfiguration();
+        Resources res = context.getResources();
+        Configuration config = new Configuration(res.getConfiguration());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             config.setLocale(locale);
-            LocaleList localeList = new LocaleList(locale);
-            LocaleList.setDefault(localeList);
-            config.setLocales(localeList);
+            config.setLocales(new LocaleList(locale));
         } else {
             config.locale = locale;
         }
-        resources.updateConfiguration(config, resources.getDisplayMetrics());
+        res.updateConfiguration(config, res.getDisplayMetrics());
 
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putString(KEY_LANGUAGE, languageCode).apply();
+        prefs.edit().putString(KEY_LANG, languageCode).apply();
+
+        AppCompatDelegate.setApplicationLocales(new LocaleList(locale));
     }
 
     public static String getSavedLanguage(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(KEY_LANGUAGE, "en");
+        return prefs.getString(KEY_LANG, "en");
     }
 
     public static void applyLanguage(Context context) {
-        String languageCode = getSavedLanguage(context);
-        setLocale(context, languageCode);
+        String code = getSavedLanguage(context);
+        setLocale(context, code);
     }
-    
+
     public static String[] getAllLanguages() {
         return new String[]{"English", "Kiswahili", "Arabic"};
     }
-    
+
     public static String[] getAllLanguageCodes() {
         return new String[]{"en", "sw", "ar"};
     }
