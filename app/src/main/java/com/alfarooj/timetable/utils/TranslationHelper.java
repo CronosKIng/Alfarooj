@@ -1,6 +1,7 @@
 package com.alfarooj.timetable.utils;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.widget.TextView;
 import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.TranslateRequest;
@@ -14,12 +15,20 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class TranslationHelper {
+    private static final String PREF_NAME = "translation_prefs";
+    private static final String KEY_LANGUAGE = "selected_language";
     private static Map<String, String> translationCache = new HashMap<>();
     private static String currentLanguage = "en";
     
-    public interface TranslationCallback {
-        void onSuccess(String translatedText);
-        void onError(String error);
+    public static void saveLanguage(Context context, String langCode) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_LANGUAGE, langCode).apply();
+        currentLanguage = langCode;
+    }
+    
+    public static void loadLanguage(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        currentLanguage = prefs.getString(KEY_LANGUAGE, "en");
     }
     
     public static void setCurrentLanguage(String langCode) {
@@ -28,6 +37,11 @@ public class TranslationHelper {
     
     public static String getCurrentLanguage() {
         return currentLanguage;
+    }
+    
+    public interface TranslationCallback {
+        void onSuccess(String translatedText);
+        void onError(String error);
     }
     
     public static void translateText(String text, TranslationCallback callback) {
@@ -68,74 +82,10 @@ public class TranslationHelper {
             public void onSuccess(String translatedText) {
                 textView.setText(translatedText);
             }
-            
             @Override
             public void onError(String error) {
                 textView.setText(originalText);
             }
         });
-    }
-    
-    public static void translateMultipleTexts(List<String> texts, BatchTranslationCallback callback) {
-        if (currentLanguage.equals("en")) {
-            Map<String, String> results = new HashMap<>();
-            for (String text : texts) {
-                results.put(text, text);
-            }
-            callback.onSuccess(results);
-            return;
-        }
-        
-        // Check cache first
-        List<String> uncachedTexts = new ArrayList<>();
-        Map<String, String> cachedResults = new HashMap<>();
-        
-        for (String text : texts) {
-            String cacheKey = text + "_" + currentLanguage;
-            if (translationCache.containsKey(cacheKey)) {
-                cachedResults.put(text, translationCache.get(cacheKey));
-            } else {
-                uncachedTexts.add(text);
-            }
-        }
-        
-        if (uncachedTexts.isEmpty()) {
-            callback.onSuccess(cachedResults);
-            return;
-        }
-        
-        // Call batch translate API
-        com.alfarooj.timetable.models.BatchTranslateRequest request = 
-            new com.alfarooj.timetable.models.BatchTranslateRequest(uncachedTexts, currentLanguage);
-        
-        ApiClient.getApiService().batchTranslate(request)
-            .enqueue(new Callback<com.alfarooj.timetable.models.BatchTranslateResponse>() {
-                @Override
-                public void onResponse(Call<com.alfarooj.timetable.models.BatchTranslateResponse> call, 
-                                       Response<com.alfarooj.timetable.models.BatchTranslateResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        Map<String, String> allResults = new HashMap<>(cachedResults);
-                        for (Map<String, String> result : response.body().getResults()) {
-                            String original = result.get("original");
-                            String translated = result.get("translated");
-                            allResults.put(original, translated);
-                            translationCache.put(original + "_" + currentLanguage, translated);
-                        }
-                        callback.onSuccess(allResults);
-                    } else {
-                        callback.onError("Batch translation failed");
-                    }
-                }
-                
-                @Override
-                public void onFailure(Call<com.alfarooj.timetable.models.BatchTranslateResponse> call, Throwable t) {
-                    callback.onError(t.getMessage());
-                }
-            });
-    }
-    
-    public interface BatchTranslationCallback {
-        void onSuccess(Map<String, String> translatedMap);
-        void onError(String error);
     }
 }
