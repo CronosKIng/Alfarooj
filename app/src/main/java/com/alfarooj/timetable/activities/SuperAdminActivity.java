@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alfarooj.timetable.adapters.UserAdapter;
 import com.alfarooj.timetable.adapters.LogAdapter;
+import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.database.DatabaseHelper;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.models.AttendanceLog;
@@ -164,7 +165,6 @@ public class SuperAdminActivity extends BaseActivity {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle("Super Admin Dashboard");
             }
-            // Also translate navigation menu items
             translateNavigationMenu();
             return;
         }
