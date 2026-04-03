@@ -30,7 +30,6 @@ import com.alfarooj.timetable.R;
 import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SuperAdminActivity extends BaseActivity {
     private DrawerLayout drawerLayout;
@@ -64,10 +63,6 @@ public class SuperAdminActivity extends BaseActivity {
             tvLanguageLabel = findViewById(R.id.tvLanguageLabel);
 
             setSupportActionBar(toolbar);
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                getSupportActionBar().setHomeButtonEnabled(true);
-            }
 
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar,
