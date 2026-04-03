@@ -3,15 +3,14 @@ package com.alfarooj.timetable.activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
@@ -41,8 +40,6 @@ public class SuperAdminActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private ArrayList<User> userList;
     private ArrayList<AttendanceLog> logList;
-    private Spinner spinnerLanguage;
-    private TextView tvLanguageLabel;
     private List<String> languageCodes = new ArrayList<>();
     private List<String> languageNames = new ArrayList<>();
 
@@ -59,8 +56,6 @@ public class SuperAdminActivity extends BaseActivity {
             navigationView = findViewById(R.id.navView);
             toolbar = findViewById(R.id.toolbar);
             contentFrame = findViewById(R.id.contentFrame);
-            spinnerLanguage = findViewById(R.id.spinnerLanguage);
-            tvLanguageLabel = findViewById(R.id.tvLanguageLabel);
 
             setSupportActionBar(toolbar);
 
@@ -101,8 +96,8 @@ public class SuperAdminActivity extends BaseActivity {
             });
 
             loadUsers();
-            setupLanguageSpinner();
-            translateUI();
+            setupLanguages();
+            translateCurrentUI();
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,7 +105,22 @@ public class SuperAdminActivity extends BaseActivity {
         }
     }
     
-    private void setupLanguageSpinner() {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_language) {
+            showLanguageDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    
+    private void setupLanguages() {
         languageCodes.add("en"); languageNames.add("English");
         languageCodes.add("sw"); languageNames.add("Kiswahili");
         languageCodes.add("ar"); languageNames.add("Arabic");
@@ -131,46 +141,34 @@ public class SuperAdminActivity extends BaseActivity {
         languageCodes.add("th"); languageNames.add("Thai");
         languageCodes.add("pl"); languageNames.add("Polish");
         languageCodes.add("uk"); languageNames.add("Ukrainian");
-        
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, languageNames);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerLanguage.setAdapter(adapter);
-        
-        String savedLang = TranslationHelper.getCurrentLanguage();
-        int position = languageCodes.indexOf(savedLang);
-        if (position >= 0) {
-            spinnerLanguage.setSelection(position);
-        }
-        
-        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String newLang = languageCodes.get(position);
-                if (!newLang.equals(TranslationHelper.getCurrentLanguage())) {
-                    TranslationHelper.setCurrentLanguage(newLang);
-                    translateUI();
-                }
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
     }
     
-    private void translateUI() {
+    private void showLanguageDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Language / Chagua Lugha");
+        
+        String[] languages = languageNames.toArray(new String[0]);
+        
+        builder.setItems(languages, (dialog, which) -> {
+            String selectedCode = languageCodes.get(which);
+            TranslationHelper.setCurrentLanguage(selectedCode);
+            translateCurrentUI();
+            Toast.makeText(this, "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
+        });
+        builder.show();
+    }
+    
+    private void translateCurrentUI() {
         String targetLang = TranslationHelper.getCurrentLanguage();
         if (targetLang.equals("en")) {
-            tvLanguageLabel.setText("Language:");
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle("Super Admin Dashboard");
             }
+            // Also translate navigation menu items
+            translateNavigationMenu();
             return;
         }
-        TranslationHelper.translateText("Language:", new TranslationHelper.TranslationCallback() {
-            @Override
-            public void onSuccess(String translated) { tvLanguageLabel.setText(translated); }
-            @Override
-            public void onError(String error) {}
-        });
+        
         TranslationHelper.translateText("Super Admin Dashboard", new TranslationHelper.TranslationCallback() {
             @Override
             public void onSuccess(String translated) { 
@@ -181,6 +179,27 @@ public class SuperAdminActivity extends BaseActivity {
             @Override
             public void onError(String error) {}
         });
+        
+        translateNavigationMenu();
+    }
+    
+    private void translateNavigationMenu() {
+        Menu menu = navigationView.getMenu();
+        String targetLang = TranslationHelper.getCurrentLanguage();
+        if (targetLang.equals("en")) return;
+        
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            String originalTitle = item.getTitle().toString();
+            TranslationHelper.translateText(originalTitle, new TranslationHelper.TranslationCallback() {
+                @Override
+                public void onSuccess(String translated) {
+                    item.setTitle(translated);
+                }
+                @Override
+                public void onError(String error) {}
+            });
+        }
     }
 
     private void showCreateUserDialog(String role) {
@@ -210,13 +229,29 @@ public class SuperAdminActivity extends BaseActivity {
                     return;
                 }
 
-                boolean success = db.createUser(fullName, username, password, role, department, session.getUserId());
-                if (success) {
-                    Toast.makeText(this, "User created successfully!", Toast.LENGTH_SHORT).show();
-                    loadUsers();
-                } else {
-                    Toast.makeText(this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
-                }
+                // Call API to create user (sends to PythonAnywhere)
+                com.alfarooj.timetable.models.CreateUserRequest request = 
+                    new com.alfarooj.timetable.models.CreateUserRequest(
+                        fullName, username, password, role, department, session.getUserId());
+                
+                ApiClient.getApiService().createUser(request)
+                    .enqueue(new retrofit2.Callback<com.alfarooj.timetable.models.CreateUserResponse>() {
+                        @Override
+                        public void onResponse(retrofit2.Call<com.alfarooj.timetable.models.CreateUserResponse> call,
+                                               retrofit2.Response<com.alfarooj.timetable.models.CreateUserResponse> response) {
+                            if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
+                                loadUsers();
+                            } else {
+                                Toast.makeText(SuperAdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        
+                        @Override
+                        public void onFailure(retrofit2.Call<com.alfarooj.timetable.models.CreateUserResponse> call, Throwable t) {
+                            Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
             });
             builder.setNegativeButton("Cancel", null);
             builder.show();
@@ -230,24 +265,60 @@ public class SuperAdminActivity extends BaseActivity {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle("Manage Users");
             }
-            userList = db.getAllUsers();
             
-            if (contentFrame.getChildCount() > 0) {
-                contentFrame.removeAllViews();
-            }
+            // Get users from API
+            ApiClient.getApiService().getUsers()
+                .enqueue(new retrofit2.Callback<com.alfarooj.timetable.models.UsersResponse>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<com.alfarooj.timetable.models.UsersResponse> call,
+                                           retrofit2.Response<com.alfarooj.timetable.models.UsersResponse> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            // Convert API users to local User objects
+                            userList = new ArrayList<>();
+                            for (com.alfarooj.timetable.models.User apiUser : response.body().getUsers()) {
+                                User localUser = new User(
+                                    apiUser.getId(),
+                                    apiUser.getFullName(),
+                                    apiUser.getUsername(),
+                                    "",
+                                    apiUser.getRole(),
+                                    apiUser.getDepartment(),
+                                    0,
+                                    ""
+                                );
+                                userList.add(localUser);
+                            }
+                            displayUsers();
+                        } else {
+                            Toast.makeText(SuperAdminActivity.this, "Failed to load users", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    
+                    @Override
+                    public void onFailure(retrofit2.Call<com.alfarooj.timetable.models.UsersResponse> call, Throwable t) {
+                        Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             
-            View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
-            recyclerView = view.findViewById(R.id.recyclerView);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            
-            UserAdapter userAdapter = new UserAdapter(userList, this, () -> loadUsers());
-            recyclerView.setAdapter(userAdapter);
-            
-            contentFrame.addView(view);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error loading users: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+    
+    private void displayUsers() {
+        if (contentFrame.getChildCount() > 0) {
+            contentFrame.removeAllViews();
+        }
+        
+        View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        
+        UserAdapter userAdapter = new UserAdapter(userList, this, () -> loadUsers());
+        recyclerView.setAdapter(userAdapter);
+        
+        contentFrame.addView(view);
     }
 
     private void loadTodayAttendance() {
@@ -255,11 +326,35 @@ public class SuperAdminActivity extends BaseActivity {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle("Today's Attendance");
             }
-            logList = db.getTodayAttendanceLogs();
-            if (logList.isEmpty()) {
-                Toast.makeText(this, "No attendance records for today", Toast.LENGTH_SHORT).show();
-            }
-            showHistoryList();
+            // Get attendance from API
+            ApiClient.getApiService().getTodayAttendance()
+                .enqueue(new retrofit2.Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
+                                           retrofit2.Response<com.alfarooj.timetable.models.AttendanceLogsResponse> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            logList = new ArrayList<>();
+                            for (com.alfarooj.timetable.models.AttendanceLog apiLog : response.body().getLogs()) {
+                                AttendanceLog localLog = new AttendanceLog(
+                                    apiLog.getId(), apiLog.getUserId(), apiLog.getUsername(),
+                                    apiLog.getFullName(), apiLog.getDepartment(), apiLog.getEventType(),
+                                    apiLog.getEventName(), apiLog.getLocation(), apiLog.getLatitude(),
+                                    apiLog.getLongitude(), apiLog.getTimestamp()
+                                );
+                                logList.add(localLog);
+                            }
+                            if (logList.isEmpty()) {
+                                Toast.makeText(SuperAdminActivity.this, "No attendance records for today", Toast.LENGTH_SHORT).show();
+                            }
+                            showHistoryList();
+                        }
+                    }
+                    
+                    @Override
+                    public void onFailure(retrofit2.Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
+                        Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -270,8 +365,31 @@ public class SuperAdminActivity extends BaseActivity {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle("All History");
             }
-            logList = db.getAllAttendanceLogs();
-            showHistoryList();
+            ApiClient.getApiService().getAttendanceLogs(null)
+                .enqueue(new retrofit2.Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
+                                           retrofit2.Response<com.alfarooj.timetable.models.AttendanceLogsResponse> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            logList = new ArrayList<>();
+                            for (com.alfarooj.timetable.models.AttendanceLog apiLog : response.body().getLogs()) {
+                                AttendanceLog localLog = new AttendanceLog(
+                                    apiLog.getId(), apiLog.getUserId(), apiLog.getUsername(),
+                                    apiLog.getFullName(), apiLog.getDepartment(), apiLog.getEventType(),
+                                    apiLog.getEventName(), apiLog.getLocation(), apiLog.getLatitude(),
+                                    apiLog.getLongitude(), apiLog.getTimestamp()
+                                );
+                                logList.add(localLog);
+                            }
+                            showHistoryList();
+                        }
+                    }
+                    
+                    @Override
+                    public void onFailure(retrofit2.Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
+                        Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -283,29 +401,48 @@ public class SuperAdminActivity extends BaseActivity {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(title + " History");
             }
-            logList = db.getAttendanceLogsByDepartment(department);
-            showHistoryList();
+            ApiClient.getApiService().getAttendanceLogs(department)
+                .enqueue(new retrofit2.Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
+                                           retrofit2.Response<com.alfarooj.timetable.models.AttendanceLogsResponse> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            logList = new ArrayList<>();
+                            for (com.alfarooj.timetable.models.AttendanceLog apiLog : response.body().getLogs()) {
+                                AttendanceLog localLog = new AttendanceLog(
+                                    apiLog.getId(), apiLog.getUserId(), apiLog.getUsername(),
+                                    apiLog.getFullName(), apiLog.getDepartment(), apiLog.getEventType(),
+                                    apiLog.getEventName(), apiLog.getLocation(), apiLog.getLatitude(),
+                                    apiLog.getLongitude(), apiLog.getTimestamp()
+                                );
+                                logList.add(localLog);
+                            }
+                            showHistoryList();
+                        }
+                    }
+                    
+                    @Override
+                    public void onFailure(retrofit2.Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
+                        Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void showHistoryList() {
-        try {
-            if (contentFrame.getChildCount() > 0) {
-                contentFrame.removeAllViews();
-            }
-            
-            View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
-            recyclerView = view.findViewById(R.id.recyclerView);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            
-            LogAdapter logAdapter = new LogAdapter(logList);
-            recyclerView.setAdapter(logAdapter);
-            
-            contentFrame.addView(view);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (contentFrame.getChildCount() > 0) {
+            contentFrame.removeAllViews();
         }
+        
+        View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        
+        LogAdapter logAdapter = new LogAdapter(logList);
+        recyclerView.setAdapter(logAdapter);
+        
+        contentFrame.addView(view);
     }
 }
