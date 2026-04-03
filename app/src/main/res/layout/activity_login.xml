@@ -9,8 +9,9 @@
 
     <ImageView
         android:id="@+id/ivLogo"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/ic_app_icon"
         android:layout_marginBottom="16dp"/>
 
     <TextView
@@ -57,7 +58,6 @@
             android:padding="4dp"/>
     </LinearLayout>
 
-    <!-- Username Label -->
     <TextView
         android:id="@+id/tvUsernameLabel"
         android:layout_width="match_parent"
@@ -67,7 +67,6 @@
         android:textSize="14sp"
         android:layout_marginBottom="8dp"/>
 
-    <!-- Username Field -->
     <EditText
         android:id="@+id/etUsername"
         android:layout_width="match_parent"
@@ -81,7 +80,6 @@
         android:layout_marginBottom="16dp"
         android:inputType="text"/>
 
-    <!-- Password Label -->
     <TextView
         android:id="@+id/tvPasswordLabel"
         android:layout_width="match_parent"
@@ -91,7 +89,6 @@
         android:textSize="14sp"
         android:layout_marginBottom="8dp"/>
 
-    <!-- Password Field -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
@@ -121,7 +118,6 @@
             android:scaleType="center"/>
     </LinearLayout>
 
-    <!-- Login Button -->
     <Button
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
@@ -132,7 +128,6 @@
         android:textStyle="bold"
         android:textColor="#FFFFFF"/>
 
-    <!-- Error Message -->
     <TextView
         android:id="@+id/tvError"
         android:layout_width="match_parent"

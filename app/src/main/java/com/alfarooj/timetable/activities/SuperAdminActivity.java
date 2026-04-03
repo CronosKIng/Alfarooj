@@ -4,11 +4,14 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
@@ -22,9 +25,12 @@ import com.alfarooj.timetable.database.DatabaseHelper;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.models.AttendanceLog;
 import com.alfarooj.timetable.utils.SessionManager;
+import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
 import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class SuperAdminActivity extends BaseActivity {
     private DrawerLayout drawerLayout;
@@ -36,6 +42,10 @@ public class SuperAdminActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private ArrayList<User> userList;
     private ArrayList<AttendanceLog> logList;
+    private Spinner spinnerLanguage;
+    private TextView tvLanguageLabel;
+    private List<String> languageCodes = new ArrayList<>();
+    private List<String> languageNames = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +60,8 @@ public class SuperAdminActivity extends BaseActivity {
             navigationView = findViewById(R.id.navView);
             toolbar = findViewById(R.id.toolbar);
             contentFrame = findViewById(R.id.contentFrame);
+            spinnerLanguage = findViewById(R.id.spinnerLanguage);
+            tvLanguageLabel = findViewById(R.id.tvLanguageLabel);
 
             setSupportActionBar(toolbar);
             if (getSupportActionBar() != null) {
@@ -94,10 +106,86 @@ public class SuperAdminActivity extends BaseActivity {
             });
 
             loadUsers();
+            setupLanguageSpinner();
+            translateUI();
+            
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
+    }
+    
+    private void setupLanguageSpinner() {
+        languageCodes.add("en"); languageNames.add("English");
+        languageCodes.add("sw"); languageNames.add("Kiswahili");
+        languageCodes.add("ar"); languageNames.add("Arabic");
+        languageCodes.add("fr"); languageNames.add("French");
+        languageCodes.add("es"); languageNames.add("Spanish");
+        languageCodes.add("de"); languageNames.add("German");
+        languageCodes.add("it"); languageNames.add("Italian");
+        languageCodes.add("pt"); languageNames.add("Portuguese");
+        languageCodes.add("ru"); languageNames.add("Russian");
+        languageCodes.add("zh"); languageNames.add("Chinese");
+        languageCodes.add("ja"); languageNames.add("Japanese");
+        languageCodes.add("ko"); languageNames.add("Korean");
+        languageCodes.add("hi"); languageNames.add("Hindi");
+        languageCodes.add("tr"); languageNames.add("Turkish");
+        languageCodes.add("nl"); languageNames.add("Dutch");
+        languageCodes.add("el"); languageNames.add("Greek");
+        languageCodes.add("vi"); languageNames.add("Vietnamese");
+        languageCodes.add("th"); languageNames.add("Thai");
+        languageCodes.add("pl"); languageNames.add("Polish");
+        languageCodes.add("uk"); languageNames.add("Ukrainian");
+        
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, languageNames);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerLanguage.setAdapter(adapter);
+        
+        String savedLang = TranslationHelper.getCurrentLanguage();
+        int position = languageCodes.indexOf(savedLang);
+        if (position >= 0) {
+            spinnerLanguage.setSelection(position);
+        }
+        
+        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String newLang = languageCodes.get(position);
+                if (!newLang.equals(TranslationHelper.getCurrentLanguage())) {
+                    TranslationHelper.setCurrentLanguage(newLang);
+                    translateUI();
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+    
+    private void translateUI() {
+        String targetLang = TranslationHelper.getCurrentLanguage();
+        if (targetLang.equals("en")) {
+            tvLanguageLabel.setText("Language:");
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Super Admin Dashboard");
+            }
+            return;
+        }
+        TranslationHelper.translateText("Language:", new TranslationHelper.TranslationCallback() {
+            @Override
+            public void onSuccess(String translated) { tvLanguageLabel.setText(translated); }
+            @Override
+            public void onError(String error) {}
+        });
+        TranslationHelper.translateText("Super Admin Dashboard", new TranslationHelper.TranslationCallback() {
+            @Override
+            public void onSuccess(String translated) { 
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle(translated);
+                }
+            }
+            @Override
+            public void onError(String error) {}
+        });
     }
 
     private void showCreateUserDialog(String role) {
@@ -105,7 +193,7 @@ public class SuperAdminActivity extends BaseActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(role.equals("admin") ? "Create Admin" : "Create User");
 
-            android.view.View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
+            View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
             EditText etFullName = view.findViewById(R.id.etFullName);
             EditText etUsername = view.findViewById(R.id.etUsername);
             EditText etPassword = view.findViewById(R.id.etPassword);
@@ -145,7 +233,7 @@ public class SuperAdminActivity extends BaseActivity {
     private void loadUsers() {
         try {
             if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle("Users List");
+                getSupportActionBar().setTitle("Manage Users");
             }
             userList = db.getAllUsers();
             
@@ -153,7 +241,7 @@ public class SuperAdminActivity extends BaseActivity {
                 contentFrame.removeAllViews();
             }
             
-            android.view.View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
+            View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
             recyclerView = view.findViewById(R.id.recyclerView);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             
@@ -213,7 +301,7 @@ public class SuperAdminActivity extends BaseActivity {
                 contentFrame.removeAllViews();
             }
             
-            android.view.View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
+            View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
             recyclerView = view.findViewById(R.id.recyclerView);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             

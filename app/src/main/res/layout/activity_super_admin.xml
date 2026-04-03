@@ -18,6 +18,32 @@
             app:titleTextColor="@android:color/white"
             app:title="Super Admin Dashboard" />
 
+        <!-- Language Selector in Toolbar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:padding="8dp"
+            android:background="#1565C0">
+
+            <TextView
+                android:id="@+id/tvLanguageLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Language:"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:layout_marginEnd="8dp"/>
+
+            <Spinner
+                android:id="@+id/spinnerLanguage"
+                android:layout_width="120dp"
+                android:layout_height="32dp"
+                android:background="#FFFFFF"
+                android:padding="2dp"/>
+        </LinearLayout>
+
         <FrameLayout
             android:id="@+id/contentFrame"
             android:layout_width="match_parent"
