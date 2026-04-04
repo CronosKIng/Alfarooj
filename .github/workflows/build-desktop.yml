@@ -1,0 +1,60 @@
+name: Build Desktop App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-desktop:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Create lib directory
+      run: mkdir -p desktop/lib
+    
+    - name: Download Gson library
+      run: |
+        cd desktop
+        wget -q -P lib/ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar
+    
+    - name: Compile Java
+      run: |
+        cd desktop
+        javac -cp "lib/gson-2.10.1.jar" -d . DesktopLauncher.java
+    
+    - name: Create JAR file
+      run: |
+        cd desktop
+        jar cvfe AlfarooqDesktop.jar DesktopLauncher *.class
+    
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AlfarooqDesktop
+        path: desktop/AlfarooqDesktop.jar
+        retention-days: 30
+    
+    - name: Create run script
+      run: |
+        echo '#!/bin/bash' > desktop/run.sh
+        echo 'java -jar AlfarooqDesktop.jar' >> desktop/run.sh
+        chmod +x desktop/run.sh
+    
+    - name: Upload run script
+      uses: actions/upload-artifact@v4
+      with:
+        name: run-script
+        path: desktop/run.sh
+        retention-days: 30
