@@ -28,38 +28,14 @@ jobs:
         javac -cp "lib\gson-2.10.1.jar" -d . DesktopApp.java
         jar cvfe AlfarooqDesktop.jar DesktopApp *.class
 
-    - name: Download launch4j (official release)
+    - name: Create EXE using jpackage (built-in JDK 17)
       shell: pwsh
       run: |
-        # Download from official launch4j website
-        $url = "https://liquidtelecom.dl.sourceforge.net/project/launch4j/launch4j-3/3.50/launch4j-3.50-win32.zip"
-        Invoke-WebRequest -Uri $url -OutFile "launch4j.zip"
-        Expand-Archive -Path launch4j.zip -DestinationPath launch4j -Force
-        # Verify download
-        Get-ChildItem launch4j
-
-    - name: Create EXE with launch4j
-      shell: pwsh
-      run: |
-        $config = @'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <launch4jConfig>
-          <dontWrapJar>false</dontWrapJar>
-          <headerType>gui</headerType>
-          <jar>desktop\AlfarooqDesktop.jar</jar>
-          <outfile>desktop\AlfarooqApp.exe</outfile>
-          <errTitle>Alfarooq</errTitle>
-          <classPath>
-            <mainClass>DesktopApp</mainClass>
-            <cp>lib\gson-2.10.1.jar</cp>
-          </classPath>
-          <jre>
-            <minVersion>11</minVersion>
-          </jre>
-        </launch4jConfig>
-        '@
-        $config | Out-File -FilePath launch4j.xml -Encoding UTF8
-        .\launch4j\launch4j.exe launch4j.xml
+        cd desktop
+        # Create EXE using jpackage (comes with JDK 17)
+        jpackage --input . --name AlfarooqApp --main-jar AlfarooqDesktop.jar --main-class DesktopApp --type app-image --dest .
+        # Compress the generated folder
+        Compress-Archive -Path AlfarooqApp -DestinationPath AlfarooqApp.zip -Force
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
@@ -67,5 +43,5 @@ jobs:
         name: Alfarooq-Desktop
         path: |
           desktop\AlfarooqDesktop.jar
-          desktop\AlfarooqApp.exe
+          desktop\AlfarooqApp.zip
         retention-days: 30
