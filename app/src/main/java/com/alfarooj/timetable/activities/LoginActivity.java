@@ -5,17 +5,17 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.InputType;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.alfarooj.timetable.api.ApiClient;
@@ -35,11 +35,14 @@ public class LoginActivity extends BaseActivity {
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ImageButton btnTogglePassword;
-    private TextView tvError, tvTitle, tvSubtitle, tvUsernameLabel, tvPasswordLabel;
+    private TextView tvError, tvTitle, tvSubtitle, tvUsernameLabel, tvPasswordLabel, tvLanguageLabel;
     private ImageView ivLogo;
+    private Spinner spinnerLanguage;
     private SessionManager session;
     private boolean isPasswordVisible = false;
     private static final int LOCATION_PERMISSION_REQUEST = 100;
+    private List<String> languageCodes = new ArrayList<>();
+    private List<String> languageNames = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +66,14 @@ public class LoginActivity extends BaseActivity {
         tvSubtitle = findViewById(R.id.tvSubtitle);
         tvUsernameLabel = findViewById(R.id.tvUsernameLabel);
         tvPasswordLabel = findViewById(R.id.tvPasswordLabel);
+        tvLanguageLabel = findViewById(R.id.tvLanguageLabel);
+        spinnerLanguage = findViewById(R.id.spinnerLanguage);
 
+        setupLanguages();
+        setupLanguageSpinner();
         translateUI();
 
-        // Password toggle - JICHO
+        // Password toggle - JICHO RANGI NYEUSI
         btnTogglePassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -145,19 +152,54 @@ public class LoginActivity extends BaseActivity {
         });
     }
     
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
+    private void setupLanguages() {
+        languageCodes.add("en"); languageNames.add("English");
+        languageCodes.add("sw"); languageNames.add("Kiswahili");
+        languageCodes.add("ar"); languageNames.add("Arabic");
+        languageCodes.add("fr"); languageNames.add("French");
+        languageCodes.add("es"); languageNames.add("Spanish");
+        languageCodes.add("de"); languageNames.add("German");
+        languageCodes.add("it"); languageNames.add("Italian");
+        languageCodes.add("pt"); languageNames.add("Portuguese");
+        languageCodes.add("ru"); languageNames.add("Russian");
+        languageCodes.add("zh"); languageNames.add("Chinese");
+        languageCodes.add("ja"); languageNames.add("Japanese");
+        languageCodes.add("ko"); languageNames.add("Korean");
+        languageCodes.add("hi"); languageNames.add("Hindi");
+        languageCodes.add("tr"); languageNames.add("Turkish");
+        languageCodes.add("nl"); languageNames.add("Dutch");
+        languageCodes.add("el"); languageNames.add("Greek");
+        languageCodes.add("vi"); languageNames.add("Vietnamese");
+        languageCodes.add("th"); languageNames.add("Thai");
+        languageCodes.add("pl"); languageNames.add("Polish");
+        languageCodes.add("uk"); languageNames.add("Ukrainian");
     }
     
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_language) {
-            showLanguageDialog();
-            return true;
+    private void setupLanguageSpinner() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, languageNames);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerLanguage.setAdapter(adapter);
+        
+        String savedLang = TranslationHelper.getCurrentLanguage();
+        int position = languageCodes.indexOf(savedLang);
+        if (position >= 0) {
+            spinnerLanguage.setSelection(position);
         }
-        return super.onOptionsItemSelected(item);
+        
+        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String newLang = languageCodes.get(position);
+                if (!newLang.equals(TranslationHelper.getCurrentLanguage())) {
+                    TranslationHelper.setCurrentLanguage(newLang);
+                    TranslationHelper.saveLanguage(LoginActivity.this, newLang);
+                    translateUI();
+                    Toast.makeText(LoginActivity.this, "Language changed", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
     }
     
     private void translateUI() {
@@ -168,40 +210,21 @@ public class LoginActivity extends BaseActivity {
             tvSubtitle.setText("TIME TABLE SYSTEM");
             tvUsernameLabel.setText("Username");
             tvPasswordLabel.setText("Password");
+            tvLanguageLabel.setText("Language:");
             etUsername.setHint("Enter your username");
             etPassword.setHint("Enter your password");
             btnLogin.setText("LOGIN");
             return;
         }
         
-        TranslationHelper.translateText("AL FAROOJ AL SHAMI", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { tvTitle.setText(translated); }
-            @Override public void onError(String error) {}
-        });
-        TranslationHelper.translateText("TIME TABLE SYSTEM", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { tvSubtitle.setText(translated); }
-            @Override public void onError(String error) {}
-        });
-        TranslationHelper.translateText("Username", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { tvUsernameLabel.setText(translated); }
-            @Override public void onError(String error) {}
-        });
-        TranslationHelper.translateText("Password", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { tvPasswordLabel.setText(translated); }
-            @Override public void onError(String error) {}
-        });
-        TranslationHelper.translateText("Enter your username", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { etUsername.setHint(translated); }
-            @Override public void onError(String error) {}
-        });
-        TranslationHelper.translateText("Enter your password", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { etPassword.setHint(translated); }
-            @Override public void onError(String error) {}
-        });
-        TranslationHelper.translateText("LOGIN", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { btnLogin.setText(translated); }
-            @Override public void onError(String error) {}
-        });
+        TranslationHelper.translateText("AL FAROOJ AL SHAMI", translated -> tvTitle.setText(translated));
+        TranslationHelper.translateText("TIME TABLE SYSTEM", translated -> tvSubtitle.setText(translated));
+        TranslationHelper.translateText("Username", translated -> tvUsernameLabel.setText(translated));
+        TranslationHelper.translateText("Password", translated -> tvPasswordLabel.setText(translated));
+        TranslationHelper.translateText("Language:", translated -> tvLanguageLabel.setText(translated));
+        TranslationHelper.translateText("Enter your username", translated -> etUsername.setHint(translated));
+        TranslationHelper.translateText("Enter your password", translated -> etPassword.setHint(translated));
+        TranslationHelper.translateText("LOGIN", translated -> btnLogin.setText(translated));
     }
 
     @Override
