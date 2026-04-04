@@ -21,6 +21,8 @@ import com.google.android.gms.location.Priority;
 import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.AttendanceRequest;
 import com.alfarooj.timetable.models.AttendanceResponse;
+import com.alfarooj.timetable.models.LocationRequest as LocRequest;
+import com.alfarooj.timetable.models.LocationResponse;
 import com.alfarooj.timetable.utils.SessionManager;
 import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
@@ -57,9 +59,10 @@ public class DeliveryActivity extends BaseActivity {
         btnLogout = findViewById(R.id.btnLogout);
 
         translateUI();
-        
-        // Check location permission
-        checkLocationPermission();
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
+        }
 
         btnSignIn.setOnClickListener(v -> checkLocationAndProceed("sign_in", "Sign In"));
         btnBreakStart.setOnClickListener(v -> checkLocationAndProceed("break_start", "Break Start"));
@@ -83,25 +86,43 @@ public class DeliveryActivity extends BaseActivity {
             return;
         }
         
-        TranslationHelper.translateText("WELCOME DELIVERY - " + session.getFullName(), translated -> tvWelcome.setText(translated));
-        TranslationHelper.translateText("Ready to sign in", translated -> tvStatus.setText(translated));
-        TranslationHelper.translateText("SIGN IN", translated -> btnSignIn.setText(translated));
-        TranslationHelper.translateText("BREAK START", translated -> btnBreakStart.setText(translated));
-        TranslationHelper.translateText("BREAK END", translated -> btnBreakEnd.setText(translated));
-        TranslationHelper.translateText("SIGN OUT", translated -> btnSignOut.setText(translated));
-        TranslationHelper.translateText("HISTORY", translated -> btnViewHistory.setText(translated));
-        TranslationHelper.translateText("LOGOUT", translated -> btnLogout.setText(translated));
-    }
-    
-    private void checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
-        }
+        TranslationHelper.translateText("WELCOME DELIVERY - " + session.getFullName(), new TranslationHelper.TranslationCallback() {
+            @Override public void onSuccess(String translated) { tvWelcome.setText(translated); }
+            @Override public void onError(String error) {}
+        });
+        TranslationHelper.translateText("Ready to sign in", new TranslationHelper.TranslationCallback() {
+            @Override public void onSuccess(String translated) { tvStatus.setText(translated); }
+            @Override public void onError(String error) {}
+        });
+        TranslationHelper.translateText("SIGN IN", new TranslationHelper.TranslationCallback() {
+            @Override public void onSuccess(String translated) { btnSignIn.setText(translated); }
+            @Override public void onError(String error) {}
+        });
+        TranslationHelper.translateText("BREAK START", new TranslationHelper.TranslationCallback() {
+            @Override public void onSuccess(String translated) { btnBreakStart.setText(translated); }
+            @Override public void onError(String error) {}
+        });
+        TranslationHelper.translateText("BREAK END", new TranslationHelper.TranslationCallback() {
+            @Override public void onSuccess(String translated) { btnBreakEnd.setText(translated); }
+            @Override public void onError(String error) {}
+        });
+        TranslationHelper.translateText("SIGN OUT", new TranslationHelper.TranslationCallback() {
+            @Override public void onSuccess(String translated) { btnSignOut.setText(translated); }
+            @Override public void onError(String error) {}
+        });
+        TranslationHelper.translateText("HISTORY", new TranslationHelper.TranslationCallback() {
+            @Override public void onSuccess(String translated) { btnViewHistory.setText(translated); }
+            @Override public void onError(String error) {}
+        });
+        TranslationHelper.translateText("LOGOUT", new TranslationHelper.TranslationCallback() {
+            @Override public void onSuccess(String translated) { btnLogout.setText(translated); }
+            @Override public void onError(String error) {}
+        });
     }
     
     private void checkLocationAndProceed(String eventType, String eventName) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Location permission required! Please enable location.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Location permission required!", Toast.LENGTH_LONG).show();
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
             return;
         }
@@ -121,8 +142,6 @@ public class DeliveryActivity extends BaseActivity {
                     currentLatitude = location.getLatitude();
                     currentLongitude = location.getLongitude();
                     currentAddress = "Lat: " + currentLatitude + ", Lon: " + currentLongitude;
-                    
-                    // Validate location with API
                     validateLocationWithApi(eventType, eventName);
                 } else {
                     tvStatus.setText("Cannot get location. Please try again.");
@@ -135,27 +154,23 @@ public class DeliveryActivity extends BaseActivity {
     }
     
     private void validateLocationWithApi(String eventType, String eventName) {
-        // First validate location with your PythonAnywhere API
-        com.alfarooj.timetable.models.LocationRequest locationRequest = 
-            new com.alfarooj.timetable.models.LocationRequest(currentLatitude, currentLongitude);
+        LocRequest locationRequest = new LocRequest(currentLatitude, currentLongitude);
             
         ApiClient.getApiService().validateLocation(locationRequest)
-            .enqueue(new Callback<com.alfarooj.timetable.models.LocationResponse>() {
+            .enqueue(new Callback<LocationResponse>() {
                 @Override
-                public void onResponse(Call<com.alfarooj.timetable.models.LocationResponse> call,
-                                       Response<com.alfarooj.timetable.models.LocationResponse> response) {
+                public void onResponse(Call<LocationResponse> call, Response<LocationResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isWithinLocation()) {
-                        // Location is valid, proceed with attendance
                         recordAttendance(eventType, eventName);
                     } else {
-                        String errorMsg = "You are NOT at the work location! You must be at Al Farooj Al Shami Restaurant to sign in/out.";
+                        String errorMsg = "You are NOT at the work location!";
                         tvStatus.setText(errorMsg);
                         Toast.makeText(DeliveryActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                     }
                 }
                 
                 @Override
-                public void onFailure(Call<com.alfarooj.timetable.models.LocationResponse> call, Throwable t) {
+                public void onFailure(Call<LocationResponse> call, Throwable t) {
                     tvStatus.setText("Location validation failed: " + t.getMessage());
                     Toast.makeText(DeliveryActivity.this, "Location validation failed", Toast.LENGTH_SHORT).show();
                 }
@@ -173,7 +188,7 @@ public class DeliveryActivity extends BaseActivity {
                 @Override
                 public void onResponse(Call<AttendanceResponse> call, Response<AttendanceResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        String msg = eventName + " recorded at " + response.body().getTimestamp();
+                        String msg = eventName + " recorded successfully";
                         tvStatus.setText(msg);
                         Toast.makeText(DeliveryActivity.this, eventName + " Success!", Toast.LENGTH_SHORT).show();
                     } else {
