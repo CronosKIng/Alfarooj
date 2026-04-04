@@ -26,8 +26,12 @@ jobs:
     
     - name: Download Gson library
       run: |
-        cd desktop
-        wget -q -P lib/ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar
+        wget -q -P desktop/lib/ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar
+    
+    - name: List files
+      run: |
+        ls -la desktop/
+        ls -la desktop/lib/
     
     - name: Compile Java
       run: |
