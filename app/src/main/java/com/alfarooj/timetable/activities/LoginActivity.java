@@ -40,8 +40,6 @@ public class LoginActivity extends BaseActivity {
     private SessionManager session;
     private boolean isPasswordVisible = false;
     private static final int LOCATION_PERMISSION_REQUEST = 100;
-    private List<String> languageCodes = new ArrayList<>();
-    private List<String> languageNames = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +64,6 @@ public class LoginActivity extends BaseActivity {
         tvUsernameLabel = findViewById(R.id.tvUsernameLabel);
         tvPasswordLabel = findViewById(R.id.tvPasswordLabel);
 
-        setupLanguages();
         translateUI();
 
         // Password toggle - JICHO
@@ -161,45 +158,6 @@ public class LoginActivity extends BaseActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-    
-    private void setupLanguages() {
-        languageCodes.add("en"); languageNames.add("English");
-        languageCodes.add("sw"); languageNames.add("Kiswahili");
-        languageCodes.add("ar"); languageNames.add("Arabic");
-        languageCodes.add("fr"); languageNames.add("French");
-        languageCodes.add("es"); languageNames.add("Spanish");
-        languageCodes.add("de"); languageNames.add("German");
-        languageCodes.add("it"); languageNames.add("Italian");
-        languageCodes.add("pt"); languageNames.add("Portuguese");
-        languageCodes.add("ru"); languageNames.add("Russian");
-        languageCodes.add("zh"); languageNames.add("Chinese");
-        languageCodes.add("ja"); languageNames.add("Japanese");
-        languageCodes.add("ko"); languageNames.add("Korean");
-        languageCodes.add("hi"); languageNames.add("Hindi");
-        languageCodes.add("tr"); languageNames.add("Turkish");
-        languageCodes.add("nl"); languageNames.add("Dutch");
-        languageCodes.add("el"); languageNames.add("Greek");
-        languageCodes.add("vi"); languageNames.add("Vietnamese");
-        languageCodes.add("th"); languageNames.add("Thai");
-        languageCodes.add("pl"); languageNames.add("Polish");
-        languageCodes.add("uk"); languageNames.add("Ukrainian");
-    }
-    
-    private void showLanguageDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Language / Chagua Lugha");
-        
-        String[] languages = languageNames.toArray(new String[0]);
-        
-        builder.setItems(languages, (dialog, which) -> {
-            String selectedCode = languageCodes.get(which);
-            TranslationHelper.setCurrentLanguage(selectedCode);
-            TranslationHelper.saveLanguage(this, selectedCode);
-            translateUI();
-            Toast.makeText(this, "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
-        });
-        builder.show();
     }
     
     private void translateUI() {
