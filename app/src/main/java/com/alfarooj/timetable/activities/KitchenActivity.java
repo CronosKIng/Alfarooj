@@ -1,32 +1,51 @@
 package com.alfarooj.timetable.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.alfarooj.timetable.database.DatabaseHelper;
-import com.alfarooj.timetable.utils.LocationHelper;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.alfarooj.timetable.api.ApiClient;
+import com.alfarooj.timetable.models.AttendanceRequest;
+import com.alfarooj.timetable.models.AttendanceResponse;
 import com.alfarooj.timetable.utils.SessionManager;
-import com.alfarooj.timetable.utils.TimeHelper;
+import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class KitchenActivity extends BaseActivity {
     private Button btnSignIn, btnBreakStart, btnBreakEnd, btnSignOut, btnViewHistory, btnLogout;
     private TextView tvWelcome, tvStatus;
-    private DatabaseHelper db;
     private SessionManager session;
-    private LocationHelper locationHelper;
+    private FusedLocationProviderClient fusedLocationClient;
     private String department = "kitchen";
+    private static final int LOCATION_PERMISSION_REQUEST = 100;
+    private double currentLatitude = 0;
+    private double currentLongitude = 0;
+    private String currentAddress = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_kitchen);
 
-        db = new DatabaseHelper(this);
         session = new SessionManager(this);
-        locationHelper = new LocationHelper(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         tvWelcome = findViewById(R.id.tvWelcome);
         tvStatus = findViewById(R.id.tvStatus);
@@ -37,35 +56,152 @@ public class KitchenActivity extends BaseActivity {
         btnViewHistory = findViewById(R.id.btnViewHistory);
         btnLogout = findViewById(R.id.btnLogout);
 
-        tvWelcome.setText("WELCOME KITCHEN - " + session.getFullName());
+        translateUI();
+        
+        // Check location permission
+        checkLocationPermission();
 
-        btnSignIn.setOnClickListener(v -> logEvent("sign_in", "Sign In"));
-        btnBreakStart.setOnClickListener(v -> logEvent("break_start", "Break Start"));
-        btnBreakEnd.setOnClickListener(v -> logEvent("break_end", "Break End"));
-        btnSignOut.setOnClickListener(v -> logEvent("sign_out", "Sign Out"));
+        btnSignIn.setOnClickListener(v -> checkLocationAndProceed("sign_in", "Sign In"));
+        btnBreakStart.setOnClickListener(v -> checkLocationAndProceed("break_start", "Break Start"));
+        btnBreakEnd.setOnClickListener(v -> checkLocationAndProceed("break_end", "Break End"));
+        btnSignOut.setOnClickListener(v -> checkLocationAndProceed("sign_out", "Sign Out"));
         btnViewHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
         btnLogout.setOnClickListener(v -> logout());
     }
-
-    private void logEvent(String eventType, String eventName) {
-        locationHelper.checkLocationAndProceed(new LocationHelper.LocationResultCallback() {
+    
+    private void translateUI() {
+        String lang = TranslationHelper.getCurrentLanguage();
+        if (lang.equals("en")) {
+            tvWelcome.setText("WELCOME KITCHEN - " + session.getFullName());
+            tvStatus.setText("Ready to sign in");
+            btnSignIn.setText("SIGN IN");
+            btnBreakStart.setText("BREAK START");
+            btnBreakEnd.setText("BREAK END");
+            btnSignOut.setText("SIGN OUT");
+            btnViewHistory.setText("HISTORY");
+            btnLogout.setText("LOGOUT");
+            return;
+        }
+        
+        TranslationHelper.translateText("WELCOME KITCHEN - " + session.getFullName(), translated -> tvWelcome.setText(translated));
+        TranslationHelper.translateText("Ready to sign in", translated -> tvStatus.setText(translated));
+        TranslationHelper.translateText("SIGN IN", translated -> btnSignIn.setText(translated));
+        TranslationHelper.translateText("BREAK START", translated -> btnBreakStart.setText(translated));
+        TranslationHelper.translateText("BREAK END", translated -> btnBreakEnd.setText(translated));
+        TranslationHelper.translateText("SIGN OUT", translated -> btnSignOut.setText(translated));
+        TranslationHelper.translateText("HISTORY", translated -> btnViewHistory.setText(translated));
+        TranslationHelper.translateText("LOGOUT", translated -> btnLogout.setText(translated));
+    }
+    
+    private void checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
+        }
+    }
+    
+    private void checkLocationAndProceed(String eventType, String eventName) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Location permission required! Please enable location.", Toast.LENGTH_LONG).show();
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
+            return;
+        }
+        
+        tvStatus.setText("Checking location...");
+        
+        LocationRequest locationRequest = new LocationRequest.Builder(10000)
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .build();
+            
+        LocationCallback locationCallback = new LocationCallback() {
             @Override
-            public void onLocationSuccess(double latitude, double longitude, String address) {
-                boolean saved = db.insertAttendanceLog(session.getUserId(), session.getUsername(), 
-                    session.getFullName(), department, eventType, eventName, address, latitude, longitude);
-                if (saved) {
-                    tvStatus.setText(eventName + " - " + TimeHelper.getCurrentTime());
-                    Toast.makeText(KitchenActivity.this, eventName + " Success!", Toast.LENGTH_SHORT).show();
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult.getLastLocation() != null) {
+                    Location location = locationResult.getLastLocation();
+                    fusedLocationClient.removeLocationUpdates(this);
+                    currentLatitude = location.getLatitude();
+                    currentLongitude = location.getLongitude();
+                    currentAddress = "Lat: " + currentLatitude + ", Lon: " + currentLongitude;
+                    
+                    // Validate location with API
+                    validateLocationWithApi(eventType, eventName);
+                } else {
+                    tvStatus.setText("Cannot get location. Please try again.");
+                    Toast.makeText(KitchenActivity.this, "Cannot get location", Toast.LENGTH_SHORT).show();
                 }
             }
-            @Override
-            public void onLocationFailed(String error) {
-                tvStatus.setText(error);
-                Toast.makeText(KitchenActivity.this, error, Toast.LENGTH_LONG).show();
-            }
-        }, () -> {});
+        };
+        
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
-
+    
+    private void validateLocationWithApi(String eventType, String eventName) {
+        // First validate location with your PythonAnywhere API
+        com.alfarooj.timetable.models.LocationRequest locationRequest = 
+            new com.alfarooj.timetable.models.LocationRequest(currentLatitude, currentLongitude);
+            
+        ApiClient.getApiService().validateLocation(locationRequest)
+            .enqueue(new Callback<com.alfarooj.timetable.models.LocationResponse>() {
+                @Override
+                public void onResponse(Call<com.alfarooj.timetable.models.LocationResponse> call,
+                                       Response<com.alfarooj.timetable.models.LocationResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isWithinLocation()) {
+                        // Location is valid, proceed with attendance
+                        recordAttendance(eventType, eventName);
+                    } else {
+                        String errorMsg = "You are NOT at the work location! You must be at Al Farooj Al Shami Restaurant to sign in/out.";
+                        tvStatus.setText(errorMsg);
+                        Toast.makeText(KitchenActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    }
+                }
+                
+                @Override
+                public void onFailure(Call<com.alfarooj.timetable.models.LocationResponse> call, Throwable t) {
+                    tvStatus.setText("Location validation failed: " + t.getMessage());
+                    Toast.makeText(KitchenActivity.this, "Location validation failed", Toast.LENGTH_SHORT).show();
+                }
+            });
+    }
+    
+    private void recordAttendance(String eventType, String eventName) {
+        AttendanceRequest request = new AttendanceRequest(
+            session.getUserId(), session.getUsername(), session.getFullName(),
+            department, eventType, eventName, currentLatitude, currentLongitude, currentAddress
+        );
+        
+        ApiClient.getApiService().recordAttendance(request)
+            .enqueue(new Callback<AttendanceResponse>() {
+                @Override
+                public void onResponse(Call<AttendanceResponse> call, Response<AttendanceResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        String msg = eventName + " recorded at " + response.body().getTimestamp();
+                        tvStatus.setText(msg);
+                        Toast.makeText(KitchenActivity.this, eventName + " Success!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        tvStatus.setText("Failed to record " + eventName);
+                        Toast.makeText(KitchenActivity.this, "Failed to record!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                
+                @Override
+                public void onFailure(Call<AttendanceResponse> call, Throwable t) {
+                    tvStatus.setText("Network error: " + t.getMessage());
+                    Toast.makeText(KitchenActivity.this, "Network error!", Toast.LENGTH_SHORT).show();
+                }
+            });
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Location permission required to sign in/out!", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    
     private void logout() {
         session.logout();
         startActivity(new Intent(this, LoginActivity.class));
