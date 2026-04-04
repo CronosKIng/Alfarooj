@@ -20,21 +20,21 @@ jobs:
         distribution: 'temurin'
 
     - name: Build JAR
+      shell: pwsh
       run: |
-        mkdir -p desktop/lib
-        curl -L -o desktop/lib/gson-2.10.1.jar https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar
+        New-Item -ItemType Directory -Force -Path desktop\lib
+        Invoke-WebRequest -Uri "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" -OutFile "desktop\lib\gson-2.10.1.jar"
         cd desktop
-        javac -cp "lib/gson-2.10.1.jar" -d . DesktopApp.java
+        javac -cp "lib\gson-2.10.1.jar" -d . DesktopApp.java
         jar cvfe AlfarooqDesktop.jar DesktopApp *.class
 
-    - name: Create EXE with launch4j (portable)
+    - name: Create EXE with launch4j
+      shell: pwsh
       run: |
-        # Download launch4j portable
-        curl -L -o launch4j.zip https://github.com/lukaszgryglicki/launch4j/releases/download/3.50/launch4j-3.50-win32.zip
-        unzip -q launch4j.zip -d launch4j
+        Invoke-WebRequest -Uri "https://github.com/lukaszgryglicki/launch4j/releases/download/3.50/launch4j-3.50-win32.zip" -OutFile "launch4j.zip"
+        Expand-Archive -Path launch4j.zip -DestinationPath launch4j -Force
         
-        # Create launch4j config
-        cat > launch4j.xml << 'CONFIG'
+        $config = @'
         <?xml version="1.0" encoding="UTF-8"?>
         <launch4jConfig>
           <dontWrapJar>false</dontWrapJar>
@@ -50,16 +50,16 @@ jobs:
             <minVersion>11</minVersion>
           </jre>
         </launch4jConfig>
-        CONFIG
+        '@
+        $config | Out-File -FilePath launch4j.xml -Encoding UTF8
         
-        # Build EXE
-        ./launch4j/launch4j.exe launch4j.xml
+        .\launch4j\launch4j.exe launch4j.xml
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Alfarooq-Desktop
         path: |
-          desktop/AlfarooqDesktop.jar
-          desktop/AlfarooqApp.exe
+          desktop\AlfarooqDesktop.jar
+          desktop\AlfarooqApp.exe
         retention-days: 30
