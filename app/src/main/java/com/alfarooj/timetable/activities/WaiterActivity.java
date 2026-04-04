@@ -21,7 +21,7 @@ import com.google.android.gms.location.Priority;
 import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.AttendanceRequest;
 import com.alfarooj.timetable.models.AttendanceResponse;
-import com.alfarooj.timetable.models.LocationRequest as LocRequest;
+import com.alfarooj.timetable.models.LocationRequest;
 import com.alfarooj.timetable.models.LocationResponse;
 import com.alfarooj.timetable.utils.SessionManager;
 import com.alfarooj.timetable.utils.TranslationHelper;
@@ -129,7 +129,7 @@ public class WaiterActivity extends BaseActivity {
         
         tvStatus.setText("Checking location...");
         
-        LocationRequest locationRequest = new LocationRequest.Builder(10000)
+        com.google.android.gms.location.LocationRequest locationRequest = new com.google.android.gms.location.LocationRequest.Builder(10000)
             .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
             .build();
             
@@ -154,7 +154,7 @@ public class WaiterActivity extends BaseActivity {
     }
     
     private void validateLocationWithApi(String eventType, String eventName) {
-        LocRequest locationRequest = new LocRequest(currentLatitude, currentLongitude);
+        LocationRequest locationRequest = new LocationRequest(currentLatitude, currentLongitude);
             
         ApiClient.getApiService().validateLocation(locationRequest)
             .enqueue(new Callback<LocationResponse>() {
