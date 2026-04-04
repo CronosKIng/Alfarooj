@@ -1,6 +1,7 @@
 package com.alfarooj.timetable.activities;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -10,7 +11,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alfarooj.timetable.adapters.UserAdapter;
@@ -25,9 +28,11 @@ import java.util.ArrayList;
 public class AdminActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private Button btnCreateUser, btnViewLogs, btnLogout;
+    private TextView tvTitle;
     private DatabaseHelper db;
     private SessionManager session;
     private ArrayList<User> userList;
+    private AlertDialog createUserDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +46,7 @@ public class AdminActivity extends BaseActivity {
         btnCreateUser = findViewById(R.id.btnCreateUser);
         btnViewLogs = findViewById(R.id.btnViewLogs);
         btnLogout = findViewById(R.id.btnLogout);
+        tvTitle = findViewById(R.id.tvTitle);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -82,73 +88,229 @@ public class AdminActivity extends BaseActivity {
     
     private void translateUI() {
         String lang = TranslationHelper.getCurrentLanguage();
+        
+        // Translate Title
         if (lang.equals("en")) {
             if (getSupportActionBar() != null) getSupportActionBar().setTitle("Admin Dashboard");
+            tvTitle.setText("ADMIN DASHBOARD");
             btnCreateUser.setText("CREATE USER");
             btnViewLogs.setText("VIEW HISTORY");
             btnLogout.setText("LOGOUT");
-            return;
+        } else {
+            TranslationHelper.translateText("Admin Dashboard", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) {
+                    if (getSupportActionBar() != null) getSupportActionBar().setTitle(translated);
+                }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("ADMIN DASHBOARD", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { tvTitle.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("CREATE USER", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { btnCreateUser.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("VIEW HISTORY", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { btnViewLogs.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("LOGOUT", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { btnLogout.setText(translated); }
+                @Override public void onError(String error) {}
+            });
         }
         
-        TranslationHelper.translateText("Admin Dashboard", translated -> {
-            if (getSupportActionBar() != null) getSupportActionBar().setTitle(translated);
-        });
-        TranslationHelper.translateText("CREATE USER", translated -> btnCreateUser.setText(translated));
-        TranslationHelper.translateText("VIEW HISTORY", translated -> btnViewLogs.setText(translated));
-        TranslationHelper.translateText("LOGOUT", translated -> btnLogout.setText(translated));
+        // Translate Users List title
+        TextView tvUsersList = findViewById(R.id.tvUsersList);
+        if (tvUsersList != null) {
+            if (lang.equals("en")) {
+                tvUsersList.setText("USERS LIST");
+            } else {
+                TranslationHelper.translateText("USERS LIST", new TranslationHelper.TranslationCallback() {
+                    @Override public void onSuccess(String translated) { tvUsersList.setText(translated); }
+                    @Override public void onError(String error) {}
+                });
+            }
+        }
     }
 
     private void showCreateUserDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Create User");
-
-        View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
-        EditText etFullName = view.findViewById(R.id.etFullName);
-        EditText etUsername = view.findViewById(R.id.etUsername);
-        EditText etPassword = view.findViewById(R.id.etPassword);
-        Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
+        EditText etFullName = dialogView.findViewById(R.id.etFullName);
+        EditText etUsername = dialogView.findViewById(R.id.etUsername);
+        EditText etPassword = dialogView.findViewById(R.id.etPassword);
+        Spinner spinnerDepartment = dialogView.findViewById(R.id.spinnerDepartment);
+        
+        TextView tvFullNameLabel = dialogView.findViewById(R.id.tvFullNameLabel);
+        TextView tvUsernameLabel = dialogView.findViewById(R.id.tvUsernameLabel);
+        TextView tvPasswordLabel = dialogView.findViewById(R.id.tvPasswordLabel);
+        TextView tvDepartmentLabel = dialogView.findViewById(R.id.tvDepartmentLabel);
 
         String[] departments = {"kitchen", "waiter", "delivery", "manager"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departments);
         spinnerDepartment.setAdapter(adapter);
 
-        builder.setView(view);
-        builder.setPositiveButton("Create", (dialog, which) -> {
-            String fullName = etFullName.getText().toString().trim();
-            String username = etUsername.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
-            String department = spinnerDepartment.getSelectedItem().toString();
+        String lang = TranslationHelper.getCurrentLanguage();
+        
+        // Translate dialog labels
+        if (lang.equals("en")) {
+            if (tvFullNameLabel != null) tvFullNameLabel.setText("Full Name");
+            if (tvUsernameLabel != null) tvUsernameLabel.setText("Username");
+            if (tvPasswordLabel != null) tvPasswordLabel.setText("Password");
+            if (tvDepartmentLabel != null) tvDepartmentLabel.setText("Department");
+            etFullName.setHint("Enter full name");
+            etUsername.setHint("Enter username");
+            etPassword.setHint("Enter password");
+        } else {
+            TranslationHelper.translateText("Full Name", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { if (tvFullNameLabel != null) tvFullNameLabel.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("Username", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { if (tvUsernameLabel != null) tvUsernameLabel.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("Password", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { if (tvPasswordLabel != null) tvPasswordLabel.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("Department", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { if (tvDepartmentLabel != null) tvDepartmentLabel.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("Enter full name", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { etFullName.setHint(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("Enter username", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { etUsername.setHint(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("Enter password", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { etPassword.setHint(translated); }
+                @Override public void onError(String error) {}
+            });
+        }
 
-            if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            com.alfarooj.timetable.models.CreateUserRequest request = 
-                new com.alfarooj.timetable.models.CreateUserRequest(
-                    fullName, username, password, "user", department, session.getUserId());
-            
-            ApiClient.getApiService().createUser(request)
-                .enqueue(new retrofit2.Callback<com.alfarooj.timetable.models.CreateUserResponse>() {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        
+        // Translate dialog title
+        if (lang.equals("en")) {
+            builder.setTitle("Create User");
+        } else {
+            TranslationHelper.translateText("Create User", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { builder.setTitle(translated); }
+                @Override public void onError(String error) { builder.setTitle("Create User"); }
+            });
+        }
+        
+        builder.setView(dialogView);
+        
+        // Translate Create button
+        if (lang.equals("en")) {
+            builder.setPositiveButton("Create", null);
+        } else {
+            TranslationHelper.translateText("Create", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { builder.setPositiveButton(translated, null); }
+                @Override public void onError(String error) { builder.setPositiveButton("Create", null); }
+            });
+        }
+        
+        // Translate Cancel button
+        if (lang.equals("en")) {
+            builder.setNegativeButton("Cancel", null);
+        } else {
+            TranslationHelper.translateText("Cancel", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { builder.setNegativeButton(translated, null); }
+                @Override public void onError(String error) { builder.setNegativeButton("Cancel", null); }
+            });
+        }
+        
+        androidx.appcompat.app.AlertDialog dialog = builder.create();
+        
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface d) {
+                Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                positiveButton.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onResponse(retrofit2.Call<com.alfarooj.timetable.models.CreateUserResponse> call,
-                                           retrofit2.Response<com.alfarooj.timetable.models.CreateUserResponse> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            Toast.makeText(AdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
-                            loadUsers();
-                        } else {
-                            Toast.makeText(AdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
+                    public void onClick(View v) {
+                        String fullName = etFullName.getText().toString().trim();
+                        String username = etUsername.getText().toString().trim();
+                        String password = etPassword.getText().toString().trim();
+                        String department = spinnerDepartment.getSelectedItem().toString();
+
+                        if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
+                            String errorMsg = "Please fill all fields";
+                            String currentLang = TranslationHelper.getCurrentLanguage();
+                            if (currentLang.equals("en")) {
+                                Toast.makeText(AdminActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                            } else {
+                                TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
+                                    @Override public void onSuccess(String translated) { Toast.makeText(AdminActivity.this, translated, Toast.LENGTH_SHORT).show(); }
+                                    @Override public void onError(String error) { Toast.makeText(AdminActivity.this, errorMsg, Toast.LENGTH_SHORT).show(); }
+                                });
+                            }
+                            return;
                         }
-                    }
-                    
-                    @Override
-                    public void onFailure(retrofit2.Call<com.alfarooj.timetable.models.CreateUserResponse> call, Throwable t) {
-                        Toast.makeText(AdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+
+                        com.alfarooj.timetable.models.CreateUserRequest request = 
+                            new com.alfarooj.timetable.models.CreateUserRequest(
+                                fullName, username, password, "user", department, session.getUserId());
+                        
+                        ApiClient.getApiService().createUser(request)
+                            .enqueue(new retrofit2.Callback<com.alfarooj.timetable.models.CreateUserResponse>() {
+                                @Override
+                                public void onResponse(retrofit2.Call<com.alfarooj.timetable.models.CreateUserResponse> call,
+                                                       retrofit2.Response<com.alfarooj.timetable.models.CreateUserResponse> response) {
+                                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                        String successMsg = "User created successfully!";
+                                        String currentLang = TranslationHelper.getCurrentLanguage();
+                                        if (currentLang.equals("en")) {
+                                            Toast.makeText(AdminActivity.this, successMsg, Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            TranslationHelper.translateText(successMsg, new TranslationHelper.TranslationCallback() {
+                                                @Override public void onSuccess(String translated) { Toast.makeText(AdminActivity.this, translated, Toast.LENGTH_SHORT).show(); }
+                                                @Override public void onError(String error) { Toast.makeText(AdminActivity.this, successMsg, Toast.LENGTH_SHORT).show(); }
+                                            });
+                                        }
+                                        loadUsers();
+                                        dialog.dismiss();
+                                    } else {
+                                        String errorMsg = "Error: Username already exists";
+                                        String currentLang = TranslationHelper.getCurrentLanguage();
+                                        if (currentLang.equals("en")) {
+                                            Toast.makeText(AdminActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
+                                                @Override public void onSuccess(String translated) { Toast.makeText(AdminActivity.this, translated, Toast.LENGTH_SHORT).show(); }
+                                                @Override public void onError(String error) { Toast.makeText(AdminActivity.this, errorMsg, Toast.LENGTH_SHORT).show(); }
+                                            });
+                                        }
+                                    }
+                                }
+                                
+                                @Override
+                                public void onFailure(retrofit2.Call<com.alfarooj.timetable.models.CreateUserResponse> call, Throwable t) {
+                                    String errorMsg = "Network error: " + t.getMessage();
+                                    String currentLang = TranslationHelper.getCurrentLanguage();
+                                    if (currentLang.equals("en")) {
+                                        Toast.makeText(AdminActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
+                                            @Override public void onSuccess(String translated) { Toast.makeText(AdminActivity.this, translated, Toast.LENGTH_SHORT).show(); }
+                                            @Override public void onError(String error) { Toast.makeText(AdminActivity.this, errorMsg, Toast.LENGTH_SHORT).show(); }
+                                        });
+                                    }
+                                }
+                            });
                     }
                 });
+            }
         });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
+        
+        dialog.show();
     }
 
     private void loadUsers() {
@@ -167,11 +329,23 @@ public class AdminActivity extends BaseActivity {
                             userList.add(localUser);
                         }
                         displayUsers();
+                    } else {
+                        String errorMsg = "Failed to load users";
+                        String currentLang = TranslationHelper.getCurrentLanguage();
+                        if (currentLang.equals("en")) {
+                            Toast.makeText(AdminActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                        } else {
+                            TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
+                                @Override public void onSuccess(String translated) { Toast.makeText(AdminActivity.this, translated, Toast.LENGTH_SHORT).show(); }
+                                @Override public void onError(String error) { Toast.makeText(AdminActivity.this, errorMsg, Toast.LENGTH_SHORT).show(); }
+                            });
+                        }
                     }
                 }
                 @Override
                 public void onFailure(retrofit2.Call<com.alfarooj.timetable.models.UsersResponse> call, Throwable t) {
-                    Toast.makeText(AdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Network error: " + t.getMessage();
+                    Toast.makeText(AdminActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
                 }
             });
     }
