@@ -1,4 +1,4 @@
-name: Build Desktop App
+name: Build Desktop JAR
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-desktop:
+  build-desktop-jar:
     runs-on: ubuntu-latest
     
     steps:
@@ -21,17 +21,10 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     
-    - name: Create lib directory
-      run: mkdir -p desktop/lib
-    
     - name: Download Gson library
       run: |
+        mkdir -p desktop/lib
         wget -q -P desktop/lib/ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar
-    
-    - name: List files
-      run: |
-        ls -la desktop/
-        ls -la desktop/lib/
     
     - name: Compile Java
       run: |
@@ -46,19 +39,6 @@ jobs:
     - name: Upload JAR artifact
       uses: actions/upload-artifact@v4
       with:
-        name: AlfarooqDesktop
+        name: AlfarooqDesktop-JAR
         path: desktop/AlfarooqDesktop.jar
-        retention-days: 30
-    
-    - name: Create run script
-      run: |
-        echo '#!/bin/bash' > desktop/run.sh
-        echo 'java -jar AlfarooqDesktop.jar' >> desktop/run.sh
-        chmod +x desktop/run.sh
-    
-    - name: Upload run script
-      uses: actions/upload-artifact@v4
-      with:
-        name: run-script
-        path: desktop/run.sh
         retention-days: 30
