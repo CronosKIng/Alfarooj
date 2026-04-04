@@ -37,26 +37,6 @@
         android:textStyle="bold"/>
 
     <Button
-        android:id="@+id/btnBreakStart"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="BREAK START"
-        android:backgroundTint="#FF9800"
-        android:layout_marginBottom="8dp"
-        android:textSize="14sp"
-        android:textStyle="bold"/>
-
-    <Button
-        android:id="@+id/btnBreakEnd"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="BREAK END"
-        android:backgroundTint="#2196F3"
-        android:layout_marginBottom="8dp"
-        android:textSize="14sp"
-        android:textStyle="bold"/>
-
-    <Button
         android:id="@+id/btnSignOut"
         android:layout_width="match_parent"
         android:layout_height="56dp"
