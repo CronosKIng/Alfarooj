@@ -7,54 +7,59 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # Tunatumia Windows ili kurahisisha utengenezaji wa EXE
-    
+    runs-on: windows-latest
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-    
-    - name: Build Application
+
+    - name: Build JAR
       run: |
         mkdir -p desktop/lib
-        # Download Gson
-        curl -L https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar -o desktop/lib/gson-2.10.1.jar
-        
-        # Compile
+        curl -L -o desktop/lib/gson-2.10.1.jar https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar
         cd desktop
         javac -cp "lib/gson-2.10.1.jar" -d . DesktopApp.java
-        
-        # Create JAR
-        jar cvfe AlfarooqDesktop.jar DesktopApp *.class lib/
-        
-    - name: Convert JAR to EXE (Using Launch4j)
-      uses: fxtentacle/launch4j-action@v2
-      with:
-        args: |
-          <launch4jConfig>
-            <dontWrapJar>false</dontWrapJar>
-            <headerType>gui</headerType>
-            <jar>desktop/AlfarooqDesktop.jar</jar>
-            <outfile>desktop/AlfarooqApp.exe</outfile>
-            <classPath>
-              <mainClass>DesktopApp</mainClass>
-              <cp>lib/*.jar</cp>
-            </classPath>
-            <jre>
-              <path>%JAVA_HOME%</path>
-              <minVersion>17</minVersion>
-            </jre>
-          </launch4jConfig>
+        jar cvfe AlfarooqDesktop.jar DesktopApp *.class
 
-    - name: Upload EXE and JAR
+    - name: Create EXE with launch4j (portable)
+      run: |
+        # Download launch4j portable
+        curl -L -o launch4j.zip https://github.com/lukaszgryglicki/launch4j/releases/download/3.50/launch4j-3.50-win32.zip
+        unzip -q launch4j.zip -d launch4j
+        
+        # Create launch4j config
+        cat > launch4j.xml << 'CONFIG'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <launch4jConfig>
+          <dontWrapJar>false</dontWrapJar>
+          <headerType>gui</headerType>
+          <jar>desktop\AlfarooqDesktop.jar</jar>
+          <outfile>desktop\AlfarooqApp.exe</outfile>
+          <errTitle>Alfarooq</errTitle>
+          <classPath>
+            <mainClass>DesktopApp</mainClass>
+            <cp>lib\gson-2.10.1.jar</cp>
+          </classPath>
+          <jre>
+            <minVersion>11</minVersion>
+          </jre>
+        </launch4jConfig>
+        CONFIG
+        
+        # Build EXE
+        ./launch4j/launch4j.exe launch4j.xml
+
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Alfarooq-Desktop-Files
+        name: Alfarooq-Desktop
         path: |
-          desktop/AlfarooqApp.exe
           desktop/AlfarooqDesktop.jar
+          desktop/AlfarooqApp.exe
+        retention-days: 30
