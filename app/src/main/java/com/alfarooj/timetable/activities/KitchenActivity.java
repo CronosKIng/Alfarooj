@@ -45,57 +45,108 @@ public class KitchenActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_kitchen);
 
-        try {
-            session = new SessionManager(this);
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        session = new SessionManager(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-            tvWelcome = findViewById(R.id.tvWelcome);
-            tvStatus = findViewById(R.id.tvStatus);
-            btnSignIn = findViewById(R.id.btnSignIn);
-            btnBreakStart = findViewById(R.id.btnBreakStart);
-            btnBreakEnd = findViewById(R.id.btnBreakEnd);
-            btnSignOut = findViewById(R.id.btnSignOut);
-            btnViewHistory = findViewById(R.id.btnViewHistory);
-            btnLogout = findViewById(R.id.btnLogout);
+        tvWelcome = findViewById(R.id.tvWelcome);
+        tvStatus = findViewById(R.id.tvStatus);
+        btnSignIn = findViewById(R.id.btnSignIn);
+        btnBreakStart = findViewById(R.id.btnBreakStart);
+        btnBreakEnd = findViewById(R.id.btnBreakEnd);
+        btnSignOut = findViewById(R.id.btnSignOut);
+        btnViewHistory = findViewById(R.id.btnViewHistory);
+        btnLogout = findViewById(R.id.btnLogout);
 
-            if (tvWelcome != null) {
-                tvWelcome.setText("WELCOME KITCHEN - " + session.getFullName());
-            }
-            if (tvStatus != null) {
-                tvStatus.setText("Ready to sign in");
-            }
+        // Set welcome text without "WELCOME" prefix
+        tvWelcome.setText("User: " + session.getFullName());
+        
+        translateUI();
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
-            }
+        // Check location permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
+        }
 
-            if (btnSignIn != null) btnSignIn.setOnClickListener(v -> checkLocationAndProceed("sign_in", "Sign In"));
-            if (btnBreakStart != null) btnBreakStart.setOnClickListener(v -> checkLocationAndProceed("break_start", "Break Start"));
-            if (btnBreakEnd != null) btnBreakEnd.setOnClickListener(v -> checkLocationAndProceed("break_end", "Break End"));
-            if (btnSignOut != null) btnSignOut.setOnClickListener(v -> checkLocationAndProceed("sign_out", "Sign Out"));
-            if (btnViewHistory != null) btnViewHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
-            if (btnLogout != null) btnLogout.setOnClickListener(v -> logout());
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        btnSignIn.setOnClickListener(v -> checkLocationAndProceed("sign_in", "Sign In"));
+        btnBreakStart.setOnClickListener(v -> checkLocationAndProceed("break_start", "Break Start"));
+        btnBreakEnd.setOnClickListener(v -> checkLocationAndProceed("break_end", "Break End"));
+        btnSignOut.setOnClickListener(v -> checkLocationAndProceed("sign_out", "Sign Out"));
+        btnViewHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
+        btnLogout.setOnClickListener(v -> logout());
+    }
+    
+    private void translateUI() {
+        String lang = TranslationHelper.getCurrentLanguage();
+        
+        // Translate status text
+        if (lang.equals("en")) {
+            tvStatus.setText("Ready");
+            btnSignIn.setText("SIGN IN");
+            btnBreakStart.setText("BREAK START");
+            btnBreakEnd.setText("BREAK END");
+            btnSignOut.setText("SIGN OUT");
+            btnViewHistory.setText("HISTORY");
+            btnLogout.setText("LOGOUT");
+        } else {
+            TranslationHelper.translateText("Ready", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { tvStatus.setText(translated); }
+                @Override public void onError(String error) { tvStatus.setText("Ready"); }
+            });
+            TranslationHelper.translateText("SIGN IN", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { btnSignIn.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("BREAK START", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { btnBreakStart.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("BREAK END", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { btnBreakEnd.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("SIGN OUT", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { btnSignOut.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("HISTORY", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { btnViewHistory.setText(translated); }
+                @Override public void onError(String error) {}
+            });
+            TranslationHelper.translateText("LOGOUT", new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { btnLogout.setText(translated); }
+                @Override public void onError(String error) {}
+            });
         }
     }
     
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Refresh UI if needed
-    }
-    
     private void checkLocationAndProceed(String eventType, String eventName) {
+        // First check if permission is granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Location permission required!", Toast.LENGTH_LONG).show();
+            String msg = "Location permission required! Please enable location.";
+            String lang = TranslationHelper.getCurrentLanguage();
+            if (lang.equals("en")) {
+                Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+            } else {
+                TranslationHelper.translateText(msg, new TranslationHelper.TranslationCallback() {
+                    @Override public void onSuccess(String translated) { Toast.makeText(KitchenActivity.this, translated, Toast.LENGTH_LONG).show(); }
+                    @Override public void onError(String error) { Toast.makeText(KitchenActivity.this, msg, Toast.LENGTH_LONG).show(); }
+                });
+            }
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
             return;
         }
         
-        if (tvStatus != null) tvStatus.setText("Checking location...");
+        // Show checking status
+        String checkingMsg = "Checking location...";
+        String lang = TranslationHelper.getCurrentLanguage();
+        if (lang.equals("en")) {
+            tvStatus.setText(checkingMsg);
+        } else {
+            TranslationHelper.translateText(checkingMsg, new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { tvStatus.setText(translated); }
+                @Override public void onError(String error) { tvStatus.setText(checkingMsg); }
+            });
+        }
         
         LocationRequest locationRequest = new LocationRequest.Builder(10000)
             .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
@@ -112,8 +163,23 @@ public class KitchenActivity extends BaseActivity {
                     currentAddress = "Lat: " + currentLatitude + ", Lon: " + currentLongitude;
                     validateLocationWithApi(eventType, eventName);
                 } else {
-                    if (tvStatus != null) tvStatus.setText("Cannot get location. Please try again.");
-                    Toast.makeText(KitchenActivity.this, "Cannot get location", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Cannot get location. Please try again.";
+                    String lang = TranslationHelper.getCurrentLanguage();
+                    if (lang.equals("en")) {
+                        tvStatus.setText(errorMsg);
+                        Toast.makeText(KitchenActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                    } else {
+                        TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
+                            @Override public void onSuccess(String translated) { 
+                                tvStatus.setText(translated);
+                                Toast.makeText(KitchenActivity.this, translated, Toast.LENGTH_SHORT).show();
+                            }
+                            @Override public void onError(String error) { 
+                                tvStatus.setText(errorMsg);
+                                Toast.makeText(KitchenActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                 }
             }
         };
@@ -132,16 +198,39 @@ public class KitchenActivity extends BaseActivity {
                     if (response.isSuccessful() && response.body() != null && response.body().isWithinLocation()) {
                         recordAttendance(eventType, eventName);
                     } else {
-                        String errorMsg = "You are NOT at the work location!";
-                        if (tvStatus != null) tvStatus.setText(errorMsg);
-                        Toast.makeText(KitchenActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                        String errorMsg = "You are NOT at the work location! You must be at Al Farooj Al Shami Restaurant to sign in/out.";
+                        String lang = TranslationHelper.getCurrentLanguage();
+                        if (lang.equals("en")) {
+                            tvStatus.setText(errorMsg);
+                            Toast.makeText(KitchenActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                        } else {
+                            TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
+                                @Override public void onSuccess(String translated) { 
+                                    tvStatus.setText(translated);
+                                    Toast.makeText(KitchenActivity.this, translated, Toast.LENGTH_LONG).show();
+                                }
+                                @Override public void onError(String error) { 
+                                    tvStatus.setText(errorMsg);
+                                    Toast.makeText(KitchenActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
                     }
                 }
                 
                 @Override
                 public void onFailure(Call<LocationResponse> call, Throwable t) {
-                    if (tvStatus != null) tvStatus.setText("Location validation failed: " + t.getMessage());
-                    Toast.makeText(KitchenActivity.this, "Location validation failed", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Location validation failed: " + t.getMessage();
+                    String lang = TranslationHelper.getCurrentLanguage();
+                    if (lang.equals("en")) {
+                        tvStatus.setText(errorMsg);
+                        Toast.makeText(KitchenActivity.this, "Location validation failed", Toast.LENGTH_SHORT).show();
+                    } else {
+                        TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
+                            @Override public void onSuccess(String translated) { tvStatus.setText(translated); }
+                            @Override public void onError(String error) { tvStatus.setText(errorMsg); }
+                        });
+                    }
                 }
             });
     }
@@ -157,19 +246,51 @@ public class KitchenActivity extends BaseActivity {
                 @Override
                 public void onResponse(Call<AttendanceResponse> call, Response<AttendanceResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        String msg = eventName + " recorded successfully";
-                        if (tvStatus != null) tvStatus.setText(msg);
-                        Toast.makeText(KitchenActivity.this, eventName + " Success!", Toast.LENGTH_SHORT).show();
+                        String successMsg = eventName + " recorded successfully!";
+                        String lang = TranslationHelper.getCurrentLanguage();
+                        if (lang.equals("en")) {
+                            tvStatus.setText(successMsg);
+                            Toast.makeText(KitchenActivity.this, eventName + " Success!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            TranslationHelper.translateText(successMsg, new TranslationHelper.TranslationCallback() {
+                                @Override public void onSuccess(String translated) { 
+                                    tvStatus.setText(translated);
+                                    Toast.makeText(KitchenActivity.this, translated, Toast.LENGTH_SHORT).show();
+                                }
+                                @Override public void onError(String error) { 
+                                    tvStatus.setText(successMsg);
+                                    Toast.makeText(KitchenActivity.this, eventName + " Success!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
                     } else {
-                        if (tvStatus != null) tvStatus.setText("Failed to record " + eventName);
-                        Toast.makeText(KitchenActivity.this, "Failed to record!", Toast.LENGTH_SHORT).show();
+                        String errorMsg = "Failed to record " + eventName;
+                        String lang = TranslationHelper.getCurrentLanguage();
+                        if (lang.equals("en")) {
+                            tvStatus.setText(errorMsg);
+                            Toast.makeText(KitchenActivity.this, "Failed to record!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
+                                @Override public void onSuccess(String translated) { tvStatus.setText(translated); }
+                                @Override public void onError(String error) { tvStatus.setText(errorMsg); }
+                            });
+                        }
                     }
                 }
                 
                 @Override
                 public void onFailure(Call<AttendanceResponse> call, Throwable t) {
-                    if (tvStatus != null) tvStatus.setText("Network error: " + t.getMessage());
-                    Toast.makeText(KitchenActivity.this, "Network error!", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Network error: " + t.getMessage();
+                    String lang = TranslationHelper.getCurrentLanguage();
+                    if (lang.equals("en")) {
+                        tvStatus.setText(errorMsg);
+                        Toast.makeText(KitchenActivity.this, "Network error!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
+                            @Override public void onSuccess(String translated) { tvStatus.setText(translated); }
+                            @Override public void onError(String error) { tvStatus.setText(errorMsg); }
+                        });
+                    }
                 }
             });
     }
@@ -179,9 +300,27 @@ public class KitchenActivity extends BaseActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+                String msg = "Location permission granted";
+                String lang = TranslationHelper.getCurrentLanguage();
+                if (lang.equals("en")) {
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                } else {
+                    TranslationHelper.translateText(msg, new TranslationHelper.TranslationCallback() {
+                        @Override public void onSuccess(String translated) { Toast.makeText(KitchenActivity.this, translated, Toast.LENGTH_SHORT).show(); }
+                        @Override public void onError(String error) { Toast.makeText(KitchenActivity.this, msg, Toast.LENGTH_SHORT).show(); }
+                    });
+                }
             } else {
-                Toast.makeText(this, "Location permission required to sign in/out!", Toast.LENGTH_LONG).show();
+                String msg = "Location permission required to sign in/out!";
+                String lang = TranslationHelper.getCurrentLanguage();
+                if (lang.equals("en")) {
+                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                } else {
+                    TranslationHelper.translateText(msg, new TranslationHelper.TranslationCallback() {
+                        @Override public void onSuccess(String translated) { Toast.makeText(KitchenActivity.this, translated, Toast.LENGTH_LONG).show(); }
+                        @Override public void onError(String error) { Toast.makeText(KitchenActivity.this, msg, Toast.LENGTH_LONG).show(); }
+                    });
+                }
             }
         }
     }
