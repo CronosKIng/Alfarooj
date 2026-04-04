@@ -61,7 +61,7 @@ public class DesktopLauncher {
         frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
         
         statusLabel = new JLabel("Ready");
-        statusLabel.setBorder(new EmptyBorder(5, 10, 5, 10));
+        statusLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         frame.getContentPane().add(statusLabel, BorderLayout.SOUTH);
         
         cardLayout.show(mainPanel, "login");
@@ -203,14 +203,12 @@ public class DesktopLauncher {
         topPanel.add(infoPanel, BorderLayout.EAST);
         panel.add(topPanel, BorderLayout.NORTH);
         
-        // Center panel with welcome message
         JPanel centerPanel = new JPanel(new GridBagLayout());
-        JLabel welcomeLabel = new JLabel();
+        JLabel welcomeLabel = new JLabel("Welcome!");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 18));
         centerPanel.add(welcomeLabel);
         panel.add(centerPanel, BorderLayout.CENTER);
         
-        // Store reference to update later
         panel.putClientProperty("welcomeLabel", welcomeLabel);
         
         return panel;
@@ -219,9 +217,10 @@ public class DesktopLauncher {
     private void updateDashboard() {
         Component[] components = mainPanel.getComponents();
         for (Component comp : components) {
-            if (comp instanceof JPanel && ((JPanel) comp).getClientProperty("welcomeLabel") != null) {
-                JLabel welcomeLabel = (JLabel) ((JPanel) comp).getClientProperty("welcomeLabel");
-                if (welcomeLabel != null) {
+            if (comp instanceof JPanel) {
+                Object prop = ((JPanel) comp).getClientProperty("welcomeLabel");
+                if (prop instanceof JLabel) {
+                    JLabel welcomeLabel = (JLabel) prop;
                     welcomeLabel.setText("Welcome " + currentFullName + "!");
                 }
             }
