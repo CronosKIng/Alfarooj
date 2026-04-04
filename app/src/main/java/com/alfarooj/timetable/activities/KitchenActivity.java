@@ -43,15 +43,7 @@ public class KitchenActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        try {
-            setContentView(R.layout.activity_kitchen);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error loading layout: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
+        setContentView(R.layout.activity_kitchen);
 
         try {
             session = new SessionManager(this);
@@ -84,64 +76,16 @@ public class KitchenActivity extends BaseActivity {
             if (btnViewHistory != null) btnViewHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
             if (btnLogout != null) btnLogout.setOnClickListener(v -> logout());
             
-            translateUI();
-            
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
     
-    private void translateUI() {
-        try {
-            String lang = TranslationHelper.getCurrentLanguage();
-            if (lang.equals("en")) {
-                if (tvWelcome != null) tvWelcome.setText("WELCOME KITCHEN - " + session.getFullName());
-                if (tvStatus != null) tvStatus.setText("Ready to sign in");
-                if (btnSignIn != null) btnSignIn.setText("SIGN IN");
-                if (btnBreakStart != null) btnBreakStart.setText("BREAK START");
-                if (btnBreakEnd != null) btnBreakEnd.setText("BREAK END");
-                if (btnSignOut != null) btnSignOut.setText("SIGN OUT");
-                if (btnViewHistory != null) btnViewHistory.setText("HISTORY");
-                if (btnLogout != null) btnLogout.setText("LOGOUT");
-                return;
-            }
-            
-            TranslationHelper.translateText("WELCOME KITCHEN - " + session.getFullName(), new TranslationHelper.TranslationCallback() {
-                @Override public void onSuccess(String translated) { if (tvWelcome != null) tvWelcome.setText(translated); }
-                @Override public void onError(String error) {}
-            });
-            TranslationHelper.translateText("Ready to sign in", new TranslationHelper.TranslationCallback() {
-                @Override public void onSuccess(String translated) { if (tvStatus != null) tvStatus.setText(translated); }
-                @Override public void onError(String error) {}
-            });
-            TranslationHelper.translateText("SIGN IN", new TranslationHelper.TranslationCallback() {
-                @Override public void onSuccess(String translated) { if (btnSignIn != null) btnSignIn.setText(translated); }
-                @Override public void onError(String error) {}
-            });
-            TranslationHelper.translateText("BREAK START", new TranslationHelper.TranslationCallback() {
-                @Override public void onSuccess(String translated) { if (btnBreakStart != null) btnBreakStart.setText(translated); }
-                @Override public void onError(String error) {}
-            });
-            TranslationHelper.translateText("BREAK END", new TranslationHelper.TranslationCallback() {
-                @Override public void onSuccess(String translated) { if (btnBreakEnd != null) btnBreakEnd.setText(translated); }
-                @Override public void onError(String error) {}
-            });
-            TranslationHelper.translateText("SIGN OUT", new TranslationHelper.TranslationCallback() {
-                @Override public void onSuccess(String translated) { if (btnSignOut != null) btnSignOut.setText(translated); }
-                @Override public void onError(String error) {}
-            });
-            TranslationHelper.translateText("HISTORY", new TranslationHelper.TranslationCallback() {
-                @Override public void onSuccess(String translated) { if (btnViewHistory != null) btnViewHistory.setText(translated); }
-                @Override public void onError(String error) {}
-            });
-            TranslationHelper.translateText("LOGOUT", new TranslationHelper.TranslationCallback() {
-                @Override public void onSuccess(String translated) { if (btnLogout != null) btnLogout.setText(translated); }
-                @Override public void onError(String error) {}
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh UI if needed
     }
     
     private void checkLocationAndProceed(String eventType, String eventName) {
