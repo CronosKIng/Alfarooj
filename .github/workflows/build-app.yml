@@ -28,12 +28,19 @@ jobs:
         javac -cp "lib\gson-2.10.1.jar" -d . DesktopApp.java
         jar cvfe AlfarooqDesktop.jar DesktopApp *.class
 
+    - name: Download launch4j (official release)
+      shell: pwsh
+      run: |
+        # Download from official launch4j website
+        $url = "https://liquidtelecom.dl.sourceforge.net/project/launch4j/launch4j-3/3.50/launch4j-3.50-win32.zip"
+        Invoke-WebRequest -Uri $url -OutFile "launch4j.zip"
+        Expand-Archive -Path launch4j.zip -DestinationPath launch4j -Force
+        # Verify download
+        Get-ChildItem launch4j
+
     - name: Create EXE with launch4j
       shell: pwsh
       run: |
-        Invoke-WebRequest -Uri "https://github.com/lukaszgryglicki/launch4j/releases/download/3.50/launch4j-3.50-win32.zip" -OutFile "launch4j.zip"
-        Expand-Archive -Path launch4j.zip -DestinationPath launch4j -Force
-        
         $config = @'
         <?xml version="1.0" encoding="UTF-8"?>
         <launch4jConfig>
@@ -52,7 +59,6 @@ jobs:
         </launch4jConfig>
         '@
         $config | Out-File -FilePath launch4j.xml -Encoding UTF8
-        
         .\launch4j\launch4j.exe launch4j.xml
 
     - name: Upload artifacts
