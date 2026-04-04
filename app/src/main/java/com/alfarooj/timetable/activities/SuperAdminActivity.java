@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,8 +43,6 @@ public class SuperAdminActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private ArrayList<User> userList;
     private ArrayList<AttendanceLog> logList;
-    private List<String> languageCodes = new ArrayList<>();
-    private List<String> languageNames = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +97,6 @@ public class SuperAdminActivity extends BaseActivity {
             });
 
             loadUsers();
-            setupLanguages();
             translateNavigationMenu();
             translateTitle();
             
@@ -130,29 +128,6 @@ public class SuperAdminActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
     
-    private void setupLanguages() {
-        languageCodes.add("en"); languageNames.add("English");
-        languageCodes.add("sw"); languageNames.add("Kiswahili");
-        languageCodes.add("ar"); languageNames.add("Arabic");
-        languageCodes.add("fr"); languageNames.add("French");
-        languageCodes.add("es"); languageNames.add("Spanish");
-        languageCodes.add("de"); languageNames.add("German");
-        languageCodes.add("it"); languageNames.add("Italian");
-        languageCodes.add("pt"); languageNames.add("Portuguese");
-        languageCodes.add("ru"); languageNames.add("Russian");
-        languageCodes.add("zh"); languageNames.add("Chinese");
-        languageCodes.add("ja"); languageNames.add("Japanese");
-        languageCodes.add("ko"); languageNames.add("Korean");
-        languageCodes.add("hi"); languageNames.add("Hindi");
-        languageCodes.add("tr"); languageNames.add("Turkish");
-        languageCodes.add("nl"); languageNames.add("Dutch");
-        languageCodes.add("el"); languageNames.add("Greek");
-        languageCodes.add("vi"); languageNames.add("Vietnamese");
-        languageCodes.add("th"); languageNames.add("Thai");
-        languageCodes.add("pl"); languageNames.add("Polish");
-        languageCodes.add("uk"); languageNames.add("Ukrainian");
-    }
-    
     private void translateTitle() {
         String lang = TranslationHelper.getCurrentLanguage();
         if (lang.equals("en")) {
@@ -177,7 +152,6 @@ public class SuperAdminActivity extends BaseActivity {
         Menu menu = navigationView.getMenu();
         String lang = TranslationHelper.getCurrentLanguage();
         
-        // Menu items original text
         String[] menuItems = {
             "Today's Attendance", "All History", "Kitchen History", 
             "Waiter History", "Delivery History", "Manager History",
@@ -223,7 +197,6 @@ public class SuperAdminActivity extends BaseActivity {
         String lang = TranslationHelper.getCurrentLanguage();
         String dialogTitle = role.equals("admin") ? "Create Admin" : "Create User";
         
-        // Translate dialog labels and hints
         if (lang.equals("en")) {
             if (tvFullNameLabel != null) tvFullNameLabel.setText("Full Name");
             if (tvUsernameLabel != null) tvUsernameLabel.setText("Username");
