@@ -1,6 +1,5 @@
 package com.alfarooj.timetable.activities;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,7 +31,6 @@ public class AdminActivity extends BaseActivity {
     private DatabaseHelper db;
     private SessionManager session;
     private ArrayList<User> userList;
-    private AlertDialog createUserDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +87,6 @@ public class AdminActivity extends BaseActivity {
     private void translateUI() {
         String lang = TranslationHelper.getCurrentLanguage();
         
-        // Translate Title
         if (lang.equals("en")) {
             if (getSupportActionBar() != null) getSupportActionBar().setTitle("Admin Dashboard");
             tvTitle.setText("ADMIN DASHBOARD");
@@ -121,7 +118,6 @@ public class AdminActivity extends BaseActivity {
             });
         }
         
-        // Translate Users List title
         TextView tvUsersList = findViewById(R.id.tvUsersList);
         if (tvUsersList != null) {
             if (lang.equals("en")) {
@@ -153,7 +149,6 @@ public class AdminActivity extends BaseActivity {
 
         String lang = TranslationHelper.getCurrentLanguage();
         
-        // Translate dialog labels
         if (lang.equals("en")) {
             if (tvFullNameLabel != null) tvFullNameLabel.setText("Full Name");
             if (tvUsernameLabel != null) tvUsernameLabel.setText("Username");
@@ -193,9 +188,8 @@ public class AdminActivity extends BaseActivity {
             });
         }
 
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         
-        // Translate dialog title
         if (lang.equals("en")) {
             builder.setTitle("Create User");
         } else {
@@ -207,7 +201,6 @@ public class AdminActivity extends BaseActivity {
         
         builder.setView(dialogView);
         
-        // Translate Create button
         if (lang.equals("en")) {
             builder.setPositiveButton("Create", null);
         } else {
@@ -217,7 +210,6 @@ public class AdminActivity extends BaseActivity {
             });
         }
         
-        // Translate Cancel button
         if (lang.equals("en")) {
             builder.setNegativeButton("Cancel", null);
         } else {
@@ -227,7 +219,7 @@ public class AdminActivity extends BaseActivity {
             });
         }
         
-        androidx.appcompat.app.AlertDialog dialog = builder.create();
+        AlertDialog dialog = builder.create();
         
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
