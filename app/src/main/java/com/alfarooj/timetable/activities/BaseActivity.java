@@ -37,6 +37,7 @@ public class BaseActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         LanguageUtils.applyLanguage(this);
+        TranslationHelper.loadLanguage(this);
     }
     
     protected void setupLanguages() {
@@ -73,7 +74,7 @@ public class BaseActivity extends AppCompatActivity {
             TranslationHelper.setCurrentLanguage(selectedCode);
             TranslationHelper.saveLanguage(this, selectedCode);
             Toast.makeText(this, "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
-            recreate();
+            recreate(); // Recreate current activity to apply language
         });
         builder.show();
     }

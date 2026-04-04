@@ -93,6 +93,15 @@ public class SuperAdminActivity extends BaseActivity {
         });
 
         loadUsers();
+        translateTitle();
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        translateTitle();
+        // Reload navigation menu translations
+        invalidateOptionsMenu();
     }
     
     @Override
@@ -108,6 +117,26 @@ public class SuperAdminActivity extends BaseActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    
+    private void translateTitle() {
+        String targetLang = TranslationHelper.getCurrentLanguage();
+        if (targetLang.equals("en")) {
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Super Admin Dashboard");
+            }
+            return;
+        }
+        TranslationHelper.translateText("Super Admin Dashboard", new TranslationHelper.TranslationCallback() {
+            @Override
+            public void onSuccess(String translated) {
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle(translated);
+                }
+            }
+            @Override
+            public void onError(String error) {}
+        });
     }
 
     private void showCreateUserDialog(String role) {
