@@ -1,0 +1,60 @@
+name: Build Desktop App (EXE & JAR)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest  # Tunatumia Windows ili kurahisisha utengenezaji wa EXE
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Build Application
+      run: |
+        mkdir -p desktop/lib
+        # Download Gson
+        curl -L https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar -o desktop/lib/gson-2.10.1.jar
+        
+        # Compile
+        cd desktop
+        javac -cp "lib/gson-2.10.1.jar" -d . DesktopApp.java
+        
+        # Create JAR
+        jar cvfe AlfarooqDesktop.jar DesktopApp *.class lib/
+        
+    - name: Convert JAR to EXE (Using Launch4j)
+      uses: fxtentacle/launch4j-action@v2
+      with:
+        args: |
+          <launch4jConfig>
+            <dontWrapJar>false</dontWrapJar>
+            <headerType>gui</headerType>
+            <jar>desktop/AlfarooqDesktop.jar</jar>
+            <outfile>desktop/AlfarooqApp.exe</outfile>
+            <classPath>
+              <mainClass>DesktopApp</mainClass>
+              <cp>lib/*.jar</cp>
+            </classPath>
+            <jre>
+              <path>%JAVA_HOME%</path>
+              <minVersion>17</minVersion>
+            </jre>
+          </launch4jConfig>
+
+    - name: Upload EXE and JAR
+      uses: actions/upload-artifact@v4
+      with:
+        name: Alfarooq-Desktop-Files
+        path: |
+          desktop/AlfarooqApp.exe
+          desktop/AlfarooqDesktop.jar
