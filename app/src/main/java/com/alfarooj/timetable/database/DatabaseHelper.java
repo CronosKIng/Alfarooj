@@ -129,6 +129,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("location", location);
         values.put("latitude", latitude);
         values.put("longitude", longitude);
+        // Use UAE time from TimeHelper
         values.put("timestamp", TimeHelper.getCurrentDateTime());
         long result = db.insert("attendance_logs", null, values);
         db.close();
