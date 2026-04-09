@@ -64,7 +64,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             Toast.makeText(context, "Password for " + user.getUsername() + " is hidden", Toast.LENGTH_LONG).show();
         });
 
-        holder.btnDelete.setOnClickListener(v -> {
+        holder.btnEdit, btnDelete.setOnClickListener(v -> {
             Toast.makeText(context, "Deleting user...", Toast.LENGTH_SHORT).show();
             
             ApiClient.getApiService().deleteUser(user.getId())
@@ -97,7 +97,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvFullName, tvUsername, tvPassword, tvDepartment, tvRole;
         ImageButton btnShowPassword;
-        Button btnDelete;
+        Button btnEdit, btnDelete;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -107,7 +107,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             tvDepartment = itemView.findViewById(R.id.tvDepartment);
             tvRole = itemView.findViewById(R.id.tvRole);
             btnShowPassword = itemView.findViewById(R.id.btnShowPassword);
-            btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnEdit, btnDelete = itemView.findViewById(R.id.btnEdit, btnDelete);
         }
     }
 }

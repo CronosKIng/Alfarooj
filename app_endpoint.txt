@@ -1,0 +1,29 @@
+
+@app.route('/api/update_user_department', methods=['POST'])
+def update_user_department():
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        department = data.get('department')
+        
+        if not user_id or not department:
+            return jsonify({'success': False, 'message': 'User ID and department required'}), 400
+        
+        valid_departments = ['kitchen', 'waiter', 'delivery', 'manager']
+        if department not in valid_departments:
+            return jsonify({'success': False, 'message': 'Invalid department'}), 400
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET department = ? WHERE id = ?", (department, user_id))
+        conn.commit()
+        affected = cursor.rowcount
+        conn.close()
+        
+        if affected > 0:
+            return jsonify({'success': True, 'message': 'Department updated successfully'})
+        else:
+            return jsonify({'success': False, 'message': 'User not found'}), 404
+            
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
