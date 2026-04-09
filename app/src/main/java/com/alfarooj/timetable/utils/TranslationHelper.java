@@ -43,14 +43,19 @@ public class TranslationHelper {
     }
     
     public static void translateText(String text, TranslationCallback callback) {
+        if (text == null || text.isEmpty()) {
+            if (callback != null) callback.onSuccess(text);
+            return;
+        }
+        
         if (currentLanguage.equals("en")) {
-            callback.onSuccess(text);
+            if (callback != null) callback.onSuccess(text);
             return;
         }
         
         String cacheKey = text + "_" + currentLanguage;
         if (translationCache.containsKey(cacheKey)) {
-            callback.onSuccess(translationCache.get(cacheKey));
+            if (callback != null) callback.onSuccess(translationCache.get(cacheKey));
             return;
         }
         
@@ -61,28 +66,72 @@ public class TranslationHelper {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         String translated = response.body().getTranslated();
                         translationCache.put(cacheKey, translated);
-                        callback.onSuccess(translated);
+                        if (callback != null) callback.onSuccess(translated);
                     } else {
-                        callback.onError("Translation failed");
+                        if (callback != null) callback.onError("Translation failed");
                     }
                 }
                 
                 @Override
                 public void onFailure(Call<TranslateResponse> call, Throwable t) {
-                    callback.onError(t.getMessage());
+                    if (callback != null) callback.onError(t.getMessage());
                 }
             });
     }
     
     public static void translateTextView(TextView textView, String originalText) {
+        if (textView == null) return;
+        
         translateText(originalText, new TranslationCallback() {
             @Override
             public void onSuccess(String translatedText) {
-                textView.setText(translatedText);
+                if (textView != null) {
+                    textView.setText(translatedText);
+                }
             }
             @Override
             public void onError(String error) {
-                textView.setText(originalText);
+                if (textView != null) {
+                    textView.setText(originalText);
+                }
+            }
+        });
+    }
+    
+    public static void translateButtonText(android.widget.Button button, String originalText) {
+        if (button == null) return;
+        
+        translateText(originalText, new TranslationCallback() {
+            @Override
+            public void onSuccess(String translatedText) {
+                if (button != null) {
+                    button.setText(translatedText);
+                }
+            }
+            @Override
+            public void onError(String error) {
+                if (button != null) {
+                    button.setText(originalText);
+                }
+            }
+        });
+    }
+    
+    public static void translateHint(TextView textView, String originalHint) {
+        if (textView == null) return;
+        
+        translateText(originalHint, new TranslationCallback() {
+            @Override
+            public void onSuccess(String translatedText) {
+                if (textView != null) {
+                    textView.setHint(translatedText);
+                }
+            }
+            @Override
+            public void onError(String error) {
+                if (textView != null) {
+                    textView.setHint(originalHint);
+                }
             }
         });
     }
