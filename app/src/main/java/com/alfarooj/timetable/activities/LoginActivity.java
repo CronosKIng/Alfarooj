@@ -6,10 +6,13 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -20,7 +23,10 @@ import com.alfarooj.timetable.models.LoginRequest;
 import com.alfarooj.timetable.models.LoginResponse;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.utils.SessionManager;
+import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
+import java.util.ArrayList;
+import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -29,11 +35,14 @@ public class LoginActivity extends BaseActivity {
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ImageButton btnTogglePassword;
-    private TextView tvError;
+    private TextView tvError, tvTitle, tvSubtitle, tvUsernameLabel, tvPasswordLabel, tvLanguageLabel;
     private ImageView ivLogo;
+    private Spinner spinnerLanguage;
     private SessionManager session;
     private boolean isPasswordVisible = false;
     private static final int LOCATION_PERMISSION_REQUEST = 100;
+    private List<String> languageCodes = new ArrayList<>();
+    private List<String> languageNames = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +62,15 @@ public class LoginActivity extends BaseActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnTogglePassword = findViewById(R.id.btnTogglePassword);
         tvError = findViewById(R.id.tvError);
+        tvTitle = findViewById(R.id.tvTitle);
+        tvSubtitle = findViewById(R.id.tvSubtitle);
+        tvUsernameLabel = findViewById(R.id.tvUsernameLabel);
+        tvPasswordLabel = findViewById(R.id.tvPasswordLabel);
+        tvLanguageLabel = findViewById(R.id.tvLanguageLabel);
+        spinnerLanguage = findViewById(R.id.spinnerLanguage);
+
+        setupLanguages();
+        setupLanguageSpinner();
 
         btnTogglePassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
@@ -126,6 +144,49 @@ public class LoginActivity extends BaseActivity {
                         tvError.setVisibility(View.VISIBLE);
                     }
                 });
+        });
+    }
+    
+    private void setupLanguages() {
+        languageCodes.add("en"); languageNames.add("English");
+        languageCodes.add("sw"); languageNames.add("Kiswahili");
+        languageCodes.add("ar"); languageNames.add("Arabic");
+        languageCodes.add("fr"); languageNames.add("French");
+        languageCodes.add("es"); languageNames.add("Spanish");
+        languageCodes.add("de"); languageNames.add("German");
+        languageCodes.add("it"); languageNames.add("Italian");
+        languageCodes.add("pt"); languageNames.add("Portuguese");
+        languageCodes.add("ru"); languageNames.add("Russian");
+        languageCodes.add("zh"); languageNames.add("Chinese");
+        languageCodes.add("ja"); languageNames.add("Japanese");
+        languageCodes.add("ko"); languageNames.add("Korean");
+        languageCodes.add("hi"); languageNames.add("Hindi");
+    }
+    
+    private void setupLanguageSpinner() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, languageNames);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerLanguage.setAdapter(adapter);
+        
+        String savedLang = TranslationHelper.getCurrentLanguage();
+        int position = languageCodes.indexOf(savedLang);
+        if (position >= 0) {
+            spinnerLanguage.setSelection(position);
+        }
+        
+        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String newLang = languageCodes.get(position);
+                if (!newLang.equals(TranslationHelper.getCurrentLanguage())) {
+                    TranslationHelper.setCurrentLanguage(newLang);
+                    TranslationHelper.saveLanguage(LoginActivity.this, newLang);
+                    Toast.makeText(LoginActivity.this, "Language changed to " + languageNames.get(position), Toast.LENGTH_SHORT).show();
+                    recreate();
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
