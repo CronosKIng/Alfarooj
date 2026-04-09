@@ -26,6 +26,7 @@
         <activity android:name=".activities.DeliveryActivity" android:exported="false" />
         <activity android:name=".activities.ManagerActivity" android:exported="false" />
         <activity android:name=".activities.HistoryActivity" android:exported="false" />
+        <activity android:name=".activities.EditUserActivity" android:exported="false" />
 
     </application>
 </manifest>

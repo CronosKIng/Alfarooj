@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.LocaleList;
+import androidx.appcompat.app.AppCompatDelegate;
 import java.util.Locale;
 
 public class LanguageUtils {
@@ -39,13 +40,5 @@ public class LanguageUtils {
     public static void applyLanguage(Context context) {
         String code = getSavedLanguage(context);
         setLocale(context, code);
-    }
-
-    public static String[] getAllLanguages() {
-        return new String[]{"English", "Kiswahili", "Arabic"};
-    }
-
-    public static String[] getAllLanguageCodes() {
-        return new String[]{"en", "sw", "ar"};
     }
 }

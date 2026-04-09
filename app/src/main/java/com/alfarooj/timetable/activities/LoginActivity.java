@@ -22,11 +22,13 @@ import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.LoginRequest;
 import com.alfarooj.timetable.models.LoginResponse;
 import com.alfarooj.timetable.models.User;
+import com.alfarooj.timetable.utils.LanguageUtils;
 import com.alfarooj.timetable.utils.SessionManager;
 import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -148,6 +150,8 @@ public class LoginActivity extends BaseActivity {
     }
     
     protected void setupLanguages() {
+        languageCodes.clear();
+        languageNames.clear();
         languageCodes.add("en"); languageNames.add("English");
         languageCodes.add("sw"); languageNames.add("Kiswahili");
         languageCodes.add("ar"); languageNames.add("Arabic");
@@ -181,6 +185,7 @@ public class LoginActivity extends BaseActivity {
                 if (!newLang.equals(TranslationHelper.getCurrentLanguage())) {
                     TranslationHelper.setCurrentLanguage(newLang);
                     TranslationHelper.saveLanguage(LoginActivity.this, newLang);
+                    LanguageUtils.setLocale(LoginActivity.this, newLang);
                     Toast.makeText(LoginActivity.this, "Language changed to " + languageNames.get(position), Toast.LENGTH_SHORT).show();
                     recreate();
                 }
