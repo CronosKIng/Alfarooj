@@ -1,6 +1,7 @@
 package com.alfarooj.timetable.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
+import com.alfarooj.timetable.activities.EditUserActivity;
 import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.DeleteUserResponse;
 import com.alfarooj.timetable.models.User;
@@ -63,8 +65,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         holder.btnShowPassword.setOnClickListener(v -> {
             Toast.makeText(context, "Password for " + user.getUsername() + " is hidden", Toast.LENGTH_LONG).show();
         });
+        
+        holder.btnEdit.setOnClickListener(v -> {
+            Intent intent = new Intent(context, EditUserActivity.class);
+            intent.putExtra("user", user);
+            context.startActivity(intent);
+        });
 
-        holder.btnEdit, btnDelete.setOnClickListener(v -> {
+        holder.btnDelete.setOnClickListener(v -> {
             Toast.makeText(context, "Deleting user...", Toast.LENGTH_SHORT).show();
             
             ApiClient.getApiService().deleteUser(user.getId())
@@ -107,7 +115,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             tvDepartment = itemView.findViewById(R.id.tvDepartment);
             tvRole = itemView.findViewById(R.id.tvRole);
             btnShowPassword = itemView.findViewById(R.id.btnShowPassword);
-            btnEdit, btnDelete = itemView.findViewById(R.id.btnEdit, btnDelete);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
 }
