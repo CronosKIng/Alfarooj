@@ -46,7 +46,6 @@ public class SuperAdminActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private ArrayList<User> userList;
     private ArrayList<AttendanceLog> logList;
-    private String currentDepartmentFilter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -243,7 +242,6 @@ public class SuperAdminActivity extends BaseActivity {
 
     private void loadTodayAttendance() {
         setTitle("Today's Attendance");
-        currentDepartmentFilter = null;
         
         ApiClient.getApiService().getTodayAttendance()
             .enqueue(new Callback<AttendanceLogsResponse>() {
@@ -266,7 +264,6 @@ public class SuperAdminActivity extends BaseActivity {
 
     private void loadAllHistory() {
         setTitle("All History");
-        currentDepartmentFilter = null;
         
         ApiClient.getApiService().getAttendanceLogs(null)
             .enqueue(new Callback<AttendanceLogsResponse>() {
@@ -292,8 +289,8 @@ public class SuperAdminActivity extends BaseActivity {
             case "delivery": title = "Delivery History"; break;
             case "manager": title = "Manager History"; break;
         }
-        setTitle(title);
-        currentDepartmentFilter = department;
+        final String finalTitle = title;
+        setTitle(finalTitle);
         
         ApiClient.getApiService().getAttendanceLogs(department)
             .enqueue(new Callback<AttendanceLogsResponse>() {
@@ -302,7 +299,7 @@ public class SuperAdminActivity extends BaseActivity {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         logList = new ArrayList<>(response.body().getLogs());
                         if (logList.isEmpty()) {
-                            Toast.makeText(SuperAdminActivity.this, "No " + title + " records found", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SuperAdminActivity.this, "No " + finalTitle + " records found", Toast.LENGTH_SHORT).show();
                         }
                         showHistoryList();
                     }
