@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "alfarooj.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -45,9 +45,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "timestamp TEXT DEFAULT (datetime('now', 'localtime')))";
         db.execSQL(CREATE_ATTENDANCE_TABLE);
 
-        String INSERT_SUPER_ADMIN = "INSERT INTO users (full_name, username, password, role, department) VALUES " +
+        // Insert SUPER ADMIN
+        String INSERT_SUPER_ADMIN = "INSERT OR IGNORE INTO users (full_name, username, password, role, department) VALUES " +
             "('AL FAROOJ AL SHAMI', 'ALFAROOJ', '097321494', 'super_admin', 'admin')";
         db.execSQL(INSERT_SUPER_ADMIN);
+        
+        // Insert sample users for testing
+        db.execSQL("INSERT OR IGNORE INTO users (full_name, username, password, role, department) VALUES ('Kitchen Staff', 'kitchen', '1234', 'kitchen', 'kitchen')");
+        db.execSQL("INSERT OR IGNORE INTO users (full_name, username, password, role, department) VALUES ('Waiter Staff', 'waiter', '1234', 'waiter', 'waiter')");
+        db.execSQL("INSERT OR IGNORE INTO users (full_name, username, password, role, department) VALUES ('Delivery Staff', 'delivery', '1234', 'delivery', 'delivery')");
+        db.execSQL("INSERT OR IGNORE INTO users (full_name, username, password, role, department) VALUES ('Manager Staff', 'manager', '1234', 'manager', 'manager')");
     }
 
     @Override
@@ -137,13 +144,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public ArrayList<AttendanceLog> getAllAttendanceLogs() {
         ArrayList<AttendanceLog> logs = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs ORDER BY id DESC LIMIT 200", null);
+        String query = "SELECT * FROM attendance_logs ORDER BY id DESC LIMIT 200";
+        Cursor cursor = db.rawQuery(query, null);
+        
         while (cursor.moveToNext()) {
-            logs.add(new AttendanceLog(
+            AttendanceLog log = new AttendanceLog(
                 cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
                 cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7),
                 cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)
-            ));
+            );
+            logs.add(log);
         }
         cursor.close();
         db.close();
@@ -153,14 +163,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public ArrayList<AttendanceLog> getAttendanceLogsByDepartment(String department) {
         ArrayList<AttendanceLog> logs = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs WHERE department = ? ORDER BY id DESC LIMIT 200", 
-            new String[]{department});
+        String query = "SELECT * FROM attendance_logs WHERE department = ? ORDER BY id DESC LIMIT 200";
+        Cursor cursor = db.rawQuery(query, new String[]{department});
+        
         while (cursor.moveToNext()) {
-            logs.add(new AttendanceLog(
+            AttendanceLog log = new AttendanceLog(
                 cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
                 cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7),
                 cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)
-            ));
+            );
+            logs.add(log);
         }
         cursor.close();
         db.close();
@@ -171,14 +183,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ArrayList<AttendanceLog> logs = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         String todayDate = TimeHelper.getCurrentDate();
-        Cursor cursor = db.rawQuery("SELECT * FROM attendance_logs WHERE date(timestamp) = ? ORDER BY id DESC", 
-            new String[]{todayDate});
+        String query = "SELECT * FROM attendance_logs WHERE date(timestamp) = ? ORDER BY id DESC";
+        Cursor cursor = db.rawQuery(query, new String[]{todayDate});
+        
         while (cursor.moveToNext()) {
-            logs.add(new AttendanceLog(
+            AttendanceLog log = new AttendanceLog(
                 cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
                 cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7),
                 cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)
-            ));
+            );
+            logs.add(log);
         }
         cursor.close();
         db.close();
