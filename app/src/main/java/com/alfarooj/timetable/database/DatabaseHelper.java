@@ -45,7 +45,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "timestamp TEXT DEFAULT (datetime('now', 'localtime')))";
         db.execSQL(CREATE_ATTENDANCE_TABLE);
 
-        // Insert SUPER ADMIN
         String INSERT_SUPER_ADMIN = "INSERT INTO users (full_name, username, password, role, department) VALUES " +
             "('AL FAROOJ AL SHAMI', 'ALFAROOJ', '097321494', 'super_admin', 'admin')";
         db.execSQL(INSERT_SUPER_ADMIN);
@@ -129,7 +128,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("location", location);
         values.put("latitude", latitude);
         values.put("longitude", longitude);
-        // Use UAE time from TimeHelper
         values.put("timestamp", TimeHelper.getCurrentDateTime());
         long result = db.insert("attendance_logs", null, values);
         db.close();
