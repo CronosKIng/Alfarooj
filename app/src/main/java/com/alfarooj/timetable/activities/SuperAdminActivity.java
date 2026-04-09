@@ -19,20 +19,23 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alfarooj.timetable.adapters.UserAdapter;
 import com.alfarooj.timetable.adapters.LogAdapter;
-import com.alfarooj.timetable.database.DatabaseHelper;
+import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.models.AttendanceLog;
 import com.alfarooj.timetable.utils.SessionManager;
 import com.alfarooj.timetable.R;
 import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
+import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SuperAdminActivity extends BaseActivity {
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private Toolbar toolbar;
     private FrameLayout contentFrame;
-    private DatabaseHelper db;
     private SessionManager session;
     private RecyclerView recyclerView;
     private ArrayList<User> userList;
@@ -44,7 +47,6 @@ public class SuperAdminActivity extends BaseActivity {
         setContentView(R.layout.activity_super_admin);
 
         try {
-            db = new DatabaseHelper(this);
             session = new SessionManager(this);
 
             drawerLayout = findViewById(R.id.drawerLayout);
@@ -98,137 +100,151 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void showCreateUserDialog(String role) {
-        try {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(role.equals("admin") ? "Create Admin" : "Create User");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(role.equals("admin") ? "Create Admin" : "Create User");
 
-            View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
-            EditText etFullName = view.findViewById(R.id.etFullName);
-            EditText etUsername = view.findViewById(R.id.etUsername);
-            EditText etPassword = view.findViewById(R.id.etPassword);
-            Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
+        View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
+        EditText etFullName = view.findViewById(R.id.etFullName);
+        EditText etUsername = view.findViewById(R.id.etUsername);
+        EditText etPassword = view.findViewById(R.id.etPassword);
+        Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
 
-            String[] departments = {"kitchen", "waiter", "delivery", "manager"};
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departments);
-            spinnerDepartment.setAdapter(adapter);
+        String[] departments = {"kitchen", "waiter", "delivery", "manager"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departments);
+        spinnerDepartment.setAdapter(adapter);
 
-            builder.setView(view);
-            builder.setPositiveButton("Create", (dialog, which) -> {
-                String fullName = etFullName.getText().toString().trim();
-                String username = etUsername.getText().toString().trim();
-                String password = etPassword.getText().toString().trim();
-                String department = spinnerDepartment.getSelectedItem().toString();
+        builder.setView(view);
+        builder.setPositiveButton("Create", (dialog, which) -> {
+            String fullName = etFullName.getText().toString().trim();
+            String username = etUsername.getText().toString().trim();
+            String password = etPassword.getText().toString().trim();
+            String department = spinnerDepartment.getSelectedItem().toString();
 
-                if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+            if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                boolean success = db.createUser(fullName, username, password, role, department, session.getUserId());
-                if (success) {
-                    Toast.makeText(this, "User created successfully!", Toast.LENGTH_SHORT).show();
-                    loadUsers();
-                } else {
-                    Toast.makeText(this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
-                }
-            });
-            builder.setNegativeButton("Cancel", null);
-            builder.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            com.alfarooj.timetable.models.CreateUserRequest request = 
+                new com.alfarooj.timetable.models.CreateUserRequest(
+                    fullName, username, password, role, department, session.getUserId());
+            
+            ApiClient.getApiService().createUser(request)
+                .enqueue(new Callback<com.alfarooj.timetable.models.CreateUserResponse>() {
+                    @Override
+                    public void onResponse(Call<com.alfarooj.timetable.models.CreateUserResponse> call,
+                                           Response<com.alfarooj.timetable.models.CreateUserResponse> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
+                            loadUsers();
+                        } else {
+                            Toast.makeText(SuperAdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    
+                    @Override
+                    public void onFailure(Call<com.alfarooj.timetable.models.CreateUserResponse> call, Throwable t) {
+                        Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
     }
 
     private void loadUsers() {
-        try {
-            setTitle("Manage Users");
-            userList = db.getAllUsers();
-            
-            if (contentFrame.getChildCount() > 0) {
-                contentFrame.removeAllViews();
-            }
-            
-            View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
-            recyclerView = view.findViewById(R.id.recyclerView);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            
-            UserAdapter userAdapter = new UserAdapter(userList, this, () -> loadUsers());
-            recyclerView.setAdapter(userAdapter);
-            
-            contentFrame.addView(view);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error loading users: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        setTitle("Loading users...");
+        
+        ApiClient.getApiService().getUsers()
+            .enqueue(new Callback<com.alfarooj.timetable.models.UsersResponse>() {
+                @Override
+                public void onResponse(Call<com.alfarooj.timetable.models.UsersResponse> call,
+                                       Response<com.alfarooj.timetable.models.UsersResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        userList = new ArrayList<>();
+                        List<com.alfarooj.timetable.models.User> apiUsers = response.body().getUsers();
+                        for (com.alfarooj.timetable.models.User apiUser : apiUsers) {
+                            User localUser = new User(
+                                apiUser.getId(),
+                                apiUser.getFullName(),
+                                apiUser.getUsername(),
+                                "",
+                                apiUser.getRole(),
+                                apiUser.getDepartment(),
+                                0,
+                                ""
+                            );
+                            userList.add(localUser);
+                        }
+                        displayUsers();
+                        setTitle("Manage Users (" + userList.size() + " users)");
+                    } else {
+                        Toast.makeText(SuperAdminActivity.this, "Failed to load users", Toast.LENGTH_SHORT).show();
+                        setTitle("Manage Users - Error");
+                    }
+                }
+                
+                @Override
+                public void onFailure(Call<com.alfarooj.timetable.models.UsersResponse> call, Throwable t) {
+                    Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    setTitle("Manage Users - Network Error");
+                }
+            });
+    }
+    
+    private void displayUsers() {
+        if (contentFrame.getChildCount() > 0) {
+            contentFrame.removeAllViews();
         }
+        
+        View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        
+        UserAdapter userAdapter = new UserAdapter(userList, this, () -> loadUsers());
+        recyclerView.setAdapter(userAdapter);
+        
+        contentFrame.addView(view);
     }
 
     private void loadTodayAttendance() {
-        try {
-            setTitle("Today's Attendance");
-            logList = db.getTodayAttendanceLogs();
-            if (logList.isEmpty()) {
-                Toast.makeText(this, "No attendance records for today", Toast.LENGTH_SHORT).show();
-            }
-            showHistoryList();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        setTitle("Today's Attendance");
+        logList = new ArrayList<>();
+        showHistoryList();
+        Toast.makeText(this, "Loading attendance...", Toast.LENGTH_SHORT).show();
     }
 
     private void loadAllHistory() {
-        try {
-            setTitle("All History");
-            logList = db.getAllAttendanceLogs();
-            showHistoryList();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        setTitle("All History");
+        logList = new ArrayList<>();
+        showHistoryList();
     }
 
     private void loadHistoryByDepartment(String department) {
-        try {
-            String title = "";
-            switch(department) {
-                case "kitchen":
-                    title = "Kitchen History";
-                    break;
-                case "waiter":
-                    title = "Waiter History";
-                    break;
-                case "delivery":
-                    title = "Delivery History";
-                    break;
-                case "manager":
-                    title = "Manager History";
-                    break;
-            }
-            setTitle(title);
-            logList = db.getAttendanceLogsByDepartment(department);
-            if (logList.isEmpty()) {
-                Toast.makeText(this, "No " + title + " records found", Toast.LENGTH_SHORT).show();
-            }
-            showHistoryList();
-        } catch (Exception e) {
-            e.printStackTrace();
+        String title = "";
+        switch(department) {
+            case "kitchen": title = "Kitchen History"; break;
+            case "waiter": title = "Waiter History"; break;
+            case "delivery": title = "Delivery History"; break;
+            case "manager": title = "Manager History"; break;
         }
+        setTitle(title);
+        logList = new ArrayList<>();
+        showHistoryList();
     }
 
     private void showHistoryList() {
-        try {
-            if (contentFrame.getChildCount() > 0) {
-                contentFrame.removeAllViews();
-            }
-            
-            View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
-            recyclerView = view.findViewById(R.id.recyclerView);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            
-            LogAdapter logAdapter = new LogAdapter(logList);
-            recyclerView.setAdapter(logAdapter);
-            
-            contentFrame.addView(view);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (contentFrame.getChildCount() > 0) {
+            contentFrame.removeAllViews();
         }
+        
+        View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        
+        LogAdapter logAdapter = new LogAdapter(logList);
+        recyclerView.setAdapter(logAdapter);
+        
+        contentFrame.addView(view);
     }
 }
