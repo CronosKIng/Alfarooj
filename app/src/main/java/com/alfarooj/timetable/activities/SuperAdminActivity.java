@@ -3,6 +3,7 @@ package com.alfarooj.timetable.activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -21,12 +22,13 @@ import com.alfarooj.timetable.adapters.UserAdapter;
 import com.alfarooj.timetable.adapters.LogAdapter;
 import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.AttendanceLog;
+import com.alfarooj.timetable.models.AttendanceLogsResponse;
 import com.alfarooj.timetable.models.CreateUserRequest;
 import com.alfarooj.timetable.models.CreateUserResponse;
-import com.alfarooj.timetable.models.DeleteUserResponse;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.models.UsersResponse;
 import com.alfarooj.timetable.utils.SessionManager;
+import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
 import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
@@ -44,6 +46,7 @@ public class SuperAdminActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private ArrayList<User> userList;
     private ArrayList<AttendanceLog> logList;
+    private String currentDepartmentFilter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,9 +100,48 @@ public class SuperAdminActivity extends BaseActivity {
             });
 
             loadUsers();
+            translateMenu();
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_language) {
+            showLanguageDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    
+    private void translateMenu() {
+        String lang = TranslationHelper.getCurrentLanguage();
+        Menu menu = navigationView.getMenu();
+        
+        String[] menuItems = {"Today's Attendance", "All History", "Kitchen History", 
+            "Waiter History", "Delivery History", "Manager History",
+            "Create Admin", "Create User", "Manage Users", "Logout"};
+        
+        if (lang.equals("en")) {
+            for (int i = 0; i < menu.size() && i < menuItems.length; i++) {
+                menu.getItem(i).setTitle(menuItems[i]);
+            }
+        } else {
+            for (int i = 0; i < menu.size() && i < menuItems.length; i++) {
+                final int index = i;
+                TranslationHelper.translateText(menuItems[i], new TranslationHelper.TranslationCallback() {
+                    @Override public void onSuccess(String translated) { menu.getItem(index).setTitle(translated); }
+                    @Override public void onError(String error) {}
+                });
+            }
         }
     }
 
@@ -124,16 +166,14 @@ public class SuperAdminActivity extends BaseActivity {
             String fullName = etFullName.getText().toString().trim();
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
-            int selectedPosition = spinnerDepartment.getSelectedItemPosition();
-            String department = departments[selectedPosition];
+            int selectedPos = spinnerDepartment.getSelectedItemPosition();
+            String department = departments[selectedPos];
 
             if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            Toast.makeText(this, "Creating user with department: " + department, Toast.LENGTH_SHORT).show();
-            
             CreateUserRequest request = new CreateUserRequest(
                 fullName, username, password, role, department, session.getUserId());
             
@@ -141,15 +181,11 @@ public class SuperAdminActivity extends BaseActivity {
                 .enqueue(new Callback<CreateUserResponse>() {
                     @Override
                     public void onResponse(Call<CreateUserResponse> call, Response<CreateUserResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            if (response.body().isSuccess()) {
-                                Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
-                                loadUsers();
-                            } else {
-                                Toast.makeText(SuperAdminActivity.this, "Error: " + response.body().getMessage(), Toast.LENGTH_SHORT).show();
-                            }
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
+                            loadUsers();
                         } else {
-                            Toast.makeText(SuperAdminActivity.this, "Error: Server error", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SuperAdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
                         }
                     }
                     
@@ -180,14 +216,12 @@ public class SuperAdminActivity extends BaseActivity {
                         setTitle("Manage Users (" + userList.size() + " users)");
                     } else {
                         Toast.makeText(SuperAdminActivity.this, "Failed to load users", Toast.LENGTH_SHORT).show();
-                        setTitle("Manage Users - Error");
                     }
                 }
                 
                 @Override
                 public void onFailure(Call<UsersResponse> call, Throwable t) {
                     Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                    setTitle("Manage Users - Network Error");
                 }
             });
     }
@@ -209,16 +243,45 @@ public class SuperAdminActivity extends BaseActivity {
 
     private void loadTodayAttendance() {
         setTitle("Today's Attendance");
-        logList = new ArrayList<>();
-        showHistoryList();
-        Toast.makeText(this, "No attendance records yet", Toast.LENGTH_SHORT).show();
+        currentDepartmentFilter = null;
+        
+        ApiClient.getApiService().getTodayAttendance()
+            .enqueue(new Callback<AttendanceLogsResponse>() {
+                @Override
+                public void onResponse(Call<AttendanceLogsResponse> call, Response<AttendanceLogsResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        logList = new ArrayList<>(response.body().getLogs());
+                        if (logList.isEmpty()) {
+                            Toast.makeText(SuperAdminActivity.this, "No attendance records for today", Toast.LENGTH_SHORT).show();
+                        }
+                        showHistoryList();
+                    }
+                }
+                @Override
+                public void onFailure(Call<AttendanceLogsResponse> call, Throwable t) {
+                    Toast.makeText(SuperAdminActivity.this, "Failed to load attendance", Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
     private void loadAllHistory() {
         setTitle("All History");
-        logList = new ArrayList<>();
-        showHistoryList();
-        Toast.makeText(this, "No attendance records yet", Toast.LENGTH_SHORT).show();
+        currentDepartmentFilter = null;
+        
+        ApiClient.getApiService().getAttendanceLogs(null)
+            .enqueue(new Callback<AttendanceLogsResponse>() {
+                @Override
+                public void onResponse(Call<AttendanceLogsResponse> call, Response<AttendanceLogsResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        logList = new ArrayList<>(response.body().getLogs());
+                        showHistoryList();
+                    }
+                }
+                @Override
+                public void onFailure(Call<AttendanceLogsResponse> call, Throwable t) {
+                    Toast.makeText(SuperAdminActivity.this, "Failed to load history", Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
     private void loadHistoryByDepartment(String department) {
@@ -230,9 +293,25 @@ public class SuperAdminActivity extends BaseActivity {
             case "manager": title = "Manager History"; break;
         }
         setTitle(title);
-        logList = new ArrayList<>();
-        showHistoryList();
-        Toast.makeText(this, "No " + title + " records yet", Toast.LENGTH_SHORT).show();
+        currentDepartmentFilter = department;
+        
+        ApiClient.getApiService().getAttendanceLogs(department)
+            .enqueue(new Callback<AttendanceLogsResponse>() {
+                @Override
+                public void onResponse(Call<AttendanceLogsResponse> call, Response<AttendanceLogsResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        logList = new ArrayList<>(response.body().getLogs());
+                        if (logList.isEmpty()) {
+                            Toast.makeText(SuperAdminActivity.this, "No " + title + " records found", Toast.LENGTH_SHORT).show();
+                        }
+                        showHistoryList();
+                    }
+                }
+                @Override
+                public void onFailure(Call<AttendanceLogsResponse> call, Throwable t) {
+                    Toast.makeText(SuperAdminActivity.this, "Failed to load history", Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
     private void showHistoryList() {

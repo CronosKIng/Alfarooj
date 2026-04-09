@@ -54,13 +54,6 @@ public class BaseActivity extends AppCompatActivity {
         languageCodes.add("ja"); languageNames.add("Japanese");
         languageCodes.add("ko"); languageNames.add("Korean");
         languageCodes.add("hi"); languageNames.add("Hindi");
-        languageCodes.add("tr"); languageNames.add("Turkish");
-        languageCodes.add("nl"); languageNames.add("Dutch");
-        languageCodes.add("el"); languageNames.add("Greek");
-        languageCodes.add("vi"); languageNames.add("Vietnamese");
-        languageCodes.add("th"); languageNames.add("Thai");
-        languageCodes.add("pl"); languageNames.add("Polish");
-        languageCodes.add("uk"); languageNames.add("Ukrainian");
     }
     
     protected void showLanguageDialog() {
@@ -74,7 +67,7 @@ public class BaseActivity extends AppCompatActivity {
             TranslationHelper.setCurrentLanguage(selectedCode);
             TranslationHelper.saveLanguage(this, selectedCode);
             Toast.makeText(this, "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
-            recreate(); // Recreate current activity to apply language
+            recreate();
         });
         builder.show();
     }

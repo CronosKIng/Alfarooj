@@ -82,6 +82,7 @@ public class EditUserActivity extends AppCompatActivity {
                         tvMessage.setText("Department updated to " + departmentNames[position]);
                         tvCurrentDept.setText("Current Department: " + departmentNames[position]);
                         Toast.makeText(EditUserActivity.this, "Department updated!", Toast.LENGTH_SHORT).show();
+                        setResult(RESULT_OK);
                         finish();
                     } else {
                         tvMessage.setText("Failed to update department");
