@@ -99,7 +99,7 @@ public class SuperAdminActivity extends BaseActivity {
             });
 
             loadUsers();
-            translateMenu();
+            translateUI();
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -121,32 +121,44 @@ public class SuperAdminActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
     
-    private void translateMenu() {
+    private void translateUI() {
         String lang = TranslationHelper.getCurrentLanguage();
-        Menu menu = navigationView.getMenu();
+        if (lang.equals("en")) return;
         
+        // Translate toolbar title
+        TranslationHelper.translateText("Super Admin Dashboard", new TranslationHelper.TranslationCallback() {
+            @Override public void onSuccess(String translated) { if (getSupportActionBar() != null) getSupportActionBar().setTitle(translated); }
+            @Override public void onError(String error) {}
+        });
+        
+        // Translate navigation menu
+        Menu menu = navigationView.getMenu();
         String[] menuItems = {"Today's Attendance", "All History", "Kitchen History", 
             "Waiter History", "Delivery History", "Manager History",
             "Create Admin", "Create User", "Manage Users", "Logout"};
         
-        if (lang.equals("en")) {
-            for (int i = 0; i < menu.size() && i < menuItems.length; i++) {
-                menu.getItem(i).setTitle(menuItems[i]);
-            }
-        } else {
-            for (int i = 0; i < menu.size() && i < menuItems.length; i++) {
-                final int index = i;
-                TranslationHelper.translateText(menuItems[i], new TranslationHelper.TranslationCallback() {
-                    @Override public void onSuccess(String translated) { menu.getItem(index).setTitle(translated); }
-                    @Override public void onError(String error) {}
-                });
-            }
+        for (int i = 0; i < menu.size() && i < menuItems.length; i++) {
+            final int index = i;
+            TranslationHelper.translateText(menuItems[i], new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { menu.getItem(index).setTitle(translated); }
+                @Override public void onError(String error) {}
+            });
         }
     }
 
     private void showCreateUserDialog(String role) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(role.equals("admin") ? "Create Admin" : "Create User");
+        String title = role.equals("admin") ? "Create Admin" : "Create User";
+        String lang = TranslationHelper.getCurrentLanguage();
+        
+        if (!lang.equals("en")) {
+            TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { builder.setTitle(translated); }
+                @Override public void onError(String error) { builder.setTitle(title); }
+            });
+        } else {
+            builder.setTitle(title);
+        }
 
         View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
         EditText etFullName = view.findViewById(R.id.etFullName);
@@ -161,41 +173,65 @@ public class SuperAdminActivity extends BaseActivity {
         spinnerDepartment.setAdapter(adapter);
 
         builder.setView(view);
-        builder.setPositiveButton("Create", (dialog, which) -> {
-            String fullName = etFullName.getText().toString().trim();
-            String username = etUsername.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
-            int selectedPos = spinnerDepartment.getSelectedItemPosition();
-            String department = departments[selectedPos];
+        
+        String createText = "Create";
+        String cancelText = "Cancel";
+        
+        if (!lang.equals("en")) {
+            TranslationHelper.translateText(createText, new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { builder.setPositiveButton(translated, null); }
+                @Override public void onError(String error) { builder.setPositiveButton(createText, null); }
+            });
+            TranslationHelper.translateText(cancelText, new TranslationHelper.TranslationCallback() {
+                @Override public void onSuccess(String translated) { builder.setNegativeButton(translated, null); }
+                @Override public void onError(String error) { builder.setNegativeButton(cancelText, null); }
+            });
+        } else {
+            builder.setPositiveButton(createText, null);
+            builder.setNegativeButton(cancelText, null);
+        }
+        
+        AlertDialog dialog = builder.create();
+        
+        dialog.setOnShowListener(d -> {
+            Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            positiveButton.setOnClickListener(v -> {
+                String fullName = etFullName.getText().toString().trim();
+                String username = etUsername.getText().toString().trim();
+                String password = etPassword.getText().toString().trim();
+                int selectedPos = spinnerDepartment.getSelectedItemPosition();
+                String department = departments[selectedPos];
 
-            if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(SuperAdminActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            CreateUserRequest request = new CreateUserRequest(
-                fullName, username, password, role, department, session.getUserId());
-            
-            ApiClient.getApiService().createUser(request)
-                .enqueue(new Callback<CreateUserResponse>() {
-                    @Override
-                    public void onResponse(Call<CreateUserResponse> call, Response<CreateUserResponse> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
-                            loadUsers();
-                        } else {
-                            Toast.makeText(SuperAdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
+                CreateUserRequest request = new CreateUserRequest(
+                    fullName, username, password, role, department, session.getUserId());
+                
+                ApiClient.getApiService().createUser(request)
+                    .enqueue(new Callback<CreateUserResponse>() {
+                        @Override
+                        public void onResponse(Call<CreateUserResponse> call, Response<CreateUserResponse> response) {
+                            if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
+                                loadUsers();
+                                dialog.dismiss();
+                            } else {
+                                Toast.makeText(SuperAdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
+                            }
                         }
-                    }
-                    
-                    @Override
-                    public void onFailure(Call<CreateUserResponse> call, Throwable t) {
-                        Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                        
+                        @Override
+                        public void onFailure(Call<CreateUserResponse> call, Throwable t) {
+                            Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+            });
         });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
+        
+        dialog.show();
     }
 
     private void loadUsers() {
