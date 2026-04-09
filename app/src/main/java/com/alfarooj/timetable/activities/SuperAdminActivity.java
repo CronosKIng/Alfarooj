@@ -108,7 +108,6 @@ public class SuperAdminActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Reload data when returning to this activity
         loadUsers();
     }
     
@@ -153,7 +152,7 @@ public class SuperAdminActivity extends BaseActivity {
             String department = departments[selectedPos];
 
             if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -275,7 +274,8 @@ public class SuperAdminActivity extends BaseActivity {
             case "delivery": title = "Delivery History"; break;
             case "manager": title = "Manager History"; break;
         }
-        setTitle(title);
+        final String finalTitle = title;
+        setTitle(finalTitle);
         
         ApiClient.getApiService().getAttendanceLogs(department)
             .enqueue(new Callback<AttendanceLogsResponse>() {
@@ -284,7 +284,7 @@ public class SuperAdminActivity extends BaseActivity {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         logList = new ArrayList<>(response.body().getLogs());
                         if (logList.isEmpty()) {
-                            Toast.makeText(SuperAdminActivity.this, "No " + title + " records found", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SuperAdminActivity.this, "No " + finalTitle + " records found", Toast.LENGTH_SHORT).show();
                         }
                         showHistoryList();
                     }
