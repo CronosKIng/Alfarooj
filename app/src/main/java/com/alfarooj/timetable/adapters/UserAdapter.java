@@ -10,8 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alfarooj.timetable.api.ApiClient;
+import com.alfarooj.timetable.models.DeleteUserResponse;
 import com.alfarooj.timetable.models.User;
-import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
 import java.util.ArrayList;
 import retrofit2.Call;
@@ -40,48 +40,50 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int pos) {
-        User user = userList.get(pos);
-        String dept = user.getDepartmentDisplay();
-
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        User user = userList.get(position);
+        
+        String departmentDisplay = "";
+        if (user.getDepartment() != null) {
+            switch(user.getDepartment()) {
+                case "kitchen": departmentDisplay = "Kitchen"; break;
+                case "waiter": departmentDisplay = "Waiter"; break;
+                case "delivery": departmentDisplay = "Delivery"; break;
+                case "manager": departmentDisplay = "Manager"; break;
+                default: departmentDisplay = user.getDepartment();
+            }
+        }
+        
         holder.tvFullName.setText("Name: " + user.getFullName());
         holder.tvUsername.setText("Username: " + user.getUsername());
         holder.tvPassword.setText("Password: ******");
-        holder.tvDepartment.setText("Department: " + dept);
+        holder.tvDepartment.setText("Department: " + departmentDisplay);
         holder.tvRole.setText("Role: " + user.getRole());
 
-        // Show password when eye button clicked
         holder.btnShowPassword.setOnClickListener(v -> {
-            Toast.makeText(context, "Password for " + user.getUsername() + " is: " + user.getPassword(),
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Password for " + user.getUsername() + " is hidden", Toast.LENGTH_LONG).show();
         });
 
-        // Delete user using API
         holder.btnDelete.setOnClickListener(v -> {
-            String deletingMsg = "Deleting user...";
-            Toast.makeText(context, deletingMsg, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Deleting user...", Toast.LENGTH_SHORT).show();
             
             ApiClient.getApiService().deleteUser(user.getId())
-                .enqueue(new Callback<com.alfarooj.timetable.models.DeleteUserResponse>() {
+                .enqueue(new Callback<DeleteUserResponse>() {
                     @Override
-                    public void onResponse(Call<com.alfarooj.timetable.models.DeleteUserResponse> call,
-                                           Response<com.alfarooj.timetable.models.DeleteUserResponse> response) {
+                    public void onResponse(Call<DeleteUserResponse> call, Response<DeleteUserResponse> response) {
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            String successMsg = "User deleted successfully";
-                            Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show();
-                            userList.remove(pos);
-                            notifyItemRemoved(pos);
+                            Toast.makeText(context, "User deleted successfully", Toast.LENGTH_SHORT).show();
+                            userList.remove(position);
+                            notifyItemRemoved(position);
                             if (deleteListener != null) deleteListener.onUserDeleted();
                         } else {
-                            String errorMsg = "Failed to delete user";
-                            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "Failed to delete user", Toast.LENGTH_SHORT).show();
                         }
                     }
                     
                     @Override
-                    public void onFailure(Call<com.alfarooj.timetable.models.DeleteUserResponse> call, Throwable t) {
-                        String errorMsg = "Network error: " + t.getMessage();
-                        Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                    public void onFailure(Call<DeleteUserResponse> call, Throwable t) {
+                        Toast.makeText(context, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
         });

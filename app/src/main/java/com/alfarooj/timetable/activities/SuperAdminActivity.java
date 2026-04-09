@@ -20,8 +20,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alfarooj.timetable.adapters.UserAdapter;
 import com.alfarooj.timetable.adapters.LogAdapter;
 import com.alfarooj.timetable.api.ApiClient;
-import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.models.AttendanceLog;
+import com.alfarooj.timetable.models.CreateUserRequest;
+import com.alfarooj.timetable.models.CreateUserResponse;
+import com.alfarooj.timetable.models.DeleteUserResponse;
+import com.alfarooj.timetable.models.User;
+import com.alfarooj.timetable.models.UsersResponse;
 import com.alfarooj.timetable.utils.SessionManager;
 import com.alfarooj.timetable.R;
 import com.google.android.material.navigation.NavigationView;
@@ -125,25 +129,30 @@ public class SuperAdminActivity extends BaseActivity {
                 return;
             }
 
-            com.alfarooj.timetable.models.CreateUserRequest request = 
-                new com.alfarooj.timetable.models.CreateUserRequest(
-                    fullName, username, password, role, department, session.getUserId());
+            // Show loading
+            Toast.makeText(this, "Creating user...", Toast.LENGTH_SHORT).show();
+            
+            CreateUserRequest request = new CreateUserRequest(
+                fullName, username, password, role, department, session.getUserId());
             
             ApiClient.getApiService().createUser(request)
-                .enqueue(new Callback<com.alfarooj.timetable.models.CreateUserResponse>() {
+                .enqueue(new Callback<CreateUserResponse>() {
                     @Override
-                    public void onResponse(Call<com.alfarooj.timetable.models.CreateUserResponse> call,
-                                           Response<com.alfarooj.timetable.models.CreateUserResponse> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
-                            loadUsers();
+                    public void onResponse(Call<CreateUserResponse> call, Response<CreateUserResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            if (response.body().isSuccess()) {
+                                Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show();
+                                loadUsers();
+                            } else {
+                                Toast.makeText(SuperAdminActivity.this, "Error: " + response.body().getMessage(), Toast.LENGTH_SHORT).show();
+                            }
                         } else {
-                            Toast.makeText(SuperAdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SuperAdminActivity.this, "Error: Server error", Toast.LENGTH_SHORT).show();
                         }
                     }
                     
                     @Override
-                    public void onFailure(Call<com.alfarooj.timetable.models.CreateUserResponse> call, Throwable t) {
+                    public void onFailure(Call<CreateUserResponse> call, Throwable t) {
                         Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -156,25 +165,14 @@ public class SuperAdminActivity extends BaseActivity {
         setTitle("Loading users...");
         
         ApiClient.getApiService().getUsers()
-            .enqueue(new Callback<com.alfarooj.timetable.models.UsersResponse>() {
+            .enqueue(new Callback<UsersResponse>() {
                 @Override
-                public void onResponse(Call<com.alfarooj.timetable.models.UsersResponse> call,
-                                       Response<com.alfarooj.timetable.models.UsersResponse> response) {
+                public void onResponse(Call<UsersResponse> call, Response<UsersResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         userList = new ArrayList<>();
-                        List<com.alfarooj.timetable.models.User> apiUsers = response.body().getUsers();
-                        for (com.alfarooj.timetable.models.User apiUser : apiUsers) {
-                            User localUser = new User(
-                                apiUser.getId(),
-                                apiUser.getFullName(),
-                                apiUser.getUsername(),
-                                "",
-                                apiUser.getRole(),
-                                apiUser.getDepartment(),
-                                0,
-                                ""
-                            );
-                            userList.add(localUser);
+                        List<User> apiUsers = response.body().getUsers();
+                        for (User apiUser : apiUsers) {
+                            userList.add(apiUser);
                         }
                         displayUsers();
                         setTitle("Manage Users (" + userList.size() + " users)");
@@ -185,7 +183,7 @@ public class SuperAdminActivity extends BaseActivity {
                 }
                 
                 @Override
-                public void onFailure(Call<com.alfarooj.timetable.models.UsersResponse> call, Throwable t) {
+                public void onFailure(Call<UsersResponse> call, Throwable t) {
                     Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
                     setTitle("Manage Users - Network Error");
                 }
@@ -211,13 +209,14 @@ public class SuperAdminActivity extends BaseActivity {
         setTitle("Today's Attendance");
         logList = new ArrayList<>();
         showHistoryList();
-        Toast.makeText(this, "Loading attendance...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "No attendance records yet", Toast.LENGTH_SHORT).show();
     }
 
     private void loadAllHistory() {
         setTitle("All History");
         logList = new ArrayList<>();
         showHistoryList();
+        Toast.makeText(this, "No attendance records yet", Toast.LENGTH_SHORT).show();
     }
 
     private void loadHistoryByDepartment(String department) {
@@ -231,6 +230,7 @@ public class SuperAdminActivity extends BaseActivity {
         setTitle(title);
         logList = new ArrayList<>();
         showHistoryList();
+        Toast.makeText(this, "No " + title + " records yet", Toast.LENGTH_SHORT).show();
     }
 
     private void showHistoryList() {
