@@ -147,7 +147,7 @@ public class LoginActivity extends BaseActivity {
         });
     }
     
-    private void setupLanguages() {
+    protected void setupLanguages() {
         languageCodes.add("en"); languageNames.add("English");
         languageCodes.add("sw"); languageNames.add("Kiswahili");
         languageCodes.add("ar"); languageNames.add("Arabic");
