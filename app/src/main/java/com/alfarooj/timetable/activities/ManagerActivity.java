@@ -23,7 +23,6 @@ import com.alfarooj.timetable.models.AttendanceRequest;
 import com.alfarooj.timetable.models.AttendanceResponse;
 import com.alfarooj.timetable.models.LocationResponse;
 import com.alfarooj.timetable.utils.SessionManager;
-import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,16 +33,14 @@ public class ManagerActivity extends BaseActivity {
     private TextView tvWelcome, tvStatus;
     private SessionManager session;
     private FusedLocationProviderClient fusedLocationClient;
-    private String department = "manager";
     private static final int LOCATION_PERMISSION_REQUEST = 100;
     private double currentLatitude = 0;
     private double currentLongitude = 0;
-    private String currentAddress = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_manager);
+        setContentView(R.layout.activity_kitchen);
 
         session = new SessionManager(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -55,14 +52,10 @@ public class ManagerActivity extends BaseActivity {
         btnViewHistory = findViewById(R.id.btnViewHistory);
         btnLogout = findViewById(R.id.btnLogout);
 
-        // Set welcome text
-        tvWelcome.setText("User: " + session.getFullName());
-        tvStatus.setText("Ready");
+        // Get department from session (what user was assigned)
+        String department = session.getDepartment();
+        tvWelcome.setText("User: " + session.getFullName() + " (" + getDepartmentDisplay(department) + ")");
 
-        // Translate UI
-        translateUI();
-
-        // Check location permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
         }
@@ -73,33 +66,15 @@ public class ManagerActivity extends BaseActivity {
         btnLogout.setOnClickListener(v -> logout());
     }
     
-    private void translateUI() {
-        String lang = TranslationHelper.getCurrentLanguage();
-        
-        if (lang.equals("en")) {
-            btnSignIn.setText("SIGN IN");
-            btnSignOut.setText("SIGN OUT");
-            btnViewHistory.setText("HISTORY");
-            btnLogout.setText("LOGOUT");
-            return;
+    private String getDepartmentDisplay(String dept) {
+        if (dept == null) return "";
+        switch(dept) {
+            case "kitchen": return "Kitchen";
+            case "waiter": return "Waiter";
+            case "delivery": return "Delivery";
+            case "manager": return "Manager";
+            default: return dept;
         }
-        
-        TranslationHelper.translateText("SIGN IN", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { btnSignIn.setText(translated); }
-            @Override public void onError(String error) { btnSignIn.setText("SIGN IN"); }
-        });
-        TranslationHelper.translateText("SIGN OUT", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { btnSignOut.setText(translated); }
-            @Override public void onError(String error) { btnSignOut.setText("SIGN OUT"); }
-        });
-        TranslationHelper.translateText("HISTORY", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { btnViewHistory.setText(translated); }
-            @Override public void onError(String error) { btnViewHistory.setText("HISTORY"); }
-        });
-        TranslationHelper.translateText("LOGOUT", new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String translated) { btnLogout.setText(translated); }
-            @Override public void onError(String error) { btnLogout.setText("LOGOUT"); }
-        });
     }
     
     private void checkLocationAndProceed(String eventType, String eventName) {
@@ -123,7 +98,6 @@ public class ManagerActivity extends BaseActivity {
                     fusedLocationClient.removeLocationUpdates(this);
                     currentLatitude = location.getLatitude();
                     currentLongitude = location.getLongitude();
-                    currentAddress = "Lat: " + currentLatitude + ", Lon: " + currentLongitude;
                     validateLocationWithApi(eventType, eventName);
                 } else {
                     tvStatus.setText("Cannot get location. Try again.");
@@ -146,9 +120,8 @@ public class ManagerActivity extends BaseActivity {
                     if (response.isSuccessful() && response.body() != null && response.body().isWithinLocation()) {
                         recordAttendance(eventType, eventName);
                     } else {
-                        String errorMsg = "You are NOT at the work location!";
-                        tvStatus.setText(errorMsg);
-                        Toast.makeText(ManagerActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                        tvStatus.setText("You are NOT at the work location!");
+                        Toast.makeText(ManagerActivity.this, "You are NOT at the work location!", Toast.LENGTH_LONG).show();
                     }
                 }
                 
@@ -161,9 +134,13 @@ public class ManagerActivity extends BaseActivity {
     }
     
     private void recordAttendance(String eventType, String eventName) {
+        // Use department from session (the user's assigned department)
+        String department = session.getDepartment();
+        String location = "Lat: " + currentLatitude + ", Lon: " + currentLongitude;
+        
         AttendanceRequest request = new AttendanceRequest(
             session.getUserId(), session.getUsername(), session.getFullName(),
-            department, eventType, eventName, currentLatitude, currentLongitude, currentAddress
+            department, eventType, eventName, currentLatitude, currentLongitude, location
         );
         
         ApiClient.getApiService().recordAttendance(request)
@@ -171,8 +148,7 @@ public class ManagerActivity extends BaseActivity {
                 @Override
                 public void onResponse(Call<AttendanceResponse> call, Response<AttendanceResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        String msg = eventName + " recorded!";
-                        tvStatus.setText(msg);
+                        tvStatus.setText(eventName + " recorded!");
                         Toast.makeText(ManagerActivity.this, eventName + " Success!", Toast.LENGTH_SHORT).show();
                     } else {
                         tvStatus.setText("Failed to record");
