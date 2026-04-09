@@ -26,7 +26,9 @@ public class SessionManager {
         editor.putString(KEY_USERNAME, username);
         editor.putString(KEY_FULL_NAME, fullName);
         editor.putString(KEY_ROLE, role);
-        editor.putString(KEY_DEPARTMENT, department);
+        // Ensure department is not null
+        String dept = (department == null || department.isEmpty()) ? "delivery" : department;
+        editor.putString(KEY_DEPARTMENT, dept);
         editor.apply();
     }
 
@@ -34,7 +36,10 @@ public class SessionManager {
     public String getUsername() { return pref.getString(KEY_USERNAME, null); }
     public String getFullName() { return pref.getString(KEY_FULL_NAME, null); }
     public String getRole() { return pref.getString(KEY_ROLE, null); }
-    public String getDepartment() { return pref.getString(KEY_DEPARTMENT, null); }
+    public String getDepartment() { 
+        String dept = pref.getString(KEY_DEPARTMENT, null);
+        return (dept == null || dept.isEmpty()) ? "delivery" : dept;
+    }
     public boolean isLoggedIn() { return pref.getBoolean(KEY_IS_LOGGED_IN, false); }
 
     public void logout() {
