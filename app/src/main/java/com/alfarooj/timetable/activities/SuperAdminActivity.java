@@ -114,7 +114,9 @@ public class SuperAdminActivity extends BaseActivity {
         Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
 
         String[] departments = {"kitchen", "waiter", "delivery", "manager"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departments);
+        String[] departmentNames = {"Kitchen", "Waiter", "Delivery", "Manager"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departmentNames);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDepartment.setAdapter(adapter);
 
         builder.setView(view);
@@ -122,15 +124,15 @@ public class SuperAdminActivity extends BaseActivity {
             String fullName = etFullName.getText().toString().trim();
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
-            String department = spinnerDepartment.getSelectedItem().toString();
+            int selectedPosition = spinnerDepartment.getSelectedItemPosition();
+            String department = departments[selectedPosition];
 
             if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Show loading
-            Toast.makeText(this, "Creating user...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Creating user with department: " + department, Toast.LENGTH_SHORT).show();
             
             CreateUserRequest request = new CreateUserRequest(
                 fullName, username, password, role, department, session.getUserId());
