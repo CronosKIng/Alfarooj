@@ -1,7 +1,6 @@
 package com.alfarooj.timetable.activities;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -10,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.UpdateDepartmentResponse;
+import com.alfarooj.timetable.models.UpdateDepartmentRequest;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.R;
 import retrofit2.Call;
@@ -69,8 +69,7 @@ public class EditUserActivity extends AppCompatActivity {
         btnUpdate.setEnabled(false);
         tvMessage.setText("");
         
-        com.alfarooj.timetable.models.UpdateDepartmentRequest request = 
-            new com.alfarooj.timetable.models.UpdateDepartmentRequest(user.getId(), newDepartment);
+        UpdateDepartmentRequest request = new UpdateDepartmentRequest(user.getId(), newDepartment);
         
         ApiClient.getApiService().updateUserDepartment(request)
             .enqueue(new Callback<UpdateDepartmentResponse>() {
@@ -83,6 +82,7 @@ public class EditUserActivity extends AppCompatActivity {
                         tvMessage.setText("Department updated to " + departmentNames[position]);
                         tvCurrentDept.setText("Current Department: " + departmentNames[position]);
                         Toast.makeText(EditUserActivity.this, "Department updated!", Toast.LENGTH_SHORT).show();
+                        finish();
                     } else {
                         tvMessage.setText("Failed to update department");
                         Toast.makeText(EditUserActivity.this, "Update failed", Toast.LENGTH_SHORT).show();
