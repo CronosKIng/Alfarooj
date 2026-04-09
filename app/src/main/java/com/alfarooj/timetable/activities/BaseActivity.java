@@ -3,6 +3,7 @@ package com.alfarooj.timetable.activities;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +14,7 @@ import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class BaseActivity extends AppCompatActivity {
     

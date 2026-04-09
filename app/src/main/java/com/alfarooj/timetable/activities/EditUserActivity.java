@@ -27,7 +27,15 @@ public class EditUserActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_user);
+        
+        try {
+            setContentView(R.layout.activity_edit_user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Layout error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         try {
             tvUserName = findViewById(R.id.tvUserName);
@@ -44,6 +52,7 @@ public class EditUserActivity extends AppCompatActivity {
                 tvCurrentDept.setText("Current Department: " + currentDept);
             } else {
                 tvUserName.setText("User not found");
+                Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show();
                 finish();
                 return;
             }
@@ -53,6 +62,7 @@ public class EditUserActivity extends AppCompatActivity {
             spinnerDepartment.setAdapter(adapter);
 
             btnUpdate.setOnClickListener(v -> updateDepartment());
+            
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -72,13 +82,19 @@ public class EditUserActivity extends AppCompatActivity {
     }
     
     private void updateDepartment() {
+        if (btnUpdate == null || spinnerDepartment == null) {
+            Toast.makeText(this, "UI not initialized", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        
         try {
             int position = spinnerDepartment.getSelectedItemPosition();
             String newDepartment = departments[position];
             
             btnUpdate.setText("Updating...");
             btnUpdate.setEnabled(false);
-            tvMessage.setText("");
+            if (tvMessage != null) tvMessage.setText("");
             
             UpdateDepartmentRequest request = new UpdateDepartmentRequest(user.getId(), newDepartment);
             
@@ -86,32 +102,40 @@ public class EditUserActivity extends AppCompatActivity {
                 .enqueue(new Callback<UpdateDepartmentResponse>() {
                     @Override
                     public void onResponse(Call<UpdateDepartmentResponse> call, Response<UpdateDepartmentResponse> response) {
-                        btnUpdate.setText("UPDATE DEPARTMENT");
-                        btnUpdate.setEnabled(true);
+                        if (btnUpdate != null) {
+                            btnUpdate.setText("UPDATE DEPARTMENT");
+                            btnUpdate.setEnabled(true);
+                        }
                         
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            tvMessage.setText("Department updated to " + departmentNames[position]);
-                            tvCurrentDept.setText("Current Department: " + departmentNames[position]);
+                            if (tvMessage != null) tvMessage.setText("Department updated to " + departmentNames[position]);
+                            if (tvCurrentDept != null) tvCurrentDept.setText("Current Department: " + departmentNames[position]);
                             Toast.makeText(EditUserActivity.this, "Department updated!", Toast.LENGTH_SHORT).show();
                             setResult(RESULT_OK);
                             finish();
                         } else {
-                            tvMessage.setText("Failed to update department");
+                            if (tvMessage != null) tvMessage.setText("Failed to update department");
                             Toast.makeText(EditUserActivity.this, "Update failed", Toast.LENGTH_SHORT).show();
                         }
                     }
                     
                     @Override
                     public void onFailure(Call<UpdateDepartmentResponse> call, Throwable t) {
-                        btnUpdate.setText("UPDATE DEPARTMENT");
-                        btnUpdate.setEnabled(true);
-                        tvMessage.setText("Network error: " + t.getMessage());
-                        Toast.makeText(EditUserActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+                        if (btnUpdate != null) {
+                            btnUpdate.setText("UPDATE DEPARTMENT");
+                            btnUpdate.setEnabled(true);
+                        }
+                        if (tvMessage != null) tvMessage.setText("Network error: " + t.getMessage());
+                        Toast.makeText(EditUserActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            if (btnUpdate != null) {
+                btnUpdate.setText("UPDATE DEPARTMENT");
+                btnUpdate.setEnabled(true);
+            }
         }
     }
 }
