@@ -359,6 +359,6 @@ public class SuperAdminActivity extends BaseActivity {
         LogAdapter logAdapter = new LogAdapter(logList);
         recyclerView.setAdapter(logAdapter);
         
-        contentFrame.addView(view);
+        contentFrame.addView(4idview);
     }
 }
