@@ -49,6 +49,19 @@ public class AdminActivity extends BaseActivity {
             toolbar = findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
             
+            // Set title
+            String title = "Admin Dashboard";
+            TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
+                @Override
+                public void onSuccess(String translatedText) {
+                    setTitle(translatedText);
+                }
+                @Override
+                public void onError(String error) {
+                    setTitle(title);
+                }
+            });
+            
             recyclerView = findViewById(R.id.recyclerView);
             btnCreateUser = findViewById(R.id.btnCreateUser);
             btnViewLogs = findViewById(R.id.btnViewLogs);
@@ -113,9 +126,6 @@ public class AdminActivity extends BaseActivity {
     }
 
     private void translateUI() {
-        // Tafsiri toolbar title
-        TranslationHelper.translateTextView(toolbar, "Admin Dashboard");
-        
         // Tafsiri button zote
         TranslationHelper.translateButtonText(btnCreateUser, "Create User");
         TranslationHelper.translateButtonText(btnViewLogs, "View Logs");

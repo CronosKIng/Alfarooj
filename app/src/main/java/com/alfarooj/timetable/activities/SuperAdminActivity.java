@@ -70,8 +70,18 @@ public class SuperAdminActivity extends BaseActivity {
             
             setSupportActionBar(toolbar);
             
-            // Tafsiri toolbar title
-            TranslationHelper.translateTextView(toolbar, "Super Admin Dashboard");
+            // Set title directly
+            String title = "Super Admin Dashboard";
+            TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
+                @Override
+                public void onSuccess(String translatedText) {
+                    setTitle(translatedText);
+                }
+                @Override
+                public void onError(String error) {
+                    setTitle(title);
+                }
+            });
             
             // Tafsiri navigation menu yote
             translateNavigationMenu();
@@ -105,7 +115,7 @@ public class SuperAdminActivity extends BaseActivity {
                     loadUsers();
                 } else if (id == R.id.nav_logout) {
                     session.logout();
-                    startActivity(new Intent(this, LoginActivity.class));
+                    startActivity(new Intent(SuperAdminActivity.this, LoginActivity.class));
                     finish();
                 }
                 drawerLayout.closeDrawer(GravityCompat.START);
@@ -119,19 +129,6 @@ public class SuperAdminActivity extends BaseActivity {
     }
     
     private void translateNavigationMenu() {
-        // Tafsiri navigation drawer header (kama ipo)
-        if (navigationView.getHeaderView(0) != null) {
-            View header = navigationView.getHeaderView(0);
-            TextView navHeaderTitle = header.findViewById(R.id.navHeaderTitle);
-            TextView navHeaderSubtitle = header.findViewById(R.id.navHeaderSubtitle);
-            if (navHeaderTitle != null) {
-                TranslationHelper.translateTextView(navHeaderTitle, "AL Farooj");
-            }
-            if (navHeaderSubtitle != null) {
-                TranslationHelper.translateTextView(navHeaderSubtitle, "Super Administrator");
-            }
-        }
-        
         // Tafsiri menu items zote
         Menu menu = navigationView.getMenu();
         for (int i = 0; i < menu.size(); i++) {
@@ -143,9 +140,7 @@ public class SuperAdminActivity extends BaseActivity {
                     item.setTitle(translatedText);
                 }
                 @Override
-                public void onError(String error) {
-                    // Keep original if translation fails
-                }
+                public void onError(String error) {}
             });
         }
     }
@@ -153,8 +148,18 @@ public class SuperAdminActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Tafsiri tena kuhakikisha kila kitu kiko kwenye lugha sahihi
-        TranslationHelper.translateTextView(toolbar, "Super Admin Dashboard");
+        // Refresh title
+        String title = "Super Admin Dashboard";
+        TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
+            @Override
+            public void onSuccess(String translatedText) {
+                setTitle(translatedText);
+            }
+            @Override
+            public void onError(String error) {
+                setTitle(title);
+            }
+        });
         translateNavigationMenu();
         loadUsers();
     }
