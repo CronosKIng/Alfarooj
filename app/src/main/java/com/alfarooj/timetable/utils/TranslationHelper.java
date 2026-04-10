@@ -43,6 +43,7 @@ public class TranslationHelper {
     }
     
     public static void translateText(String text, TranslationCallback callback) {
+        android.util.Log.d("TranslationHelper", "📝 Translating: " + text + " to: " + currentLanguage);
         if (text == null || text.isEmpty()) {
             if (callback != null) callback.onSuccess(text);
             return;
