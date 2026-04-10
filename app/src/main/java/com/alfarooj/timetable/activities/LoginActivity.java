@@ -1,6 +1,7 @@
 package com.alfarooj.timetable.activities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -34,13 +35,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class LoginActivity extends BaseActivity {
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        LanguageUtils.applyLanguage(newBase);
-        super.attachBaseContext(newBase);
-    }
-
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ImageButton btnTogglePassword;
@@ -52,6 +46,12 @@ public class LoginActivity extends BaseActivity {
     private static final int LOCATION_PERMISSION_REQUEST = 100;
     private List<String> languageCodes = new ArrayList<>();
     private List<String> languageNames = new ArrayList<>();
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        LanguageUtils.applyLanguage(newBase);
+        super.attachBaseContext(newBase);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,14 +105,14 @@ public class LoginActivity extends BaseActivity {
 
             tvError.setText("");
             tvError.setVisibility(View.GONE);
-            
+
             if (username.isEmpty()) {
                 tvError.setText("Please enter username");
                 tvError.setVisibility(View.VISIBLE);
                 etUsername.requestFocus();
                 return;
             }
-            
+
             if (password.isEmpty()) {
                 tvError.setText("Please enter password");
                 tvError.setVisibility(View.VISIBLE);
@@ -129,11 +129,11 @@ public class LoginActivity extends BaseActivity {
                     public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                         btnLogin.setText("LOGIN");
                         btnLogin.setEnabled(true);
-                        
+
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                             User user = response.body().getUser();
                             if (user != null) {
-                                session.createLoginSession(user.getId(), user.getUsername(), 
+                                session.createLoginSession(user.getId(), user.getUsername(),
                                     user.getFullName(), user.getRole(), user.getDepartment());
                                 Toast.makeText(LoginActivity.this, "Welcome " + user.getFullName() + "!", Toast.LENGTH_SHORT).show();
                                 navigateToDashboard();
@@ -145,7 +145,7 @@ public class LoginActivity extends BaseActivity {
                             etPassword.requestFocus();
                         }
                     }
-                    
+
                     @Override
                     public void onFailure(Call<LoginResponse> call, Throwable t) {
                         btnLogin.setText("LOGIN");
@@ -156,7 +156,13 @@ public class LoginActivity extends BaseActivity {
                 });
         });
     }
-    
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        translateUI();
+    }
+
     protected void setupLanguages() {
         languageCodes.clear();
         languageNames.clear();
@@ -174,18 +180,18 @@ public class LoginActivity extends BaseActivity {
         languageCodes.add("ko"); languageNames.add("Korean");
         languageCodes.add("hi"); languageNames.add("Hindi");
     }
-    
+
     private void setupLanguageSpinner() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, languageNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerLanguage.setAdapter(adapter);
-        
+
         String savedLang = TranslationHelper.getCurrentLanguage();
         int position = languageCodes.indexOf(savedLang);
         if (position >= 0) {
             spinnerLanguage.setSelection(position);
         }
-        
+
         spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -203,6 +209,19 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
+    private void translateUI() {
+        String currentLang = TranslationHelper.getCurrentLanguage();
+        
+        TranslationHelper.translateTextView(tvTitle, "AL Farooj Timetable");
+        TranslationHelper.translateTextView(tvSubtitle, "Login to continue");
+        TranslationHelper.translateTextView(tvUsernameLabel, "Username");
+        TranslationHelper.translateTextView(tvPasswordLabel, "Password");
+        TranslationHelper.translateTextView(tvLanguageLabel, "Select Language");
+        TranslationHelper.translateButtonText(btnLogin, "LOGIN");
+        TranslationHelper.translateHint(etUsername, "Enter username");
+        TranslationHelper.translateHint(etPassword, "Enter password");
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -213,24 +232,6 @@ public class LoginActivity extends BaseActivity {
                 Toast.makeText(this, "Location permission required!", Toast.LENGTH_LONG).show();
             }
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        translateUI();
-    }
-
-    private void translateUI() {
-        android.util.Log.d("LoginActivity", "🌍 Current language: " + TranslationHelper.getCurrentLanguage());
-        TranslationHelper.translateTextView(tvTitle, "AL Farooj Timetable");
-        TranslationHelper.translateTextView(tvSubtitle, "Login to continue");
-        TranslationHelper.translateTextView(tvUsernameLabel, "Username");
-        TranslationHelper.translateTextView(tvPasswordLabel, "Password");
-        TranslationHelper.translateTextView(tvLanguageLabel, "Select Language");
-        TranslationHelper.translateButtonText(btnLogin, "LOGIN");
-        TranslationHelper.translateHint(etUsername, "Enter username");
-        TranslationHelper.translateHint(etPassword, "Enter password");
     }
 
     private void navigateToDashboard() {
@@ -258,15 +259,3 @@ public class LoginActivity extends BaseActivity {
         }
     }
 }
-
-    @Override
-        // Tafsiri label zote
-        TranslationHelper.translateTextView(tvTitle, "AL Farooj Timetable");
-        TranslationHelper.translateTextView(tvSubtitle, "Login to continue");
-        TranslationHelper.translateTextView(tvUsernameLabel, "Username");
-        TranslationHelper.translateTextView(tvPasswordLabel, "Password");
-        TranslationHelper.translateTextView(tvLanguageLabel, "Select Language");
-        TranslationHelper.translateButtonText(btnLogin, "LOGIN");
-        TranslationHelper.translateHint(etUsername, "Enter username");
-        TranslationHelper.translateHint(etPassword, "Enter password");
-    }
