@@ -34,6 +34,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class LoginActivity extends BaseActivity {
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        LanguageUtils.applyLanguage(newBase);
+        super.attachBaseContext(newBase);
+    }
+
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ImageButton btnTogglePassword;
@@ -73,6 +80,7 @@ public class LoginActivity extends BaseActivity {
 
         setupLanguages();
         setupLanguageSpinner();
+        translateUI();
 
         btnTogglePassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
@@ -207,6 +215,24 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        translateUI();
+    }
+
+    private void translateUI() {
+        android.util.Log.d("LoginActivity", "🌍 Current language: " + TranslationHelper.getCurrentLanguage());
+        TranslationHelper.translateTextView(tvTitle, "AL Farooj Timetable");
+        TranslationHelper.translateTextView(tvSubtitle, "Login to continue");
+        TranslationHelper.translateTextView(tvUsernameLabel, "Username");
+        TranslationHelper.translateTextView(tvPasswordLabel, "Password");
+        TranslationHelper.translateTextView(tvLanguageLabel, "Select Language");
+        TranslationHelper.translateButtonText(btnLogin, "LOGIN");
+        TranslationHelper.translateHint(etUsername, "Enter username");
+        TranslationHelper.translateHint(etPassword, "Enter password");
+    }
+
     private void navigateToDashboard() {
         String role = session.getRole();
         Intent intent;
@@ -232,3 +258,15 @@ public class LoginActivity extends BaseActivity {
         }
     }
 }
+
+    @Override
+        // Tafsiri label zote
+        TranslationHelper.translateTextView(tvTitle, "AL Farooj Timetable");
+        TranslationHelper.translateTextView(tvSubtitle, "Login to continue");
+        TranslationHelper.translateTextView(tvUsernameLabel, "Username");
+        TranslationHelper.translateTextView(tvPasswordLabel, "Password");
+        TranslationHelper.translateTextView(tvLanguageLabel, "Select Language");
+        TranslationHelper.translateButtonText(btnLogin, "LOGIN");
+        TranslationHelper.translateHint(etUsername, "Enter username");
+        TranslationHelper.translateHint(etPassword, "Enter password");
+    }
