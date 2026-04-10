@@ -1,0 +1,23 @@
+    private void translateUI() {
+        String currentLang = TranslationHelper.getCurrentLanguage();
+        
+        if (currentLang.equals("sw")) {
+            tvUsernameLabel.setText("Jina la mtumiaji");
+            tvPasswordLabel.setText("Nenosiri");
+            btnLogin.setText("INGIA");
+        } else if (currentLang.equals("ar")) {
+            tvUsernameLabel.setText("اسم المستخدم");
+            tvPasswordLabel.setText("كلمة السر");
+            btnLogin.setText("تسجيل الدخول");
+        } else {
+            TranslationHelper.translateTextView(tvUsernameLabel, "Username");
+            TranslationHelper.translateTextView(tvPasswordLabel, "Password");
+            TranslationHelper.translateButtonText(btnLogin, "LOGIN");
+        }
+        
+        TranslationHelper.translateTextView(tvTitle, "AL Farooj Timetable");
+        TranslationHelper.translateTextView(tvSubtitle, "Login to continue");
+        TranslationHelper.translateTextView(tvLanguageLabel, "Select Language");
+        TranslationHelper.translateHint(etUsername, "Enter username");
+        TranslationHelper.translateHint(etPassword, "Enter password");
+    }
