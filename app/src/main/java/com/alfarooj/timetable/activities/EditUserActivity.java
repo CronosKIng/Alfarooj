@@ -41,7 +41,7 @@ public class EditUserActivity extends AppCompatActivity {
             setContentView(R.layout.activity_edit_user);
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Layout error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, TranslationHelper.translateTextDirect("Layout error: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -56,60 +56,48 @@ public class EditUserActivity extends AppCompatActivity {
             user = (User) getIntent().getSerializableExtra("user");
             
             if (user != null) {
-                String userText = "User: " + user.getFullName() + " (" + user.getUsername() + ")";
-                TranslationHelper.translateTextView(tvUserName, userText);
-                
-                String currentDeptText = "Current Department: " + getDepartmentDisplay(user.getDepartment());
-                TranslationHelper.translateTextView(tvCurrentDept, currentDeptText);
+                tvUserName.setText(TranslationHelper.translateTextDirect("User: ") + user.getFullName() + " (" + user.getUsername() + ")");
+                tvCurrentDept.setText(TranslationHelper.translateTextDirect("Current Department: ") + getDepartmentDisplay(user.getDepartment()));
             } else {
-                TranslationHelper.translateTextView(tvUserName, "User not found");
-                Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show();
+                tvUserName.setText(TranslationHelper.translateTextDirect("User not found"));
+                Toast.makeText(this, TranslationHelper.translateTextDirect("User data not found"), Toast.LENGTH_SHORT).show();
                 finish();
                 return;
             }
 
-            // Translate department names for spinner
             for (int i = 0; i < departmentNames.length; i++) {
-                final int index = i;
-                TranslationHelper.translateText(departmentNames[i], new TranslationHelper.TranslationCallback() {
-                    @Override
-                    public void onSuccess(String translatedText) {
-                        departmentNames[index] = translatedText;
-                    }
-                    @Override
-                    public void onError(String error) {}
-                });
+                departmentNames[i] = TranslationHelper.translateTextDirect(departmentNames[i]);
             }
             
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departmentNames);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerDepartment.setAdapter(adapter);
             
-            TranslationHelper.translateButtonText(btnUpdate, "UPDATE DEPARTMENT");
+            btnUpdate.setText(TranslationHelper.translateTextDirect("UPDATE DEPARTMENT"));
             
             btnUpdate.setOnClickListener(v -> updateDepartment());
             
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, TranslationHelper.translateTextDirect("Error: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
             finish();
         }
     }
 
     private String getDepartmentDisplay(String dept) {
-        if (dept == null) return "None";
+        if (dept == null) return TranslationHelper.translateTextDirect("None");
         switch(dept) {
-            case "kitchen": return "Kitchen";
-            case "waiter": return "Waiter";
-            case "delivery": return "Delivery";
-            case "manager": return "Manager";
+            case "kitchen": return TranslationHelper.translateTextDirect("Kitchen");
+            case "waiter": return TranslationHelper.translateTextDirect("Waiter");
+            case "delivery": return TranslationHelper.translateTextDirect("Delivery");
+            case "manager": return TranslationHelper.translateTextDirect("Manager");
             default: return dept;
         }
     }
 
     private void updateDepartment() {
         if (btnUpdate == null || spinnerDepartment == null) {
-            Toast.makeText(this, "UI not initialized", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, TranslationHelper.translateTextDirect("UI not initialized"), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -118,10 +106,7 @@ public class EditUserActivity extends AppCompatActivity {
             int position = spinnerDepartment.getSelectedItemPosition();
             String newDepartment = departments[position];
             
-            TranslationHelper.translateText("Updating...", new TranslationHelper.TranslationCallback() {
-                @Override public void onSuccess(String s) { btnUpdate.setText(s); }
-                @Override public void onError(String e) { btnUpdate.setText("Updating..."); }
-            });
+            btnUpdate.setText(TranslationHelper.translateTextDirect("Updating..."));
             btnUpdate.setEnabled(false);
             if (tvMessage != null) tvMessage.setText("");
             
@@ -131,63 +116,39 @@ public class EditUserActivity extends AppCompatActivity {
                 .enqueue(new Callback<UpdateDepartmentResponse>() {
                     @Override
                     public void onResponse(Call<UpdateDepartmentResponse> call, Response<UpdateDepartmentResponse> response) {
-                        TranslationHelper.translateButtonText(btnUpdate, "UPDATE DEPARTMENT");
+                        btnUpdate.setText(TranslationHelper.translateTextDirect("UPDATE DEPARTMENT"));
                         btnUpdate.setEnabled(true);
                         
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            String successMsg = "Department updated to " + departmentNames[position];
-                            TranslationHelper.translateText(successMsg, new TranslationHelper.TranslationCallback() {
-                                @Override public void onSuccess(String s) { 
-                                    if (tvMessage != null) tvMessage.setText(s);
-                                    Toast.makeText(EditUserActivity.this, s, Toast.LENGTH_SHORT).show();
-                                }
-                                @Override public void onError(String e) { 
-                                    if (tvMessage != null) tvMessage.setText(successMsg);
-                                    Toast.makeText(EditUserActivity.this, "Department updated!", Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                            String successMsg = TranslationHelper.translateTextDirect("Department updated to ") + departmentNames[position];
+                            if (tvMessage != null) tvMessage.setText(successMsg);
+                            Toast.makeText(EditUserActivity.this, successMsg, Toast.LENGTH_SHORT).show();
                             
-                            String currentDeptText = "Current Department: " + departmentNames[position];
-                            TranslationHelper.translateTextView(tvCurrentDept, currentDeptText);
+                            tvCurrentDept.setText(TranslationHelper.translateTextDirect("Current Department: ") + departmentNames[position]);
                             
                             setResult(RESULT_OK);
                             finish();
                         } else {
-                            TranslationHelper.translateText("Failed to update department", new TranslationHelper.TranslationCallback() {
-                                @Override public void onSuccess(String s) { 
-                                    if (tvMessage != null) tvMessage.setText(s);
-                                    Toast.makeText(EditUserActivity.this, s, Toast.LENGTH_SHORT).show();
-                                }
-                                @Override public void onError(String e) { 
-                                    if (tvMessage != null) tvMessage.setText("Failed to update department");
-                                    Toast.makeText(EditUserActivity.this, "Update failed", Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                            String failMsg = TranslationHelper.translateTextDirect("Failed to update department");
+                            if (tvMessage != null) tvMessage.setText(failMsg);
+                            Toast.makeText(EditUserActivity.this, failMsg, Toast.LENGTH_SHORT).show();
                         }
                     }
                     
                     @Override
                     public void onFailure(Call<UpdateDepartmentResponse> call, Throwable t) {
-                        TranslationHelper.translateButtonText(btnUpdate, "UPDATE DEPARTMENT");
+                        btnUpdate.setText(TranslationHelper.translateTextDirect("UPDATE DEPARTMENT"));
                         btnUpdate.setEnabled(true);
                         
-                        String errorMsg = "Network error: " + t.getMessage();
-                        TranslationHelper.translateText(errorMsg, new TranslationHelper.TranslationCallback() {
-                            @Override public void onSuccess(String s) { 
-                                if (tvMessage != null) tvMessage.setText(s);
-                                Toast.makeText(EditUserActivity.this, s, Toast.LENGTH_SHORT).show();
-                            }
-                            @Override public void onError(String e) { 
-                                if (tvMessage != null) tvMessage.setText(errorMsg);
-                                Toast.makeText(EditUserActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        String errorMsg = TranslationHelper.translateTextDirect("Network error: ") + t.getMessage();
+                        if (tvMessage != null) tvMessage.setText(errorMsg);
+                        Toast.makeText(EditUserActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
                     }
                 });
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            TranslationHelper.translateButtonText(btnUpdate, "UPDATE DEPARTMENT");
+            Toast.makeText(this, TranslationHelper.translateTextDirect("Error: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
+            btnUpdate.setText(TranslationHelper.translateTextDirect("UPDATE DEPARTMENT"));
             btnUpdate.setEnabled(true);
         }
     }

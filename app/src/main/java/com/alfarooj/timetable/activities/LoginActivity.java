@@ -148,7 +148,7 @@ public class LoginActivity extends BaseActivity {
                 });
         });
     }
-    
+
     protected void updateUIText() {
         tvTitle.setText(TranslationHelper.translateTextDirect("AL FAROOJ AL SHAMI"));
         tvSubtitle.setText(TranslationHelper.translateTextDirect("TIME TABLE SYSTEM"));
@@ -168,26 +168,26 @@ public class LoginActivity extends BaseActivity {
     protected void setupLanguages() {
         languageCodes.clear();
         languageNames.clear();
-        languageCodes.add("en"); languageNames.add("English");
-        languageCodes.add("sw"); languageNames.add("Kiswahili");
-        languageCodes.add("ar"); languageNames.add("Arabic");
-        languageCodes.add("fr"); languageNames.add("French");
-        languageCodes.add("es"); languageNames.add("Spanish");
-        languageCodes.add("de"); languageNames.add("German");
-        languageCodes.add("it"); languageNames.add("Italian");
-        languageCodes.add("pt"); languageNames.add("Portuguese");
-        languageCodes.add("ru"); languageNames.add("Russian");
-        languageCodes.add("zh"); languageNames.add("Chinese");
-        languageCodes.add("ja"); languageNames.add("Japanese");
-        languageCodes.add("ko"); languageNames.add("Korean");
-        languageCodes.add("hi"); languageNames.add("Hindi");
-        languageCodes.add("tr"); languageNames.add("Turkish");
-        languageCodes.add("nl"); languageNames.add("Dutch");
-        languageCodes.add("el"); languageNames.add("Greek");
-        languageCodes.add("vi"); languageNames.add("Vietnamese");
-        languageCodes.add("th"); languageNames.add("Thai");
-        languageCodes.add("pl"); languageNames.add("Polish");
-        languageCodes.add("uk"); languageNames.add("Ukrainian");
+        languageCodes.add("en"); languageNames.add(TranslationHelper.translateTextDirect("English"));
+        languageCodes.add("sw"); languageNames.add(TranslationHelper.translateTextDirect("Kiswahili"));
+        languageCodes.add("ar"); languageNames.add(TranslationHelper.translateTextDirect("Arabic"));
+        languageCodes.add("fr"); languageNames.add(TranslationHelper.translateTextDirect("French"));
+        languageCodes.add("es"); languageNames.add(TranslationHelper.translateTextDirect("Spanish"));
+        languageCodes.add("de"); languageNames.add(TranslationHelper.translateTextDirect("German"));
+        languageCodes.add("it"); languageNames.add(TranslationHelper.translateTextDirect("Italian"));
+        languageCodes.add("pt"); languageNames.add(TranslationHelper.translateTextDirect("Portuguese"));
+        languageCodes.add("ru"); languageNames.add(TranslationHelper.translateTextDirect("Russian"));
+        languageCodes.add("zh"); languageNames.add(TranslationHelper.translateTextDirect("Chinese"));
+        languageCodes.add("ja"); languageNames.add(TranslationHelper.translateTextDirect("Japanese"));
+        languageCodes.add("ko"); languageNames.add(TranslationHelper.translateTextDirect("Korean"));
+        languageCodes.add("hi"); languageNames.add(TranslationHelper.translateTextDirect("Hindi"));
+        languageCodes.add("tr"); languageNames.add(TranslationHelper.translateTextDirect("Turkish"));
+        languageCodes.add("nl"); languageNames.add(TranslationHelper.translateTextDirect("Dutch"));
+        languageCodes.add("el"); languageNames.add(TranslationHelper.translateTextDirect("Greek"));
+        languageCodes.add("vi"); languageNames.add(TranslationHelper.translateTextDirect("Vietnamese"));
+        languageCodes.add("th"); languageNames.add(TranslationHelper.translateTextDirect("Thai"));
+        languageCodes.add("pl"); languageNames.add(TranslationHelper.translateTextDirect("Polish"));
+        languageCodes.add("uk"); languageNames.add(TranslationHelper.translateTextDirect("Ukrainian"));
     }
 
     private void setupLanguageSpinner() {

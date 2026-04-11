@@ -49,18 +49,7 @@ public class AdminActivity extends BaseActivity {
             toolbar = findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
             
-            // Set title
-            String title = "Admin Dashboard";
-            TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    setTitle(translatedText);
-                }
-                @Override
-                public void onError(String error) {
-                    setTitle(title);
-                }
-            });
+            setTitle(TranslationHelper.translateTextDirect("Admin Dashboard"));
             
             recyclerView = findViewById(R.id.recyclerView);
             btnCreateUser = findViewById(R.id.btnCreateUser);
@@ -69,7 +58,6 @@ public class AdminActivity extends BaseActivity {
             
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             
-            // Tafsiri kila kitu
             translateUI();
 
             btnCreateUser.setOnClickListener(v -> showCreateUserDialog());
@@ -86,7 +74,7 @@ public class AdminActivity extends BaseActivity {
             loadUsers();
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, TranslationHelper.translateTextDirect("Error: ") + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -100,18 +88,9 @@ public class AdminActivity extends BaseActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        // Tafsiri options menu
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
-            String title = item.getTitle().toString();
-            TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    item.setTitle(translatedText);
-                }
-                @Override
-                public void onError(String error) {}
-            });
+            item.setTitle(TranslationHelper.translateTextDirect(item.getTitle().toString()));
         }
         return true;
     }
@@ -126,27 +105,15 @@ public class AdminActivity extends BaseActivity {
     }
 
     private void translateUI() {
-        // Tafsiri button zote
-        TranslationHelper.translateButtonText(btnCreateUser, "Create User");
-        TranslationHelper.translateButtonText(btnViewLogs, "View Logs");
-        TranslationHelper.translateButtonText(btnLogout, "Logout");
+        btnCreateUser.setText(TranslationHelper.translateTextDirect("Create User"));
+        btnViewLogs.setText(TranslationHelper.translateTextDirect("View Logs"));
+        btnLogout.setText(TranslationHelper.translateTextDirect("Logout"));
     }
 
     private void showCreateUserDialog() {
         try {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            
-            // Tafsiri dialog title
-            TranslationHelper.translateText("Create User", new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    builder.setTitle(translatedText);
-                }
-                @Override
-                public void onError(String error) {
-                    builder.setTitle("Create User");
-                }
-            });
+            builder.setTitle(TranslationHelper.translateTextDirect("Create User"));
 
             View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
             EditText etFullName = view.findViewById(R.id.etFullName);
@@ -154,10 +121,9 @@ public class AdminActivity extends BaseActivity {
             EditText etPassword = view.findViewById(R.id.etPassword);
             Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
             
-            // Tafsiri hints za input fields
-            TranslationHelper.translateHint(etFullName, "Full Name");
-            TranslationHelper.translateHint(etUsername, "Username");
-            TranslationHelper.translateHint(etPassword, "Password");
+            etFullName.setHint(TranslationHelper.translateTextDirect("Full Name"));
+            etUsername.setHint(TranslationHelper.translateTextDirect("Username"));
+            etPassword.setHint(TranslationHelper.translateTextDirect("Password"));
             
             String[] departments = {"kitchen", "waiter", "delivery", "manager"};
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departments);
@@ -165,33 +131,11 @@ public class AdminActivity extends BaseActivity {
             
             builder.setView(view);
             
-            // Tafsiri button za dialog
-            TranslationHelper.translateText("Create", new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    builder.setPositiveButton(translatedText, (dialog, which) -> {
-                        createUserLogic(etFullName, etUsername, etPassword, spinnerDepartment);
-                    });
-                }
-                @Override
-                public void onError(String error) {
-                    builder.setPositiveButton("Create", (dialog, which) -> {
-                        createUserLogic(etFullName, etUsername, etPassword, spinnerDepartment);
-                    });
-                }
+            builder.setPositiveButton(TranslationHelper.translateTextDirect("Create"), (dialog, which) -> {
+                createUserLogic(etFullName, etUsername, etPassword, spinnerDepartment);
             });
             
-            TranslationHelper.translateText("Cancel", new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    builder.setNegativeButton(translatedText, null);
-                }
-                @Override
-                public void onError(String error) {
-                    builder.setNegativeButton("Cancel", null);
-                }
-            });
-            
+            builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
             builder.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -205,31 +149,16 @@ public class AdminActivity extends BaseActivity {
         String department = spinnerDepartment.getSelectedItem().toString();
 
         if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-            TranslationHelper.translateText("Please fill all fields", new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String s) { Toast.makeText(AdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
-                @Override
-                public void onError(String e) { Toast.makeText(AdminActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show(); }
-            });
+            Toast.makeText(AdminActivity.this, TranslationHelper.translateTextDirect("Please fill all fields"), Toast.LENGTH_SHORT).show();
             return;
         }
         
         boolean success = db.createUser(fullName, username, password, "user", department, session.getUserId());
         if (success) {
-            TranslationHelper.translateText("User created successfully!", new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String s) { Toast.makeText(AdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
-                @Override
-                public void onError(String e) { Toast.makeText(AdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show(); }
-            });
+            Toast.makeText(AdminActivity.this, TranslationHelper.translateTextDirect("User created successfully!"), Toast.LENGTH_SHORT).show();
             loadUsers();
         } else {
-            TranslationHelper.translateText("Error: Username already exists", new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String s) { Toast.makeText(AdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
-                @Override
-                public void onError(String e) { Toast.makeText(AdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show(); }
-            });
+            Toast.makeText(AdminActivity.this, TranslationHelper.translateTextDirect("Error: Username already exists"), Toast.LENGTH_SHORT).show();
         }
     }
     

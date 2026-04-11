@@ -47,7 +47,7 @@ public class WaiterActivity extends BaseActivity {
         setContentView(R.layout.activity_kitchen);
         session = new SessionManager(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        
+
         tvWelcome = findViewById(R.id.tvWelcome);
         tvStatus = findViewById(R.id.tvStatus);
         btnSignIn = findViewById(R.id.btnSignIn);
@@ -56,17 +56,17 @@ public class WaiterActivity extends BaseActivity {
         btnBreakOut = findViewById(R.id.btnBreakOut);
         btnViewHistory = findViewById(R.id.btnViewHistory);
         btnLogout = findViewById(R.id.btnLogout);
-        
+
         updateUI();
-        
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
         }
-        
-        btnSignIn.setOnClickListener(v -> checkLocation("sign_in", "Sign In"));
-        btnSignOut.setOnClickListener(v -> checkLocation("sign_out", "Sign Out"));
-        btnBreakIn.setOnClickListener(v -> checkLocation("break_in", "Break In"));
-        btnBreakOut.setOnClickListener(v -> checkLocation("break_out", "Break Out"));
+
+        btnSignIn.setOnClickListener(v -> checkLocation(TranslationHelper.translateTextDirect("sign_in"), TranslationHelper.translateTextDirect("Sign In")));
+        btnSignOut.setOnClickListener(v -> checkLocation(TranslationHelper.translateTextDirect("sign_out"), TranslationHelper.translateTextDirect("Sign Out")));
+        btnBreakIn.setOnClickListener(v -> checkLocation(TranslationHelper.translateTextDirect("break_in"), TranslationHelper.translateTextDirect("Break In")));
+        btnBreakOut.setOnClickListener(v -> checkLocation(TranslationHelper.translateTextDirect("break_out"), TranslationHelper.translateTextDirect("Break Out")));
         btnViewHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
         btnLogout.setOnClickListener(v -> logout());
     }
@@ -74,8 +74,7 @@ public class WaiterActivity extends BaseActivity {
     private void updateUI() {
         String dept = session.getDepartment();
         String icon = "🍱";
-        tvWelcome.setText(TranslationHelper.translateTextDirect("User: ") + session.getFullName() + " (" + dept + ") " + icon);
-        
+        tvWelcome.setText(TranslationHelper.translateTextDirect("User: ") + session.getFullName() + " (" + TranslationHelper.translateTextDirect(dept) + ") " + icon);
         btnSignIn.setText(TranslationHelper.translateTextDirect("SIGN IN"));
         btnSignOut.setText(TranslationHelper.translateTextDirect("SIGN OUT"));
         btnBreakIn.setText(TranslationHelper.translateTextDirect("BREAK IN"));
@@ -97,50 +96,50 @@ public class WaiterActivity extends BaseActivity {
         }
         pendingEventType = eventType;
         pendingEventName = eventName;
-        
-        if (eventType.equals("sign_in")) {
+
+        if (eventType.equals(TranslationHelper.translateTextDirect("sign_in"))) {
             showLateDialog();
         } else {
             pendingComment = "";
             startLocationCheck();
         }
     }
-    
+
     private void showLateDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(TranslationHelper.translateTextDirect("Are you late?"));
         builder.setMessage(TranslationHelper.translateTextDirect("Did you arrive late to work today?"));
-        
+
         builder.setPositiveButton(TranslationHelper.translateTextDirect("Yes, I'm late"), (dialog, which) -> {
             showCommentDialog();
         });
-        
+
         builder.setNegativeButton(TranslationHelper.translateTextDirect("No, I'm on time"), (dialog, which) -> {
             pendingComment = "";
             startLocationCheck();
         });
-        
+
         builder.show();
     }
-    
+
     private void showCommentDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness"));
-        
+
         final EditText input = new EditText(this);
         input.setHint(TranslationHelper.translateTextDirect("Enter your reason here..."));
         builder.setView(input);
-        
+
         builder.setPositiveButton(TranslationHelper.translateTextDirect("Submit"), (dialog, which) -> {
             pendingComment = input.getText().toString().trim();
             startLocationCheck();
         });
-        
+
         builder.setNegativeButton(TranslationHelper.translateTextDirect("Skip"), (dialog, which) -> {
             pendingComment = "";
             startLocationCheck();
         });
-        
+
         builder.show();
     }
 
@@ -173,6 +172,7 @@ public class WaiterActivity extends BaseActivity {
                 else
                     tvStatus.setText(TranslationHelper.translateTextDirect("Not at work location!"));
             }
+
             @Override
             public void onFailure(Call<LocationResponse> call, Throwable t) {
                 tvStatus.setText(TranslationHelper.translateTextDirect("Network error"));
@@ -184,25 +184,26 @@ public class WaiterActivity extends BaseActivity {
         String location = "Lat: " + currentLatitude + ", Lon: " + currentLongitude;
         AttendanceRequest request = new AttendanceRequest(session.getUserId(), session.getUsername(), session.getFullName(),
                 session.getDepartment(), pendingEventType, pendingEventName, currentLatitude, currentLongitude, location);
-        
-        if (pendingEventType.equals("sign_in") && !pendingComment.isEmpty()) {
+
+        if (pendingEventType.equals(TranslationHelper.translateTextDirect("sign_in")) && !pendingComment.isEmpty()) {
             request.setComment(pendingComment);
         }
-        
+
         ApiClient.getApiService().recordAttendance(request).enqueue(new Callback<AttendanceResponse>() {
             @Override
             public void onResponse(Call<AttendanceResponse> call, Response<AttendanceResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    tvStatus.setText(pendingEventName + " recorded");
-                    Toast.makeText(WaiterActivity.this, pendingEventName + " Success!", Toast.LENGTH_SHORT).show();
+                    tvStatus.setText(pendingEventName + " " + TranslationHelper.translateTextDirect("recorded"));
+                    Toast.makeText(WaiterActivity.this, pendingEventName + " " + TranslationHelper.translateTextDirect("Success!"), Toast.LENGTH_SHORT).show();
                     pendingComment = "";
                 } else {
-                    tvStatus.setText("Failed");
+                    tvStatus.setText(TranslationHelper.translateTextDirect("Failed"));
                 }
             }
+
             @Override
             public void onFailure(Call<AttendanceResponse> call, Throwable t) {
-                tvStatus.setText("Network error");
+                tvStatus.setText(TranslationHelper.translateTextDirect("Network error"));
             }
         });
     }

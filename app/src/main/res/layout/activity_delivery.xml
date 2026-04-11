@@ -21,92 +21,87 @@
         android:gravity="center"
         android:padding="10dp"/>
 
-    <ScrollView
+    <GridLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        
-        <GridLayout
-            android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:rowCount="4"
+        android:layout_marginTop="20dp">
+
+        <Button
+            android:id="@+id/btnSignIn"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:columnCount="2"
-            android:rowCount="5"
-            android:layout_marginTop="20dp">
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:padding="16dp"
+            android:text="SIGN IN"/>
 
-            <Button
-                android:id="@+id/btnSignIn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="SIGN IN"/>
+        <Button
+            android:id="@+id/btnSignOut"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:padding="16dp"
+            android:text="SIGN OUT"/>
 
-            <Button
-                android:id="@+id/btnSignOut"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="SIGN OUT"/>
+        <Button
+            android:id="@+id/btnBreakIn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:padding="16dp"
+            android:text="BREAK IN"/>
 
-            <Button
-                android:id="@+id/btnBreakIn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="BREAK IN"/>
+        <Button
+            android:id="@+id/btnBreakOut"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:padding="16dp"
+            android:text="BREAK OUT"/>
 
-            <Button
-                android:id="@+id/btnBreakOut"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="BREAK OUT"/>
+        <Button
+            android:id="@+id/btnPickupOrder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:padding="16dp"
+            android:text="PICKUP ORDER"
+            android:backgroundTint="#FF9800"/>
 
-            <Button
-                android:id="@+id/btnPickupOrder"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="PICKUP ORDER"
-                android:backgroundTint="#FF9800"/>
+        <Button
+            android:id="@+id/btnDropoffOrder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:padding="16dp"
+            android:text="DROPOFF ORDER"
+            android:backgroundTint="#FF9800"/>
 
-            <Button
-                android:id="@+id/btnDropoffOrder"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="DROPOFF ORDER"
-                android:backgroundTint="#FF9800"/>
+        <Button
+            android:id="@+id/btnViewHistory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:padding="16dp"
+            android:text="VIEW HISTORY"/>
 
-            <Button
-                android:id="@+id/btnViewHistory"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="VIEW HISTORY"/>
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:padding="16dp"
+            android:text="LOGOUT"/>
 
-            <Button
-                android:id="@+id/btnLogout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="LOGOUT"/>
-
-        </GridLayout>
-    </ScrollView>
+    </GridLayout>
 
 </LinearLayout>

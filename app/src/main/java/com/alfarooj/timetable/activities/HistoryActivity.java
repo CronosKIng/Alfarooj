@@ -24,8 +24,8 @@ public class HistoryActivity extends BaseActivity {
     private DatabaseHelper db;
     private SessionManager session;
     private ArrayList<AttendanceLog> logList;
-    private String[] filters = {"All", "Today"};
-    private String[] translatedFilters = {"All", "Today"};
+    private String[] filters = {TranslationHelper.translateTextDirect("All"), TranslationHelper.translateTextDirect("Today")};
+    private String[] translatedFilters = new String[2];
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -44,38 +44,26 @@ public class HistoryActivity extends BaseActivity {
         recyclerView = findViewById(R.id.recyclerView);
         spinnerFilter = findViewById(R.id.spinnerFilter);
         btnRefresh = findViewById(R.id.btnRefresh);
-        
+
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        
+
         translateUI();
-        
+
         loadLogs();
         btnRefresh.setOnClickListener(v -> loadLogs());
     }
-    
+
     private void translateUI() {
-        // Translate filter options
-        for (int i = 0; i < filters.length; i++) {
-            final int index = i;
-            TranslationHelper.translateText(filters[i], new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    translatedFilters[index] = translatedText;
-                }
-                @Override
-                public void onError(String error) {
-                    translatedFilters[index] = filters[index];
-                }
-            });
-        }
+        translatedFilters[0] = TranslationHelper.translateTextDirect("All");
+        translatedFilters[1] = TranslationHelper.translateTextDirect("Today");
         
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, translatedFilters);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerFilter.setAdapter(adapter);
-        
-        TranslationHelper.translateButtonText(btnRefresh, "Refresh");
+
+        btnRefresh.setText(TranslationHelper.translateTextDirect("Refresh"));
     }
-    
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -87,11 +75,8 @@ public class HistoryActivity extends BaseActivity {
         logList = db.getAllAttendanceLogs();
         LogAdapter adapter = new LogAdapter(logList);
         recyclerView.setAdapter(adapter);
-        
-        String logMsg = "Logs: " + logList.size();
-        TranslationHelper.translateText(logMsg, new TranslationHelper.TranslationCallback() {
-            @Override public void onSuccess(String s) { Toast.makeText(HistoryActivity.this, s, Toast.LENGTH_SHORT).show(); }
-            @Override public void onError(String e) { Toast.makeText(HistoryActivity.this, logMsg, Toast.LENGTH_SHORT).show(); }
-        });
+
+        String logMsg = TranslationHelper.translateTextDirect("Logs: ") + logList.size();
+        Toast.makeText(HistoryActivity.this, logMsg, Toast.LENGTH_SHORT).show();
     }
 }
