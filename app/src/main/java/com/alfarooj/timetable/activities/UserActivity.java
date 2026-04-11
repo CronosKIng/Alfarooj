@@ -1,6 +1,7 @@
 package com.alfarooj.timetable.activities;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -8,6 +9,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -124,7 +126,7 @@ public class UserActivity extends BaseActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness"));
         
-        android.widget.EditText input = new android.widget.EditText(this);
+        EditText input = new EditText(this);
         input.setHint(TranslationHelper.translateTextDirect("Enter your reason here..."));
         builder.setView(input);
         

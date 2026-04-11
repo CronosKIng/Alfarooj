@@ -314,7 +314,9 @@ public class SuperAdminActivity extends BaseActivity {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         logList = new ArrayList<>(response.body().getLogs());
                         if (logList.isEmpty()) {
-                            Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("No ") + title + " " + TranslationHelper.translateTextDirect("records found"), Toast.LENGTH_SHORT).show();
+                            final String finalTitle = title;
+                            Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("No ") + finalTitle + " " + TranslationHelper.translateTextDirect("records found"), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("No ") + finalTitle + " " + TranslationHelper.translateTextDirect("records found"), Toast.LENGTH_SHORT).show();
                         }
                         showHistoryList();
                     }
