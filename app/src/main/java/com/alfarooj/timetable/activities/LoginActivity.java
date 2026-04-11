@@ -1,7 +1,6 @@
 package com.alfarooj.timetable.activities;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -29,7 +28,6 @@ import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -46,12 +44,6 @@ public class LoginActivity extends BaseActivity {
     private static final int LOCATION_PERMISSION_REQUEST = 100;
     private List<String> languageCodes = new ArrayList<>();
     private List<String> languageNames = new ArrayList<>();
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        LanguageUtils.applyLanguage(newBase);
-        super.attachBaseContext(newBase);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +72,7 @@ public class LoginActivity extends BaseActivity {
 
         setupLanguages();
         setupLanguageSpinner();
-        translateUI();
+        updateUIText();
 
         btnTogglePassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
@@ -107,27 +99,27 @@ public class LoginActivity extends BaseActivity {
             tvError.setVisibility(View.GONE);
 
             if (username.isEmpty()) {
-                tvError.setText("Please enter username");
+                tvError.setText(TranslationHelper.translateTextDirect("Please enter username"));
                 tvError.setVisibility(View.VISIBLE);
                 etUsername.requestFocus();
                 return;
             }
 
             if (password.isEmpty()) {
-                tvError.setText("Please enter password");
+                tvError.setText(TranslationHelper.translateTextDirect("Please enter password"));
                 tvError.setVisibility(View.VISIBLE);
                 etPassword.requestFocus();
                 return;
             }
 
-            btnLogin.setText("LOGGING IN...");
+            btnLogin.setText(TranslationHelper.translateTextDirect("LOGGING IN..."));
             btnLogin.setEnabled(false);
 
             ApiClient.getApiService().login(new LoginRequest(username, password))
                 .enqueue(new Callback<LoginResponse>() {
                     @Override
                     public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                        btnLogin.setText("LOGIN");
+                        btnLogin.setText(TranslationHelper.translateTextDirect("LOGIN"));
                         btnLogin.setEnabled(true);
 
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
@@ -135,11 +127,11 @@ public class LoginActivity extends BaseActivity {
                             if (user != null) {
                                 session.createLoginSession(user.getId(), user.getUsername(),
                                     user.getFullName(), user.getRole(), user.getDepartment());
-                                Toast.makeText(LoginActivity.this, "Welcome " + user.getFullName() + "!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(LoginActivity.this, TranslationHelper.translateTextDirect("Welcome ") + user.getFullName() + "!", Toast.LENGTH_SHORT).show();
                                 navigateToDashboard();
                             }
                         } else {
-                            tvError.setText("Invalid username or password!");
+                            tvError.setText(TranslationHelper.translateTextDirect("Invalid username or password!"));
                             tvError.setVisibility(View.VISIBLE);
                             etPassword.setText("");
                             etPassword.requestFocus();
@@ -148,19 +140,29 @@ public class LoginActivity extends BaseActivity {
 
                     @Override
                     public void onFailure(Call<LoginResponse> call, Throwable t) {
-                        btnLogin.setText("LOGIN");
+                        btnLogin.setText(TranslationHelper.translateTextDirect("LOGIN"));
                         btnLogin.setEnabled(true);
-                        tvError.setText("Network error: " + t.getMessage());
+                        tvError.setText(TranslationHelper.translateTextDirect("Network error: ") + t.getMessage());
                         tvError.setVisibility(View.VISIBLE);
                     }
                 });
         });
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        translateUI();
+    
+    private void updateUIText() {
+        tvTitle.setText(TranslationHelper.translateTextDirect("AL FAROOJ AL SHAMI"));
+        tvSubtitle.setText(TranslationHelper.translateTextDirect("TIME TABLE SYSTEM"));
+        tvUsernameLabel.setText(TranslationHelper.translateTextDirect("Username:"));
+        tvPasswordLabel.setText(TranslationHelper.translateTextDirect("Password:"));
+        tvLanguageLabel.setText(TranslationHelper.translateTextDirect("Select Language:"));
+        btnLogin.setText(TranslationHelper.translateTextDirect("LOGIN"));
+        
+        if (etUsername.getText().toString().isEmpty() || etUsername.getText().toString().equals("Enter username")) {
+            etUsername.setHint(TranslationHelper.translateTextDirect("Enter username"));
+        }
+        if (etPassword.getText().toString().isEmpty() || new String(etPassword.getPassword()).equals("Enter password")) {
+            etPassword.setHint(TranslationHelper.translateTextDirect("Enter password"));
+        }
     }
 
     protected void setupLanguages() {
@@ -179,6 +181,13 @@ public class LoginActivity extends BaseActivity {
         languageCodes.add("ja"); languageNames.add("Japanese");
         languageCodes.add("ko"); languageNames.add("Korean");
         languageCodes.add("hi"); languageNames.add("Hindi");
+        languageCodes.add("tr"); languageNames.add("Turkish");
+        languageCodes.add("nl"); languageNames.add("Dutch");
+        languageCodes.add("el"); languageNames.add("Greek");
+        languageCodes.add("vi"); languageNames.add("Vietnamese");
+        languageCodes.add("th"); languageNames.add("Thai");
+        languageCodes.add("pl"); languageNames.add("Polish");
+        languageCodes.add("uk"); languageNames.add("Ukrainian");
     }
 
     private void setupLanguageSpinner() {
@@ -200,8 +209,8 @@ public class LoginActivity extends BaseActivity {
                     TranslationHelper.setCurrentLanguage(newLang);
                     TranslationHelper.saveLanguage(LoginActivity.this, newLang);
                     LanguageUtils.setLocale(LoginActivity.this, newLang);
-                    Toast.makeText(LoginActivity.this, "Language changed to " + languageNames.get(position), Toast.LENGTH_SHORT).show();
-                    recreate();
+                    updateUIText();
+                    Toast.makeText(LoginActivity.this, TranslationHelper.translateTextDirect("Language changed to ") + languageNames.get(position), Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
@@ -209,27 +218,14 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
-    private void translateUI() {
-        String currentLang = TranslationHelper.getCurrentLanguage();
-        
-        TranslationHelper.translateTextView(tvTitle, "AL Farooj Timetable");
-        TranslationHelper.translateTextView(tvSubtitle, "Login to continue");
-        TranslationHelper.translateTextView(tvUsernameLabel, "Username");
-        TranslationHelper.translateTextView(tvPasswordLabel, "Password");
-        TranslationHelper.translateTextView(tvLanguageLabel, "Select Language");
-        TranslationHelper.translateButtonText(btnLogin, "LOGIN");
-        TranslationHelper.translateHint(etUsername, "Enter username");
-        TranslationHelper.translateHint(etPassword, "Enter password");
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, TranslationHelper.translateTextDirect("Location permission granted"), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Location permission required!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, TranslationHelper.translateTextDirect("Location permission required!"), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -255,7 +251,7 @@ public class LoginActivity extends BaseActivity {
             finish();
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, TranslationHelper.translateTextDirect("Error: ") + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 }

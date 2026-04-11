@@ -1,12 +1,14 @@
 package com.alfarooj.timetable.activities;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -37,6 +39,7 @@ public class KitchenActivity extends BaseActivity {
     private static final int LOCATION_PERMISSION_REQUEST = 100;
     private double currentLatitude = 0, currentLongitude = 0;
     private String pendingEventType = "", pendingEventName = "";
+    private String pendingComment = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +47,7 @@ public class KitchenActivity extends BaseActivity {
         setContentView(R.layout.activity_kitchen);
         session = new SessionManager(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        
         tvWelcome = findViewById(R.id.tvWelcome);
         tvStatus = findViewById(R.id.tvStatus);
         btnSignIn = findViewById(R.id.btnSignIn);
@@ -52,6 +56,7 @@ public class KitchenActivity extends BaseActivity {
         btnBreakOut = findViewById(R.id.btnBreakOut);
         btnViewHistory = findViewById(R.id.btnViewHistory);
         btnLogout = findViewById(R.id.btnLogout);
+        
         updateUI();
         
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -91,14 +96,54 @@ public class KitchenActivity extends BaseActivity {
         }
         pendingEventType = eventType;
         pendingEventName = eventName;
+        
         if (eventType.equals("sign_in")) {
-            showCommentDialog(() -> getLocationAndRecord());
+            showLateDialog();
         } else {
-            getLocationAndRecord();
+            pendingComment = "";
+            startLocationCheck();
         }
     }
+    
+    private void showLateDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(TranslationHelper.translateTextDirect("Are you late?"));
+        builder.setMessage(TranslationHelper.translateTextDirect("Did you arrive late to work today?"));
+        
+        builder.setPositiveButton(TranslationHelper.translateTextDirect("Yes, I'm late"), (dialog, which) -> {
+            showCommentDialog();
+        });
+        
+        builder.setNegativeButton(TranslationHelper.translateTextDirect("No, I'm on time"), (dialog, which) -> {
+            pendingComment = "";
+            startLocationCheck();
+        });
+        
+        builder.show();
+    }
+    
+    private void showCommentDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness"));
+        
+        final EditText input = new EditText(this);
+        input.setHint(TranslationHelper.translateTextDirect("Enter your reason here..."));
+        builder.setView(input);
+        
+        builder.setPositiveButton(TranslationHelper.translateTextDirect("Submit"), (dialog, which) -> {
+            pendingComment = input.getText().toString().trim();
+            startLocationCheck();
+        });
+        
+        builder.setNegativeButton(TranslationHelper.translateTextDirect("Skip"), (dialog, which) -> {
+            pendingComment = "";
+            startLocationCheck();
+        });
+        
+        builder.show();
+    }
 
-    private void getLocationAndRecord() {
+    private void startLocationCheck() {
         tvStatus.setText(TranslationHelper.translateTextDirect("Getting location..."));
         LocationRequest request = new LocationRequest.Builder(10000).setPriority(Priority.PRIORITY_HIGH_ACCURACY).build();
         LocationCallback callback = new LocationCallback() {
@@ -138,12 +183,18 @@ public class KitchenActivity extends BaseActivity {
         String location = "Lat: " + currentLatitude + ", Lon: " + currentLongitude;
         AttendanceRequest request = new AttendanceRequest(session.getUserId(), session.getUsername(), session.getFullName(),
                 session.getDepartment(), pendingEventType, pendingEventName, currentLatitude, currentLongitude, location);
+        
+        if (pendingEventType.equals("sign_in") && !pendingComment.isEmpty()) {
+            request.setComment(pendingComment);
+        }
+        
         ApiClient.getApiService().recordAttendance(request).enqueue(new Callback<AttendanceResponse>() {
             @Override
             public void onResponse(Call<AttendanceResponse> call, Response<AttendanceResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     tvStatus.setText(pendingEventName + " recorded");
                     Toast.makeText(KitchenActivity.this, pendingEventName + " Success!", Toast.LENGTH_SHORT).show();
+                    pendingComment = "";
                 } else {
                     tvStatus.setText("Failed");
                 }

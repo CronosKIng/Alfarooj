@@ -348,14 +348,14 @@ public class SuperAdminActivity extends BaseActivity {
                             userList.add(apiUser);
                         }
                         displayUsers();
-                        TranslationHelper.translateText("Manage Users (" + userList.size() + " users)", new TranslationHelper.TranslationCallback() {
+                        TranslationHelper.translateText("👥 Manage Users (" + userList.size() + " users)", new TranslationHelper.TranslationCallback() {
                             @Override
                             public void onSuccess(String translatedText) {
                                 setTitle(translatedText);
                             }
                             @Override
                             public void onError(String error) {
-                                setTitle("Manage Users (" + userList.size() + " users)");
+                                setTitle("👥 Manage Users (" + userList.size() + " users)");
                             }
                         });
                     } else {
@@ -422,9 +422,9 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadAllHistory() {
-        TranslationHelper.translateText("📖 All History", new TranslationHelper.TranslationCallback() {
+        TranslationHelper.translateText("📖 📖 All History", new TranslationHelper.TranslationCallback() {
             @Override public void onSuccess(String s) { setTitle(s); }
-            @Override public void onError(String e) { setTitle("📖 All History"); }
+            @Override public void onError(String e) { setTitle("📖 📖 All History"); }
         });
         
         ApiClient.getApiService().getAttendanceLogs(null)
@@ -450,10 +450,10 @@ public class SuperAdminActivity extends BaseActivity {
     private void loadHistoryByDepartment(String department) {
         String title = "";
         switch(department) {
-            case "kitchen": title = "Kitchen History"; break;
-            case "waiter": title = "Waiter History"; break;
-            case "delivery": title = "Delivery History"; break;
-            case "manager": title = "Manager History"; break;
+            case "kitchen": title = "🧑‍🍳 Kitchen History"; break;
+            case "waiter": title = "🍱 Waiter History"; break;
+            case "delivery": title = "🚗 Delivery History"; break;
+            case "manager": title = "💼 Manager History"; break;
         }
         final String finalTitle = title;
         
