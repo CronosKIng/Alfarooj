@@ -150,7 +150,7 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
-    private void updateUIText() {
+    protected void updateUIText() {
         tvTitle.setText(TranslationHelper.translateTextDirect("AL FAROOJ AL SHAMI"));
         tvSubtitle.setText(TranslationHelper.translateTextDirect("TIME TABLE SYSTEM"));
         tvUsernameLabel.setText(TranslationHelper.translateTextDirect("Username:"));
@@ -175,7 +175,7 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    private void setupLanguages() {
+    protected void setupLanguages() {
         languageCodes.clear();
         languageNames.clear();
         languageCodes.add("en"); languageNames.add("English");
@@ -200,7 +200,7 @@ public class LoginActivity extends BaseActivity {
         languageCodes.add("uk"); languageNames.add("Ukrainian");
     }
 
-    private void refreshSpinnerLanguageNames() {
+    protected void refreshSpinnerLanguageNames() {
         // Badilisha majina ya lugha kwenye spinner kwa lugha mpya
         List<String> translatedNames = new ArrayList<>();
         for (String langName : languageNames) {
@@ -215,7 +215,7 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    private void setupLanguageSpinner() {
+    protected void setupLanguageSpinner() {
         // First create adapter with original names
         List<String> displayNames = new ArrayList<>();
         for (String langName : languageNames) {
