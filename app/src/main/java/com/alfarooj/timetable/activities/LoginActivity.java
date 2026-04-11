@@ -160,7 +160,7 @@ public class LoginActivity extends BaseActivity {
         if (etUsername.getText().toString().isEmpty() || etUsername.getText().toString().equals("Enter username")) {
             etUsername.setHint(TranslationHelper.translateTextDirect("Enter username"));
         }
-        if (etPassword.getText().toString().isEmpty() || new String(etPassword.getText().toString()).equals("Enter password")) {
+        if (etPassword.getText().toString().isEmpty() || etPassword.getText().toString().equals("Enter password")) {
             etPassword.setHint(TranslationHelper.translateTextDirect("Enter password"));
         }
     }
@@ -210,6 +210,9 @@ public class LoginActivity extends BaseActivity {
                     TranslationHelper.saveLanguage(LoginActivity.this, newLang);
                     LanguageUtils.setLocale(LoginActivity.this, newLang);
                     updateUIText();
+                    // Refresh spinner texts after language change
+                    setupLanguages();
+                    adapter.notifyDataSetChanged();
                     Toast.makeText(LoginActivity.this, TranslationHelper.translateTextDirect("Language changed to ") + languageNames.get(position), Toast.LENGTH_SHORT).show();
                 }
             }

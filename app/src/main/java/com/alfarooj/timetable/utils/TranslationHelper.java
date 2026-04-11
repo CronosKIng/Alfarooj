@@ -8,8 +8,6 @@ import com.alfarooj.timetable.models.TranslateRequest;
 import com.alfarooj.timetable.models.TranslateResponse;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -19,11 +17,14 @@ public class TranslationHelper {
     private static final String KEY_LANGUAGE = "selected_language";
     private static Map<String, String> translationCache = new HashMap<>();
     private static String currentLanguage = "en";
+    private static Map<String, String> pendingTranslations = new HashMap<>();
 
     public static void saveLanguage(Context context, String langCode) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_LANGUAGE, langCode).apply();
         currentLanguage = langCode;
+        // Clear cache when language changes
+        translationCache.clear();
     }
 
     public static void loadLanguage(Context context) {
@@ -39,44 +40,42 @@ public class TranslationHelper {
         return currentLanguage;
     }
 
-    // DIRECT TRANSLATION - inarudisha String moja kwa moja kwa kutumia API
+    // DIRECT TRANSLATION - inarudisha String moja kwa moja
     public static String translateTextDirect(String text) {
         if (text == null || text.isEmpty()) return text;
         if (currentLanguage.equals("en")) return text;
         
-        // Angalia cache kwanza
         String cacheKey = text + "_" + currentLanguage;
         if (translationCache.containsKey(cacheKey)) {
             return translationCache.get(cacheKey);
         }
         
-        // Tumia API kwa translation synchronous
-        try {
-            final String[] translated = {text};
-            final CountDownLatch latch = new CountDownLatch(1);
-            
-            ApiClient.getApiService().translateText(new TranslateRequest(text, currentLanguage))
-                .enqueue(new Callback<TranslateResponse>() {
-                    @Override
-                    public void onResponse(Call<TranslateResponse> call, Response<TranslateResponse> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            translated[0] = response.body().getTranslated();
-                            translationCache.put(cacheKey, translated[0]);
-                        }
-                        latch.countDown();
-                    }
-                    
-                    @Override
-                    public void onFailure(Call<TranslateResponse> call, Throwable t) {
-                        latch.countDown();
-                    }
-                });
-            
-            latch.await(3, TimeUnit.SECONDS);
-            return translated[0];
-        } catch (Exception e) {
+        // Kama iko kwenye pending, rudisha text asili kwa sasa
+        if (pendingTranslations.containsKey(cacheKey)) {
             return text;
         }
+        
+        // Tumia API kwa translation
+        pendingTranslations.put(cacheKey, text);
+        
+        ApiClient.getApiService().translateText(new TranslateRequest(text, currentLanguage))
+            .enqueue(new Callback<TranslateResponse>() {
+                @Override
+                public void onResponse(Call<TranslateResponse> call, Response<TranslateResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        String translated = response.body().getTranslated();
+                        translationCache.put(cacheKey, translated);
+                        pendingTranslations.remove(cacheKey);
+                    }
+                }
+                
+                @Override
+                public void onFailure(Call<TranslateResponse> call, Throwable t) {
+                    pendingTranslations.remove(cacheKey);
+                }
+            });
+        
+        return text;
     }
 
     public static void translateTextView(TextView textView, String originalText) {
