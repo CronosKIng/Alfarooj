@@ -53,9 +53,11 @@ public class WaiterActivity extends BaseActivity {
         btnViewHistory = findViewById(R.id.btnViewHistory);
         btnLogout = findViewById(R.id.btnLogout);
         updateUI();
+        
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
         }
+        
         btnSignIn.setOnClickListener(v -> checkLocation("sign_in", "Sign In"));
         btnSignOut.setOnClickListener(v -> checkLocation("sign_out", "Sign Out"));
         btnBreakIn.setOnClickListener(v -> checkLocation("break_in", "Break In"));
@@ -66,19 +68,25 @@ public class WaiterActivity extends BaseActivity {
 
     private void updateUI() {
         String dept = session.getDepartment();
-        String icon = "🍽️";
-        tvWelcome.setText(TranslationHelper.translateText("User: ") + session.getFullName() + " (" + dept + ") " + icon);
-        btnSignIn.setText(TranslationHelper.translateText("SIGN IN"));
-        btnSignOut.setText(TranslationHelper.translateText("SIGN OUT"));
-        btnBreakIn.setText(TranslationHelper.translateText("BREAK IN"));
-        btnBreakOut.setText(TranslationHelper.translateText("BREAK OUT"));
-        btnViewHistory.setText(TranslationHelper.translateText("VIEW HISTORY"));
-        btnLogout.setText(TranslationHelper.translateText("LOGOUT"));
+        String icon = "🍱";
+        tvWelcome.setText(TranslationHelper.translateTextDirect("User: ") + session.getFullName() + " (" + dept + ") " + icon);
+        btnSignIn.setText(TranslationHelper.translateTextDirect("SIGN IN"));
+        btnSignOut.setText(TranslationHelper.translateTextDirect("SIGN OUT"));
+        btnBreakIn.setText(TranslationHelper.translateTextDirect("BREAK IN"));
+        btnBreakOut.setText(TranslationHelper.translateTextDirect("BREAK OUT"));
+        btnViewHistory.setText(TranslationHelper.translateTextDirect("VIEW HISTORY"));
+        btnLogout.setText(TranslationHelper.translateTextDirect("LOGOUT"));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateUI();
     }
 
     private void checkLocation(String eventType, String eventName) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, TranslationHelper.translateText("Location permission required!"), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, TranslationHelper.translateTextDirect("Location permission required!"), Toast.LENGTH_LONG).show();
             return;
         }
         pendingEventType = eventType;
@@ -91,7 +99,7 @@ public class WaiterActivity extends BaseActivity {
     }
 
     private void getLocationAndRecord() {
-        tvStatus.setText(TranslationHelper.translateText("Getting location..."));
+        tvStatus.setText(TranslationHelper.translateTextDirect("Getting location..."));
         LocationRequest request = new LocationRequest.Builder(10000).setPriority(Priority.PRIORITY_HIGH_ACCURACY).build();
         LocationCallback callback = new LocationCallback() {
             @Override
@@ -102,7 +110,7 @@ public class WaiterActivity extends BaseActivity {
                     currentLongitude = result.getLastLocation().getLongitude();
                     validateLocation();
                 } else {
-                    tvStatus.setText(TranslationHelper.translateText("Location failed"));
+                    tvStatus.setText(TranslationHelper.translateTextDirect("Location failed"));
                 }
             }
         };
@@ -117,11 +125,11 @@ public class WaiterActivity extends BaseActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().isWithinLocation())
                     recordAttendance();
                 else
-                    tvStatus.setText(TranslationHelper.translateText("Not at work location!"));
+                    tvStatus.setText(TranslationHelper.translateTextDirect("Not at work location!"));
             }
             @Override
             public void onFailure(Call<LocationResponse> call, Throwable t) {
-                tvStatus.setText(TranslationHelper.translateText("Network error"));
+                tvStatus.setText(TranslationHelper.translateTextDirect("Network error"));
             }
         });
     }

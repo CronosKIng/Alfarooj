@@ -422,9 +422,9 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadAllHistory() {
-        TranslationHelper.translateText("All History", new TranslationHelper.TranslationCallback() {
+        TranslationHelper.translateText("📖 All History", new TranslationHelper.TranslationCallback() {
             @Override public void onSuccess(String s) { setTitle(s); }
-            @Override public void onError(String e) { setTitle("All History"); }
+            @Override public void onError(String e) { setTitle("📖 All History"); }
         });
         
         ApiClient.getApiService().getAttendanceLogs(null)
