@@ -149,7 +149,7 @@ public class LoginActivity extends BaseActivity {
         });
     }
     
-    private void updateUIText() {
+    protected void updateUIText() {
         tvTitle.setText(TranslationHelper.translateTextDirect("AL FAROOJ AL SHAMI"));
         tvSubtitle.setText(TranslationHelper.translateTextDirect("TIME TABLE SYSTEM"));
         tvUsernameLabel.setText(TranslationHelper.translateTextDirect("Username:"));
