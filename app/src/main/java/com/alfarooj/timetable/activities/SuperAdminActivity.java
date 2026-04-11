@@ -67,16 +67,14 @@ public class SuperAdminActivity extends BaseActivity {
             navigationView = findViewById(R.id.navView);
             toolbar = findViewById(R.id.toolbar);
             contentFrame = findViewById(R.id.contentFrame);
+            
             setSupportActionBar(toolbar);
-
+            
             String title = "Super Admin Dashboard";
             TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
                 @Override public void onSuccess(String translatedText) { setTitle(translatedText); }
                 @Override public void onError(String error) { setTitle(title); }
             });
-
-            // Set icons kwenye navigation menu
-            setupNavigationMenuIcons();
 
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar,
@@ -84,7 +82,7 @@ public class SuperAdminActivity extends BaseActivity {
                 R.string.navigation_drawer_close);
             drawerLayout.addDrawerListener(toggle);
             toggle.syncState();
-
+            
             navigationView.setNavigationItemSelectedListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.nav_today_attendance) {
@@ -120,65 +118,6 @@ public class SuperAdminActivity extends BaseActivity {
         }
     }
 
-    private void setupNavigationMenuIcons() {
-        Menu menu = navigationView.getMenu();
-        
-        // Set icons kwa kila menu item
-        MenuItem todayAttendance = menu.findItem(R.id.nav_today_attendance);
-        MenuItem allHistory = menu.findItem(R.id.nav_all_history);
-        MenuItem kitchenHistory = menu.findItem(R.id.nav_kitchen_history);
-        MenuItem waiterHistory = menu.findItem(R.id.nav_waiter_history);
-        MenuItem deliveryHistory = menu.findItem(R.id.nav_delivery_history);
-        MenuItem managerHistory = menu.findItem(R.id.nav_manager_history);
-        MenuItem createAdmin = menu.findItem(R.id.nav_create_admin);
-        MenuItem createUser = menu.findItem(R.id.nav_create_user);
-        MenuItem users = menu.findItem(R.id.nav_users);
-        MenuItem logout = menu.findItem(R.id.nav_logout);
-        
-        if (todayAttendance != null) todayAttendance.setTitle("📋 " + todayAttendance.getTitle());
-        if (allHistory != null) allHistory.setTitle("📖 " + allHistory.getTitle());
-        if (kitchenHistory != null) kitchenHistory.setTitle("🧑‍🍳 " + kitchenHistory.getTitle());
-        if (waiterHistory != null) waiterHistory.setTitle("🍱 " + waiterHistory.getTitle());
-        if (deliveryHistory != null) deliveryHistory.setTitle("🚗 " + deliveryHistory.getTitle());
-        if (managerHistory != null) managerHistory.setTitle("💼 " + managerHistory.getTitle());
-        if (createAdmin != null) createAdmin.setTitle("👑 " + createAdmin.getTitle());
-        if (createUser != null) createUser.setTitle("👤 " + createUser.getTitle());
-        if (users != null) users.setTitle("👥 " + users.getTitle());
-        if (logout != null) logout.setTitle("🚪 " + logout.getTitle());
-        
-        // Tafsiri menu items
-        for (int i = 0; i < menu.size(); i++) {
-            MenuItem item = menu.getItem(i);
-            String originalTitle = item.getTitle().toString();
-            // Remove icon emoji before translation to avoid double emoji
-            String cleanTitle = originalTitle.replaceAll("[🧑‍🍳🍱🚗💼📋📖👑👤👥🚪]", "").trim();
-            TranslationHelper.translateText(cleanTitle, new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    // Preserve the icon
-                    String icon = getIconForTitle(originalTitle);
-                    item.setTitle(icon + " " + translatedText);
-                }
-                @Override
-                public void onError(String error) {}
-            });
-        }
-    }
-    
-    private String getIconForTitle(String title) {
-        if (title.contains("Today")) return "📋";
-        if (title.contains("All History")) return "📖";
-        if (title.contains("Kitchen")) return "🧑‍🍳";
-        if (title.contains("Waiter")) return "🍱";
-        if (title.contains("Delivery")) return "🚗";
-        if (title.contains("Manager")) return "💼";
-        if (title.contains("Create Admin")) return "👑";
-        if (title.contains("Create User")) return "👤";
-        if (title.contains("Manage Users") || title.contains("Users")) return "👥";
-        if (title.contains("Logout")) return "🚪";
-        return "";
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -187,7 +126,6 @@ public class SuperAdminActivity extends BaseActivity {
             @Override public void onSuccess(String translatedText) { setTitle(translatedText); }
             @Override public void onError(String error) { setTitle(title); }
         });
-        setupNavigationMenuIcons();
         loadUsers();
     }
 
@@ -233,7 +171,7 @@ public class SuperAdminActivity extends BaseActivity {
         TranslationHelper.translateHint(etPassword, "Password");
         
         String[] departments = {"kitchen", "waiter", "delivery", "manager"};
-        String[] departmentNames = {"🧑‍🍳 Kitchen", "🍱 Waiter", "🚗 Delivery", "💼 Manager"};
+        String[] departmentNames = {"Kitchen", "Waiter", "Delivery", "Manager"};
         
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departmentNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -326,9 +264,9 @@ public class SuperAdminActivity extends BaseActivity {
                             userList.add(apiUser);
                         }
                         displayUsers();
-                        TranslationHelper.translateText("👥 Manage Users (" + userList.size() + " users)", new TranslationHelper.TranslationCallback() {
+                        TranslationHelper.translateText("Manage Users (" + userList.size() + " users)", new TranslationHelper.TranslationCallback() {
                             @Override public void onSuccess(String translatedText) { setTitle(translatedText); }
-                            @Override public void onError(String error) { setTitle("👥 Manage Users (" + userList.size() + " users)"); }
+                            @Override public void onError(String error) { setTitle("Manage Users (" + userList.size() + " users)"); }
                         });
                     } else {
                         TranslationHelper.translateText("Failed to load users", new TranslationHelper.TranslationCallback() {
@@ -362,9 +300,9 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadTodayAttendance() {
-        TranslationHelper.translateText("📋 Today's Attendance", new TranslationHelper.TranslationCallback() {
+        TranslationHelper.translateText("Today's Attendance", new TranslationHelper.TranslationCallback() {
             @Override public void onSuccess(String s) { setTitle(s); }
-            @Override public void onError(String e) { setTitle("📋 Today's Attendance"); }
+            @Override public void onError(String e) { setTitle("Today's Attendance"); }
         });
         
         ApiClient.getApiService().getTodayAttendance()
@@ -394,9 +332,9 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadAllHistory() {
-        TranslationHelper.translateText("📖 All History", new TranslationHelper.TranslationCallback() {
+        TranslationHelper.translateText("All History", new TranslationHelper.TranslationCallback() {
             @Override public void onSuccess(String s) { setTitle(s); }
-            @Override public void onError(String e) { setTitle("📖 All History"); }
+            @Override public void onError(String e) { setTitle("All History"); }
         });
         
         ApiClient.getApiService().getAttendanceLogs(null)
@@ -422,10 +360,10 @@ public class SuperAdminActivity extends BaseActivity {
     private void loadHistoryByDepartment(String department) {
         String title = "";
         switch(department) {
-            case "kitchen": title = "🧑‍🍳 Kitchen History"; break;
-            case "waiter": title = "🍱 Waiter History"; break;
-            case "delivery": title = "🚗 Delivery History"; break;
-            case "manager": title = "💼 Manager History"; break;
+            case "kitchen": title = "Kitchen History"; break;
+            case "waiter": title = "Waiter History"; break;
+            case "delivery": title = "Delivery History"; break;
+            case "manager": title = "Manager History"; break;
         }
         final String finalTitle = title;
         
