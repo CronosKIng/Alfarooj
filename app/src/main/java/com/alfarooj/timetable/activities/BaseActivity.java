@@ -68,28 +68,26 @@ public class BaseActivity extends AppCompatActivity {
 
     protected void showCommentDialog(Runnable onSuccess) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(TranslationHelper.translateText("Reason for lateness / Comment"));
+        builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness / Comment"));
         final EditText input = new EditText(this);
-        input.setHint(TranslationHelper.translateText("Enter your reason here..."));
+        input.setHint(TranslationHelper.translateTextDirect("Enter your reason here..."));
         builder.setView(input);
-        builder.setPositiveButton(TranslationHelper.translateText("Submit"), (dialog, which) -> {
-            String comment = input.getText().toString().trim();
-            // Store comment somewhere or pass via callback
+        builder.setPositiveButton(TranslationHelper.translateTextDirect("Submit"), (dialog, which) -> {
             onSuccess.run();
         });
-        builder.setNegativeButton(TranslationHelper.translateText("Cancel"), null);
+        builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
         builder.show();
     }
 
     protected void showLanguageDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(TranslationHelper.translateText("Select Language / Chagua Lugha"));
+        builder.setTitle(TranslationHelper.translateTextDirect("Select Language / Chagua Lugha"));
         String[] languages = languageNames.toArray(new String[0]);
         builder.setItems(languages, (dialog, which) -> {
             String selectedCode = languageCodes.get(which);
             TranslationHelper.setCurrentLanguage(selectedCode);
             TranslationHelper.saveLanguage(this, selectedCode);
-            Toast.makeText(this, TranslationHelper.translateText("Language changed to ") + languages[which], Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, TranslationHelper.translateTextDirect("Language changed to ") + languages[which], Toast.LENGTH_SHORT).show();
             recreate();
         });
         builder.show();
