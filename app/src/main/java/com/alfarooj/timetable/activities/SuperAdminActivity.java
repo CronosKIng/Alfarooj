@@ -305,7 +305,8 @@ public class SuperAdminActivity extends BaseActivity {
             case "delivery": title = TranslationHelper.translateTextDirect("Delivery History"); break;
             case "manager": title = TranslationHelper.translateTextDirect("Manager History"); break;
         }
-        setTitle(title);
+        final String finalTitle = title;
+        setTitle(finalTitle);
         
         ApiClient.getApiService().getAttendanceLogs(department)
             .enqueue(new Callback<AttendanceLogsResponse>() {
@@ -314,8 +315,6 @@ public class SuperAdminActivity extends BaseActivity {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         logList = new ArrayList<>(response.body().getLogs());
                         if (logList.isEmpty()) {
-                            final String finalTitle = title;
-                            Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("No ") + finalTitle + " " + TranslationHelper.translateTextDirect("records found"), Toast.LENGTH_SHORT).show();
                             Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("No ") + finalTitle + " " + TranslationHelper.translateTextDirect("records found"), Toast.LENGTH_SHORT).show();
                         }
                         showHistoryList();
