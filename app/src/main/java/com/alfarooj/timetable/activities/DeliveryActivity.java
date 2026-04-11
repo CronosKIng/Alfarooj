@@ -40,7 +40,6 @@ public class DeliveryActivity extends BaseActivity {
     private double currentLatitude = 0, currentLongitude = 0;
     private String pendingEventType = "", pendingEventName = "";
     private String pendingComment = "";
-    private boolean isLate = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +79,7 @@ public class DeliveryActivity extends BaseActivity {
         String dept = session.getDepartment();
         String icon = "🚗";
         tvWelcome.setText(TranslationHelper.translateTextDirect("User: ") + session.getFullName() + " (" + dept + ") " + icon);
+        
         btnSignIn.setText(TranslationHelper.translateTextDirect("SIGN IN"));
         btnSignOut.setText(TranslationHelper.translateTextDirect("SIGN OUT"));
         btnBreakIn.setText(TranslationHelper.translateTextDirect("BREAK IN"));
@@ -105,7 +105,6 @@ public class DeliveryActivity extends BaseActivity {
         pendingEventName = eventName;
         
         if (eventType.equals("sign_in")) {
-            // Ask if user is late
             showLateDialog();
         } else {
             pendingComment = "";
@@ -119,12 +118,10 @@ public class DeliveryActivity extends BaseActivity {
         builder.setMessage(TranslationHelper.translateTextDirect("Did you arrive late to work today?"));
         
         builder.setPositiveButton(TranslationHelper.translateTextDirect("Yes, I'm late"), (dialog, which) -> {
-            isLate = true;
             showCommentDialog();
         });
         
         builder.setNegativeButton(TranslationHelper.translateTextDirect("No, I'm on time"), (dialog, which) -> {
-            isLate = false;
             pendingComment = "";
             startLocationCheck();
         });
@@ -135,7 +132,6 @@ public class DeliveryActivity extends BaseActivity {
     private void showCommentDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness"));
-        builder.setMessage(TranslationHelper.translateTextDirect("Please explain why you are late:"));
         
         final EditText input = new EditText(this);
         input.setHint(TranslationHelper.translateTextDirect("Enter your reason here..."));
@@ -143,12 +139,7 @@ public class DeliveryActivity extends BaseActivity {
         
         builder.setPositiveButton(TranslationHelper.translateTextDirect("Submit"), (dialog, which) -> {
             pendingComment = input.getText().toString().trim();
-            if (pendingComment.isEmpty()) {
-                Toast.makeText(this, TranslationHelper.translateTextDirect("Please enter a reason"), Toast.LENGTH_SHORT).show();
-                showCommentDialog();
-            } else {
-                startLocationCheck();
-            }
+            startLocationCheck();
         });
         
         builder.setNegativeButton(TranslationHelper.translateTextDirect("Skip"), (dialog, which) -> {
@@ -200,9 +191,15 @@ public class DeliveryActivity extends BaseActivity {
         AttendanceRequest request = new AttendanceRequest(session.getUserId(), session.getUsername(), session.getFullName(),
                 session.getDepartment(), pendingEventType, pendingEventName, currentLatitude, currentLongitude, location);
         
-        // Add comment for lateness
         if (pendingEventType.equals("sign_in") && !pendingComment.isEmpty()) {
-            // comment already handled
+            request.setComment(pendingComment);
+        }
+        
+        // Set order type for pickup/dropoff
+        if (pendingEventType.equals("pickup_order")) {
+            request.setOrderType("pickup");
+        } else if (pendingEventType.equals("dropoff_order")) {
+            request.setOrderType("dropoff");
         }
         
         ApiClient.getApiService().recordAttendance(request).enqueue(new Callback<AttendanceResponse>() {
@@ -210,11 +207,7 @@ public class DeliveryActivity extends BaseActivity {
             public void onResponse(Call<AttendanceResponse> call, Response<AttendanceResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     tvStatus.setText(pendingEventName + " recorded");
-                    String msg = pendingEventName + " Success!";
-                    if (!pendingComment.isEmpty()) {
-                        msg += " Comment saved.";
-                    }
-                    Toast.makeText(DeliveryActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DeliveryActivity.this, pendingEventName + " Success!", Toast.LENGTH_SHORT).show();
                     pendingComment = "";
                 } else {
                     tvStatus.setText("Failed");

@@ -75,6 +75,7 @@ public class ManagerActivity extends BaseActivity {
         String dept = session.getDepartment();
         String icon = "💼";
         tvWelcome.setText(TranslationHelper.translateTextDirect("User: ") + session.getFullName() + " (" + dept + ") " + icon);
+        
         btnSignIn.setText(TranslationHelper.translateTextDirect("SIGN IN"));
         btnSignOut.setText(TranslationHelper.translateTextDirect("SIGN OUT"));
         btnBreakIn.setText(TranslationHelper.translateTextDirect("BREAK IN"));
@@ -185,7 +186,7 @@ public class ManagerActivity extends BaseActivity {
                 session.getDepartment(), pendingEventType, pendingEventName, currentLatitude, currentLongitude, location);
         
         if (pendingEventType.equals("sign_in") && !pendingComment.isEmpty()) {
-            // comment already handled
+            request.setComment(pendingComment);
         }
         
         ApiClient.getApiService().recordAttendance(request).enqueue(new Callback<AttendanceResponse>() {

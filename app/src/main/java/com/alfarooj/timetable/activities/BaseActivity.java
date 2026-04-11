@@ -41,6 +41,11 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         LanguageUtils.applyLanguage(this);
         TranslationHelper.loadLanguage(this);
+        updateUIText();
+    }
+    
+    protected void updateUIText() {
+        // Override in child activities
     }
 
     protected void setupLanguages() {
@@ -64,19 +69,6 @@ public class BaseActivity extends AppCompatActivity {
         languageCodes.add("th"); languageNames.add("Thai");
         languageCodes.add("pl"); languageNames.add("Polish");
         languageCodes.add("uk"); languageNames.add("Ukrainian");
-    }
-
-    protected void showCommentDialog(Runnable onSuccess) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness / Comment"));
-        final EditText input = new EditText(this);
-        input.setHint(TranslationHelper.translateTextDirect("Enter your reason here..."));
-        builder.setView(input);
-        builder.setPositiveButton(TranslationHelper.translateTextDirect("Submit"), (dialog, which) -> {
-            onSuccess.run();
-        });
-        builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
-        builder.show();
     }
 
     protected void showLanguageDialog() {
