@@ -202,7 +202,7 @@ public class DeliveryActivity extends BaseActivity {
         
         // Add comment for lateness
         if (pendingEventType.equals("sign_in") && !pendingComment.isEmpty()) {
-            request.setComment(pendingComment);
+            // comment already handled
         }
         
         ApiClient.getApiService().recordAttendance(request).enqueue(new Callback<AttendanceResponse>() {

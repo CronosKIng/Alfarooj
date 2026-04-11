@@ -160,7 +160,7 @@ public class LoginActivity extends BaseActivity {
         if (etUsername.getText().toString().isEmpty() || etUsername.getText().toString().equals("Enter username")) {
             etUsername.setHint(TranslationHelper.translateTextDirect("Enter username"));
         }
-        if (etPassword.getText().toString().isEmpty() || new String(etPassword.getPassword()).equals("Enter password")) {
+        if (etPassword.getText().toString().isEmpty() || new String(etPassword.getText().toString()).equals("Enter password")) {
             etPassword.setHint(TranslationHelper.translateTextDirect("Enter password"));
         }
     }

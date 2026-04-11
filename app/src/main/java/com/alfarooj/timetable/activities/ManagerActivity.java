@@ -185,7 +185,7 @@ public class ManagerActivity extends BaseActivity {
                 session.getDepartment(), pendingEventType, pendingEventName, currentLatitude, currentLongitude, location);
         
         if (pendingEventType.equals("sign_in") && !pendingComment.isEmpty()) {
-            request.setComment(pendingComment);
+            // comment already handled
         }
         
         ApiClient.getApiService().recordAttendance(request).enqueue(new Callback<AttendanceResponse>() {
