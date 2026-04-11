@@ -67,24 +67,16 @@ public class SuperAdminActivity extends BaseActivity {
             navigationView = findViewById(R.id.navView);
             toolbar = findViewById(R.id.toolbar);
             contentFrame = findViewById(R.id.contentFrame);
-            
             setSupportActionBar(toolbar);
-            
-            // Set title directly
+
             String title = "Super Admin Dashboard";
             TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    setTitle(translatedText);
-                }
-                @Override
-                public void onError(String error) {
-                    setTitle(title);
-                }
+                @Override public void onSuccess(String translatedText) { setTitle(translatedText); }
+                @Override public void onError(String error) { setTitle(title); }
             });
-            
-            // Tafsiri navigation menu yote
-            translateNavigationMenu();
+
+            // Set icons kwenye navigation menu
+            setupNavigationMenuIcons();
 
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar,
@@ -92,7 +84,7 @@ public class SuperAdminActivity extends BaseActivity {
                 R.string.navigation_drawer_close);
             drawerLayout.addDrawerListener(toggle);
             toggle.syncState();
-            
+
             navigationView.setNavigationItemSelectedListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.nav_today_attendance) {
@@ -127,57 +119,87 @@ public class SuperAdminActivity extends BaseActivity {
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
-    
-    private void translateNavigationMenu() {
-        // Tafsiri menu items zote
+
+    private void setupNavigationMenuIcons() {
         Menu menu = navigationView.getMenu();
+        
+        // Set icons kwa kila menu item
+        MenuItem todayAttendance = menu.findItem(R.id.nav_today_attendance);
+        MenuItem allHistory = menu.findItem(R.id.nav_all_history);
+        MenuItem kitchenHistory = menu.findItem(R.id.nav_kitchen_history);
+        MenuItem waiterHistory = menu.findItem(R.id.nav_waiter_history);
+        MenuItem deliveryHistory = menu.findItem(R.id.nav_delivery_history);
+        MenuItem managerHistory = menu.findItem(R.id.nav_manager_history);
+        MenuItem createAdmin = menu.findItem(R.id.nav_create_admin);
+        MenuItem createUser = menu.findItem(R.id.nav_create_user);
+        MenuItem users = menu.findItem(R.id.nav_users);
+        MenuItem logout = menu.findItem(R.id.nav_logout);
+        
+        if (todayAttendance != null) todayAttendance.setTitle("📋 " + todayAttendance.getTitle());
+        if (allHistory != null) allHistory.setTitle("📖 " + allHistory.getTitle());
+        if (kitchenHistory != null) kitchenHistory.setTitle("🧑‍🍳 " + kitchenHistory.getTitle());
+        if (waiterHistory != null) waiterHistory.setTitle("🍱 " + waiterHistory.getTitle());
+        if (deliveryHistory != null) deliveryHistory.setTitle("🚗 " + deliveryHistory.getTitle());
+        if (managerHistory != null) managerHistory.setTitle("💼 " + managerHistory.getTitle());
+        if (createAdmin != null) createAdmin.setTitle("👑 " + createAdmin.getTitle());
+        if (createUser != null) createUser.setTitle("👤 " + createUser.getTitle());
+        if (users != null) users.setTitle("👥 " + users.getTitle());
+        if (logout != null) logout.setTitle("🚪 " + logout.getTitle());
+        
+        // Tafsiri menu items
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
             String originalTitle = item.getTitle().toString();
-            TranslationHelper.translateText(originalTitle, new TranslationHelper.TranslationCallback() {
+            // Remove icon emoji before translation to avoid double emoji
+            String cleanTitle = originalTitle.replaceAll("[🧑‍🍳🍱🚗💼📋📖👑👤👥🚪]", "").trim();
+            TranslationHelper.translateText(cleanTitle, new TranslationHelper.TranslationCallback() {
                 @Override
                 public void onSuccess(String translatedText) {
-                    item.setTitle(translatedText);
+                    // Preserve the icon
+                    String icon = getIconForTitle(originalTitle);
+                    item.setTitle(icon + " " + translatedText);
                 }
                 @Override
                 public void onError(String error) {}
             });
         }
     }
+    
+    private String getIconForTitle(String title) {
+        if (title.contains("Today")) return "📋";
+        if (title.contains("All History")) return "📖";
+        if (title.contains("Kitchen")) return "🧑‍🍳";
+        if (title.contains("Waiter")) return "🍱";
+        if (title.contains("Delivery")) return "🚗";
+        if (title.contains("Manager")) return "💼";
+        if (title.contains("Create Admin")) return "👑";
+        if (title.contains("Create User")) return "👤";
+        if (title.contains("Manage Users") || title.contains("Users")) return "👥";
+        if (title.contains("Logout")) return "🚪";
+        return "";
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh title
         String title = "Super Admin Dashboard";
         TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
-            @Override
-            public void onSuccess(String translatedText) {
-                setTitle(translatedText);
-            }
-            @Override
-            public void onError(String error) {
-                setTitle(title);
-            }
+            @Override public void onSuccess(String translatedText) { setTitle(translatedText); }
+            @Override public void onError(String error) { setTitle(title); }
         });
-        translateNavigationMenu();
+        setupNavigationMenuIcons();
         loadUsers();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        // Tafsiri options menu
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
             String title = item.getTitle().toString();
             TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    item.setTitle(translatedText);
-                }
-                @Override
-                public void onError(String error) {}
+                @Override public void onSuccess(String translatedText) { item.setTitle(translatedText); }
+                @Override public void onError(String error) {}
             });
         }
         return true;
@@ -194,17 +216,10 @@ public class SuperAdminActivity extends BaseActivity {
 
     private void showCreateUserDialog(String role) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        
         String title = role.equals("admin") ? "Create Admin" : "Create User";
         TranslationHelper.translateText(title, new TranslationHelper.TranslationCallback() {
-            @Override
-            public void onSuccess(String translatedText) {
-                builder.setTitle(translatedText);
-            }
-            @Override
-            public void onError(String error) {
-                builder.setTitle(title);
-            }
+            @Override public void onSuccess(String translatedText) { builder.setTitle(translatedText); }
+            @Override public void onError(String error) { builder.setTitle(title); }
         });
 
         View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
@@ -213,26 +228,12 @@ public class SuperAdminActivity extends BaseActivity {
         EditText etPassword = view.findViewById(R.id.etPassword);
         Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
         
-        // Tafsiri hints za input fields
         TranslationHelper.translateHint(etFullName, "Full Name");
         TranslationHelper.translateHint(etUsername, "Username");
         TranslationHelper.translateHint(etPassword, "Password");
         
         String[] departments = {"kitchen", "waiter", "delivery", "manager"};
-        String[] departmentNames = {"Kitchen", "Waiter", "Delivery", "Manager"};
-        
-        // Tafsiri department names
-        for (int i = 0; i < departmentNames.length; i++) {
-            final int index = i;
-            TranslationHelper.translateText(departmentNames[i], new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String translatedText) {
-                    departmentNames[index] = translatedText;
-                }
-                @Override
-                public void onError(String error) {}
-            });
-        }
+        String[] departmentNames = {"🧑‍🍳 Kitchen", "🍱 Waiter", "🚗 Delivery", "💼 Manager"};
         
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departmentNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -240,16 +241,13 @@ public class SuperAdminActivity extends BaseActivity {
         
         builder.setView(view);
         
-        // Tafsiri button texts
         TranslationHelper.translateText("Create", new TranslationHelper.TranslationCallback() {
-            @Override
-            public void onSuccess(String translatedText) {
+            @Override public void onSuccess(String translatedText) {
                 builder.setPositiveButton(translatedText, (dialog, which) -> {
                     createUserLogic(etFullName, etUsername, etPassword, spinnerDepartment, departments, role);
                 });
             }
-            @Override
-            public void onError(String error) {
+            @Override public void onError(String error) {
                 builder.setPositiveButton("Create", (dialog, which) -> {
                     createUserLogic(etFullName, etUsername, etPassword, spinnerDepartment, departments, role);
                 });
@@ -257,14 +255,8 @@ public class SuperAdminActivity extends BaseActivity {
         });
         
         TranslationHelper.translateText("Cancel", new TranslationHelper.TranslationCallback() {
-            @Override
-            public void onSuccess(String translatedText) {
-                builder.setNegativeButton(translatedText, null);
-            }
-            @Override
-            public void onError(String error) {
-                builder.setNegativeButton("Cancel", null);
-            }
+            @Override public void onSuccess(String translatedText) { builder.setNegativeButton(translatedText, null); }
+            @Override public void onError(String error) { builder.setNegativeButton("Cancel", null); }
         });
         
         builder.show();
@@ -280,10 +272,8 @@ public class SuperAdminActivity extends BaseActivity {
         
         if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
             TranslationHelper.translateText("Please fill all fields", new TranslationHelper.TranslationCallback() {
-                @Override
-                public void onSuccess(String s) { Toast.makeText(SuperAdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
-                @Override
-                public void onError(String e) { Toast.makeText(SuperAdminActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show(); }
+                @Override public void onSuccess(String s) { Toast.makeText(SuperAdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
+                @Override public void onError(String e) { Toast.makeText(SuperAdminActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show(); }
             });
             return;
         }
@@ -297,18 +287,14 @@ public class SuperAdminActivity extends BaseActivity {
                 public void onResponse(Call<CreateUserResponse> call, Response<CreateUserResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         TranslationHelper.translateText("User created successfully!", new TranslationHelper.TranslationCallback() {
-                            @Override
-                            public void onSuccess(String s) { Toast.makeText(SuperAdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
-                            @Override
-                            public void onError(String e) { Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show(); }
+                            @Override public void onSuccess(String s) { Toast.makeText(SuperAdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
+                            @Override public void onError(String e) { Toast.makeText(SuperAdminActivity.this, "User created successfully!", Toast.LENGTH_SHORT).show(); }
                         });
                         loadUsers();
                     } else {
                         TranslationHelper.translateText("Error: Username already exists", new TranslationHelper.TranslationCallback() {
-                            @Override
-                            public void onSuccess(String s) { Toast.makeText(SuperAdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
-                            @Override
-                            public void onError(String e) { Toast.makeText(SuperAdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show(); }
+                            @Override public void onSuccess(String s) { Toast.makeText(SuperAdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
+                            @Override public void onError(String e) { Toast.makeText(SuperAdminActivity.this, "Error: Username already exists", Toast.LENGTH_SHORT).show(); }
                         });
                     }
                 }
@@ -316,10 +302,8 @@ public class SuperAdminActivity extends BaseActivity {
                 @Override
                 public void onFailure(Call<CreateUserResponse> call, Throwable t) {
                     TranslationHelper.translateText("Network error: " + t.getMessage(), new TranslationHelper.TranslationCallback() {
-                        @Override
-                        public void onSuccess(String s) { Toast.makeText(SuperAdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
-                        @Override
-                        public void onError(String e) { Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show(); }
+                        @Override public void onSuccess(String s) { Toast.makeText(SuperAdminActivity.this, s, Toast.LENGTH_SHORT).show(); }
+                        @Override public void onError(String e) { Toast.makeText(SuperAdminActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show(); }
                     });
                 }
             });
@@ -327,14 +311,8 @@ public class SuperAdminActivity extends BaseActivity {
     
     private void loadUsers() {
         TranslationHelper.translateText("Loading users...", new TranslationHelper.TranslationCallback() {
-            @Override
-            public void onSuccess(String translatedText) {
-                setTitle(translatedText);
-            }
-            @Override
-            public void onError(String error) {
-                setTitle("Loading users...");
-            }
+            @Override public void onSuccess(String translatedText) { setTitle(translatedText); }
+            @Override public void onError(String error) { setTitle("Loading users..."); }
         });
         
         ApiClient.getApiService().getUsers()
@@ -349,14 +327,8 @@ public class SuperAdminActivity extends BaseActivity {
                         }
                         displayUsers();
                         TranslationHelper.translateText("👥 Manage Users (" + userList.size() + " users)", new TranslationHelper.TranslationCallback() {
-                            @Override
-                            public void onSuccess(String translatedText) {
-                                setTitle(translatedText);
-                            }
-                            @Override
-                            public void onError(String error) {
-                                setTitle("👥 Manage Users (" + userList.size() + " users)");
-                            }
+                            @Override public void onSuccess(String translatedText) { setTitle(translatedText); }
+                            @Override public void onError(String error) { setTitle("👥 Manage Users (" + userList.size() + " users)"); }
                         });
                     } else {
                         TranslationHelper.translateText("Failed to load users", new TranslationHelper.TranslationCallback() {
@@ -390,9 +362,9 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadTodayAttendance() {
-        TranslationHelper.translateText("Today's Attendance", new TranslationHelper.TranslationCallback() {
+        TranslationHelper.translateText("📋 Today's Attendance", new TranslationHelper.TranslationCallback() {
             @Override public void onSuccess(String s) { setTitle(s); }
-            @Override public void onError(String e) { setTitle("Today's Attendance"); }
+            @Override public void onError(String e) { setTitle("📋 Today's Attendance"); }
         });
         
         ApiClient.getApiService().getTodayAttendance()
@@ -422,9 +394,9 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadAllHistory() {
-        TranslationHelper.translateText("📖 📖 All History", new TranslationHelper.TranslationCallback() {
+        TranslationHelper.translateText("📖 All History", new TranslationHelper.TranslationCallback() {
             @Override public void onSuccess(String s) { setTitle(s); }
-            @Override public void onError(String e) { setTitle("📖 📖 All History"); }
+            @Override public void onError(String e) { setTitle("📖 All History"); }
         });
         
         ApiClient.getApiService().getAttendanceLogs(null)
