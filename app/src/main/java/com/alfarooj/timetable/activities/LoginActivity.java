@@ -44,6 +44,7 @@ public class LoginActivity extends BaseActivity {
     private static final int LOCATION_PERMISSION_REQUEST = 100;
     private List<String> languageCodes = new ArrayList<>();
     private List<String> languageNames = new ArrayList<>();
+    private ArrayAdapter<String> spinnerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,7 +150,7 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
-    protected void updateUIText() {
+    private void updateUIText() {
         tvTitle.setText(TranslationHelper.translateTextDirect("AL FAROOJ AL SHAMI"));
         tvSubtitle.setText(TranslationHelper.translateTextDirect("TIME TABLE SYSTEM"));
         tvUsernameLabel.setText(TranslationHelper.translateTextDirect("Username:"));
@@ -157,43 +158,73 @@ public class LoginActivity extends BaseActivity {
         tvLanguageLabel.setText(TranslationHelper.translateTextDirect("Select Language:"));
         btnLogin.setText(TranslationHelper.translateTextDirect("LOGIN"));
         
-        if (etUsername.getText().toString().isEmpty() || etUsername.getText().toString().equals("Enter username")) {
+        String currentUsername = etUsername.getText().toString();
+        if (currentUsername.isEmpty() || currentUsername.equals("Enter username") || currentUsername.equals(TranslationHelper.translateTextDirect("Enter username"))) {
             etUsername.setHint(TranslationHelper.translateTextDirect("Enter username"));
+            if (currentUsername.equals("Enter username")) {
+                etUsername.setText("");
+            }
         }
-        if (etPassword.getText().toString().isEmpty() || etPassword.getText().toString().equals("Enter password")) {
+        
+        String currentPassword = etPassword.getText().toString();
+        if (currentPassword.isEmpty() || currentPassword.equals("Enter password") || currentPassword.equals(TranslationHelper.translateTextDirect("Enter password"))) {
             etPassword.setHint(TranslationHelper.translateTextDirect("Enter password"));
+            if (currentPassword.equals("Enter password")) {
+                etPassword.setText("");
+            }
         }
     }
 
-    protected void setupLanguages() {
+    private void setupLanguages() {
         languageCodes.clear();
         languageNames.clear();
-        languageCodes.add("en"); languageNames.add(TranslationHelper.translateTextDirect("English"));
-        languageCodes.add("sw"); languageNames.add(TranslationHelper.translateTextDirect("Kiswahili"));
-        languageCodes.add("ar"); languageNames.add(TranslationHelper.translateTextDirect("Arabic"));
-        languageCodes.add("fr"); languageNames.add(TranslationHelper.translateTextDirect("French"));
-        languageCodes.add("es"); languageNames.add(TranslationHelper.translateTextDirect("Spanish"));
-        languageCodes.add("de"); languageNames.add(TranslationHelper.translateTextDirect("German"));
-        languageCodes.add("it"); languageNames.add(TranslationHelper.translateTextDirect("Italian"));
-        languageCodes.add("pt"); languageNames.add(TranslationHelper.translateTextDirect("Portuguese"));
-        languageCodes.add("ru"); languageNames.add(TranslationHelper.translateTextDirect("Russian"));
-        languageCodes.add("zh"); languageNames.add(TranslationHelper.translateTextDirect("Chinese"));
-        languageCodes.add("ja"); languageNames.add(TranslationHelper.translateTextDirect("Japanese"));
-        languageCodes.add("ko"); languageNames.add(TranslationHelper.translateTextDirect("Korean"));
-        languageCodes.add("hi"); languageNames.add(TranslationHelper.translateTextDirect("Hindi"));
-        languageCodes.add("tr"); languageNames.add(TranslationHelper.translateTextDirect("Turkish"));
-        languageCodes.add("nl"); languageNames.add(TranslationHelper.translateTextDirect("Dutch"));
-        languageCodes.add("el"); languageNames.add(TranslationHelper.translateTextDirect("Greek"));
-        languageCodes.add("vi"); languageNames.add(TranslationHelper.translateTextDirect("Vietnamese"));
-        languageCodes.add("th"); languageNames.add(TranslationHelper.translateTextDirect("Thai"));
-        languageCodes.add("pl"); languageNames.add(TranslationHelper.translateTextDirect("Polish"));
-        languageCodes.add("uk"); languageNames.add(TranslationHelper.translateTextDirect("Ukrainian"));
+        languageCodes.add("en"); languageNames.add("English");
+        languageCodes.add("sw"); languageNames.add("Kiswahili");
+        languageCodes.add("ar"); languageNames.add("Arabic");
+        languageCodes.add("fr"); languageNames.add("French");
+        languageCodes.add("es"); languageNames.add("Spanish");
+        languageCodes.add("de"); languageNames.add("German");
+        languageCodes.add("it"); languageNames.add("Italian");
+        languageCodes.add("pt"); languageNames.add("Portuguese");
+        languageCodes.add("ru"); languageNames.add("Russian");
+        languageCodes.add("zh"); languageNames.add("Chinese");
+        languageCodes.add("ja"); languageNames.add("Japanese");
+        languageCodes.add("ko"); languageNames.add("Korean");
+        languageCodes.add("hi"); languageNames.add("Hindi");
+        languageCodes.add("tr"); languageNames.add("Turkish");
+        languageCodes.add("nl"); languageNames.add("Dutch");
+        languageCodes.add("el"); languageNames.add("Greek");
+        languageCodes.add("vi"); languageNames.add("Vietnamese");
+        languageCodes.add("th"); languageNames.add("Thai");
+        languageCodes.add("pl"); languageNames.add("Polish");
+        languageCodes.add("uk"); languageNames.add("Ukrainian");
+    }
+
+    private void refreshSpinnerLanguageNames() {
+        // Badilisha majina ya lugha kwenye spinner kwa lugha mpya
+        List<String> translatedNames = new ArrayList<>();
+        for (String langName : languageNames) {
+            translatedNames.add(TranslationHelper.translateTextDirect(langName));
+        }
+        if (spinnerAdapter != null) {
+            spinnerAdapter.clear();
+            for (String name : translatedNames) {
+                spinnerAdapter.add(name);
+            }
+            spinnerAdapter.notifyDataSetChanged();
+        }
     }
 
     private void setupLanguageSpinner() {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, languageNames);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerLanguage.setAdapter(adapter);
+        // First create adapter with original names
+        List<String> displayNames = new ArrayList<>();
+        for (String langName : languageNames) {
+            displayNames.add(TranslationHelper.translateTextDirect(langName));
+        }
+        
+        spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, displayNames);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerLanguage.setAdapter(spinnerAdapter);
 
         String savedLang = TranslationHelper.getCurrentLanguage();
         int position = languageCodes.indexOf(savedLang);
@@ -206,14 +237,19 @@ public class LoginActivity extends BaseActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String newLang = languageCodes.get(position);
                 if (!newLang.equals(TranslationHelper.getCurrentLanguage())) {
+                    // Change language
                     TranslationHelper.setCurrentLanguage(newLang);
                     TranslationHelper.saveLanguage(LoginActivity.this, newLang);
                     LanguageUtils.setLocale(LoginActivity.this, newLang);
+                    
+                    // Update ALL UI texts immediately
                     updateUIText();
-                    // Refresh spinner texts after language change
-                    setupLanguages();
-                    adapter.notifyDataSetChanged();
-                    Toast.makeText(LoginActivity.this, TranslationHelper.translateTextDirect("Language changed to ") + languageNames.get(position), Toast.LENGTH_SHORT).show();
+                    
+                    // Refresh spinner display names
+                    refreshSpinnerLanguageNames();
+                    
+                    // Show confirmation
+                    Toast.makeText(LoginActivity.this, TranslationHelper.translateTextDirect("Language changed to ") + TranslationHelper.translateTextDirect(languageNames.get(position)), Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
