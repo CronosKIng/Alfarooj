@@ -73,6 +73,14 @@ public class SuperAdminActivity extends BaseActivity {
             String title = TranslationHelper.translateTextDirect("Super Admin Dashboard");
             setTitle(title);
 
+            // Translate navigation menu titles
+            Menu navMenu = navigationView.getMenu();
+            for (int i = 0; i < navMenu.size(); i++) {
+                MenuItem item = navMenu.getItem(i);
+                String originalTitle = item.getTitle().toString();
+                item.setTitle(TranslationHelper.translateTextDirect(originalTitle));
+            }
+
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar,
                 R.string.navigation_drawer_open,
@@ -87,17 +95,17 @@ public class SuperAdminActivity extends BaseActivity {
                 } else if (id == R.id.nav_all_history) {
                     loadAllHistory();
                 } else if (id == R.id.nav_kitchen_history) {
-                    loadHistoryByDepartment(TranslationHelper.translateTextDirect("kitchen"));
+                    loadHistoryByDepartment("kitchen");
                 } else if (id == R.id.nav_waiter_history) {
-                    loadHistoryByDepartment(TranslationHelper.translateTextDirect("waiter"));
+                    loadHistoryByDepartment("waiter");
                 } else if (id == R.id.nav_delivery_history) {
-                    loadHistoryByDepartment(TranslationHelper.translateTextDirect("delivery"));
+                    loadHistoryByDepartment("delivery");
                 } else if (id == R.id.nav_manager_history) {
-                    loadHistoryByDepartment(TranslationHelper.translateTextDirect("manager"));
+                    loadHistoryByDepartment("manager");
                 } else if (id == R.id.nav_create_admin) {
-                    showCreateUserDialog(TranslationHelper.translateTextDirect("admin"));
+                    showCreateUserDialog("admin");
                 } else if (id == R.id.nav_create_user) {
-                    showCreateUserDialog(TranslationHelper.translateTextDirect("user"));
+                    showCreateUserDialog("user");
                 } else if (id == R.id.nav_users) {
                     loadUsers();
                 } else if (id == R.id.nav_logout) {
@@ -120,6 +128,15 @@ public class SuperAdminActivity extends BaseActivity {
         super.onResume();
         String title = TranslationHelper.translateTextDirect("Super Admin Dashboard");
         setTitle(title);
+        
+        // Re-translate navigation menu titles
+        Menu navMenu = navigationView.getMenu();
+        for (int i = 0; i < navMenu.size(); i++) {
+            MenuItem item = navMenu.getItem(i);
+            String originalTitle = item.getTitle().toString();
+            item.setTitle(TranslationHelper.translateTextDirect(originalTitle));
+        }
+        
         loadUsers();
     }
 
@@ -144,7 +161,7 @@ public class SuperAdminActivity extends BaseActivity {
 
     private void showCreateUserDialog(String role) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String title = role.equals(TranslationHelper.translateTextDirect("admin")) ? TranslationHelper.translateTextDirect("Create Admin") : TranslationHelper.translateTextDirect("Create User");
+        String title = role.equals("admin") ? TranslationHelper.translateTextDirect("Create Admin") : TranslationHelper.translateTextDirect("Create User");
         builder.setTitle(title);
 
         View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
