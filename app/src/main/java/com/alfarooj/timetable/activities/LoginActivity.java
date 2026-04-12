@@ -157,7 +157,7 @@ public class LoginActivity extends BaseActivity {
         tvPasswordLabel.setText(TranslationHelper.translateTextDirect("Password:"));
         tvLanguageLabel.setText(TranslationHelper.translateTextDirect("Select Language:"));
         btnLogin.setText(TranslationHelper.translateTextDirect("LOGIN"));
-        
+
         String currentUsername = etUsername.getText().toString();
         if (currentUsername.isEmpty() || currentUsername.equals("Enter username") || currentUsername.equals(TranslationHelper.translateTextDirect("Enter username"))) {
             etUsername.setHint(TranslationHelper.translateTextDirect("Enter username"));
@@ -165,7 +165,7 @@ public class LoginActivity extends BaseActivity {
                 etUsername.setText("");
             }
         }
-        
+
         String currentPassword = etPassword.getText().toString();
         if (currentPassword.isEmpty() || currentPassword.equals("Enter password") || currentPassword.equals(TranslationHelper.translateTextDirect("Enter password"))) {
             etPassword.setHint(TranslationHelper.translateTextDirect("Enter password"));
@@ -200,8 +200,7 @@ public class LoginActivity extends BaseActivity {
         languageCodes.add("uk"); languageNames.add("Ukrainian");
     }
 
-    protected void refreshSpinnerLanguageNames() {
-        // Badilisha majina ya lugha kwenye spinner kwa lugha mpya
+    protected void refreshSpinnerIfNeeded() {
         List<String> translatedNames = new ArrayList<>();
         for (String langName : languageNames) {
             translatedNames.add(TranslationHelper.translateTextDirect(langName));
@@ -216,12 +215,11 @@ public class LoginActivity extends BaseActivity {
     }
 
     protected void setupLanguageSpinner() {
-        // First create adapter with original names
         List<String> displayNames = new ArrayList<>();
         for (String langName : languageNames) {
             displayNames.add(TranslationHelper.translateTextDirect(langName));
         }
-        
+
         spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, displayNames);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerLanguage.setAdapter(spinnerAdapter);
@@ -237,18 +235,11 @@ public class LoginActivity extends BaseActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String newLang = languageCodes.get(position);
                 if (!newLang.equals(TranslationHelper.getCurrentLanguage())) {
-                    // Change language
                     TranslationHelper.setCurrentLanguage(newLang);
                     TranslationHelper.saveLanguage(LoginActivity.this, newLang);
                     LanguageUtils.setLocale(LoginActivity.this, newLang);
-                    
-                    // Update ALL UI texts immediately
                     updateUIText();
-                    
-                    // Refresh spinner display names
-                    refreshSpinnerLanguageNames();
-                    
-                    // Show confirmation
+                    refreshSpinnerIfNeeded();
                     Toast.makeText(LoginActivity.this, TranslationHelper.translateTextDirect("Language changed to ") + TranslationHelper.translateTextDirect(languageNames.get(position)), Toast.LENGTH_SHORT).show();
                 }
             }
@@ -266,21 +257,6 @@ public class LoginActivity extends BaseActivity {
             } else {
                 Toast.makeText(this, TranslationHelper.translateTextDirect("Location permission required!"), Toast.LENGTH_LONG).show();
             }
-        }
-    }
-
-    @Override
-    protected void refreshSpinnerIfNeeded() {
-        List<String> translatedNames = new ArrayList<>();
-        for (String langName : languageNames) {
-            translatedNames.add(TranslationHelper.translateTextDirect(langName));
-        }
-        if (spinnerAdapter != null) {
-            spinnerAdapter.clear();
-            for (String name : translatedNames) {
-                spinnerAdapter.add(name);
-            }
-            spinnerAdapter.notifyDataSetChanged();
         }
     }
 
@@ -309,5 +285,3 @@ public class LoginActivity extends BaseActivity {
         }
     }
 }
-
-    @Override
