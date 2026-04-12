@@ -269,6 +269,21 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
+    @Override
+    protected void refreshSpinnerIfNeeded() {
+        List<String> translatedNames = new ArrayList<>();
+        for (String langName : languageNames) {
+            translatedNames.add(TranslationHelper.translateTextDirect(langName));
+        }
+        if (spinnerAdapter != null) {
+            spinnerAdapter.clear();
+            for (String name : translatedNames) {
+                spinnerAdapter.add(name);
+            }
+            spinnerAdapter.notifyDataSetChanged();
+        }
+    }
+
     private void navigateToDashboard() {
         String role = session.getRole();
         Intent intent;
@@ -296,17 +311,3 @@ public class LoginActivity extends BaseActivity {
 }
 
     @Override
-    protected void refreshSpinnerIfNeeded() {
-        // Refresh spinner display names
-        List<String> translatedNames = new ArrayList<>();
-        for (String langName : languageNames) {
-            translatedNames.add(TranslationHelper.translateTextDirect(langName));
-        }
-        if (spinnerAdapter != null) {
-            spinnerAdapter.clear();
-            for (String name : translatedNames) {
-                spinnerAdapter.add(name);
-            }
-            spinnerAdapter.notifyDataSetChanged();
-        }
-    }
