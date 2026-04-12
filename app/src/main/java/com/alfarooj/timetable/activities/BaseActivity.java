@@ -41,6 +41,8 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         LanguageUtils.applyLanguage(this);
         TranslationHelper.loadLanguage(this);
+        // Refresh UI when returning to activity
+        updateUIText();
     }
 
     protected void setupLanguages() {
