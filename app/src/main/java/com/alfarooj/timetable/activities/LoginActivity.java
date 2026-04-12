@@ -269,11 +269,11 @@ public class LoginActivity extends BaseActivity {
                 intent = new Intent(this, SuperAdminActivity.class);
             } else if (role.equals("admin")) {
                 intent = new Intent(this, AdminActivity.class);
-            } else if (role.equals("kitchen")) {
+            } else if (department.equals("kitchen")) {
                 intent = new Intent(this, KitchenActivity.class);
-            } else if (role.equals("waiter")) {
+            } else if (department.equals("waiter")) {
                 intent = new Intent(this, WaiterActivity.class);
-            } else if (role.equals("delivery")) {
+            } else if (department.equals("delivery")) {
                 intent = new Intent(this, DeliveryActivity.class);
             } else {
                 intent = new Intent(this, ManagerActivity.class);
