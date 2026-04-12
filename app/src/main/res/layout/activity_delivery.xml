@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center"
     android:background="#FFFFFF">
     
     <TextView
@@ -33,26 +32,127 @@
         android:layout_height="1dp"
         android:background="#E0E0E0"
         android:layout_marginVertical="20dp"/>
-    
-    <TextView
+
+    <!-- PICKUP Button -->
+    <Button
+        android:id="@+id/btnPickup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="📋 Quick Actions:"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:padding="15dp"
+        android:text="📦 PICKUP ORDER"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:padding="10dp"
-        android:gravity="center"
-        android:textColor="#000000"/>
-    
-    <TextView
+        android:backgroundTint="#FF9800"
+        android:textColor="#FFFFFF"
+        android:enabled="true"
+        android:clickable="true"/>
+
+    <!-- DROPOFF Button -->
+    <Button
+        android:id="@+id/btnDropoff"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Use the menu (⋮) at the top right to access all delivery functions"
-        android:textSize="14sp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:padding="15dp"
-        android:gravity="center"
-        android:background="#F5F5F5"
-        android:layout_margin="10dp"
-        android:textColor="#333333"/>
-    
+        android:text="✅ DROPOFF ORDER"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF"
+        android:enabled="true"
+        android:clickable="true"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        android:layout_marginVertical="20dp"/>
+
+    <!-- SIGN IN Button -->
+    <Button
+        android:id="@+id/btnSignIn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="12dp"
+        android:text="SIGN IN"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:backgroundTint="#2196F3"
+        android:textColor="#FFFFFF"/>
+
+    <!-- SIGN OUT Button -->
+    <Button
+        android:id="@+id/btnSignOut"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="12dp"
+        android:text="SIGN OUT"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:backgroundTint="#F44336"
+        android:textColor="#FFFFFF"/>
+
+    <!-- BREAK IN Button -->
+    <Button
+        android:id="@+id/btnBreakIn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="12dp"
+        android:text="BREAK IN"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:backgroundTint="#9C27B0"
+        android:textColor="#FFFFFF"/>
+
+    <!-- BREAK OUT Button -->
+    <Button
+        android:id="@+id/btnBreakOut"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="12dp"
+        android:text="BREAK OUT"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:backgroundTint="#FF5722"
+        android:textColor="#FFFFFF"/>
+
+    <!-- VIEW HISTORY Button -->
+    <Button
+        android:id="@+id/btnViewHistory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="12dp"
+        android:text="VIEW HISTORY"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:backgroundTint="#607D8B"
+        android:textColor="#FFFFFF"/>
+
+    <!-- LOGOUT Button -->
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="12dp"
+        android:text="LOGOUT"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:backgroundTint="#795548"
+        android:textColor="#FFFFFF"/>
+
 </LinearLayout>

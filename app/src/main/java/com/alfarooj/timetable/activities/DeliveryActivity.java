@@ -6,13 +6,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Looper;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -33,8 +30,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class DeliveryActivity extends BaseActivity {
-
     private TextView tvWelcome, tvStatus;
+    private Button btnPickup, btnDropoff, btnSignIn, btnSignOut, btnBreakIn, btnBreakOut, btnViewHistory, btnLogout;
     private SessionManager session;
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST = 100;
@@ -47,70 +44,52 @@ public class DeliveryActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_delivery);
 
-        // Setup Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
         session = new SessionManager(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         tvWelcome = findViewById(R.id.tvWelcome);
         tvStatus = findViewById(R.id.tvStatus);
+        
+        btnPickup = findViewById(R.id.btnPickup);
+        btnDropoff = findViewById(R.id.btnDropoff);
+        btnSignIn = findViewById(R.id.btnSignIn);
+        btnSignOut = findViewById(R.id.btnSignOut);
+        btnBreakIn = findViewById(R.id.btnBreakIn);
+        btnBreakOut = findViewById(R.id.btnBreakOut);
+        btnViewHistory = findViewById(R.id.btnViewHistory);
+        btnLogout = findViewById(R.id.btnLogout);
 
         updateUI();
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
         }
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.delivery_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_pickup) {
-            checkLocation(TranslationHelper.translateTextDirect("pickup_order"), "Pickup Order");
-            return true;
-        } else if (id == R.id.action_dropoff) {
-            checkLocation(TranslationHelper.translateTextDirect("dropoff_order"), "Dropoff Order");
-            return true;
-        } else if (id == R.id.action_signin) {
-            checkLocation(TranslationHelper.translateTextDirect("sign_in"), "Sign In");
-            return true;
-        } else if (id == R.id.action_signout) {
-            checkLocation(TranslationHelper.translateTextDirect("sign_out"), "Sign Out");
-            return true;
-        } else if (id == R.id.action_breakin) {
-            checkLocation(TranslationHelper.translateTextDirect("break_in"), "Break In");
-            return true;
-        } else if (id == R.id.action_breakout) {
-            checkLocation(TranslationHelper.translateTextDirect("break_out"), "Break Out");
-            return true;
-        } else if (id == R.id.action_history) {
-            startActivity(new Intent(this, HistoryActivity.class));
-            return true;
-        } else if (id == R.id.action_logout) {
-            logout();
-            return true;
-        } else if (id == R.id.action_language) {
-            showLanguageDialog();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        btnPickup.setOnClickListener(v -> checkLocation("pickup_order", "Pickup Order"));
+        btnDropoff.setOnClickListener(v -> checkLocation("dropoff_order", "Dropoff Order"));
+        btnSignIn.setOnClickListener(v -> checkLocation("sign_in", "Sign In"));
+        btnSignOut.setOnClickListener(v -> checkLocation("sign_out", "Sign Out"));
+        btnBreakIn.setOnClickListener(v -> checkLocation("break_in", "Break In"));
+        btnBreakOut.setOnClickListener(v -> checkLocation("break_out", "Break Out"));
+        btnViewHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
+        btnLogout.setOnClickListener(v -> logout());
     }
 
     private void updateUI() {
         String dept = session.getDepartment();
         String icon = "🚗";
         tvWelcome.setText("User: " + session.getFullName() + " (" + dept + ") " + icon);
-        tvStatus.setText("Ready - Select action from menu");
+        tvStatus.setText(TranslationHelper.translateTextDirect("Ready"));
+        
+        // Translate button texts
+        btnPickup.setText(TranslationHelper.translateTextDirect("PICKUP ORDER"));
+        btnDropoff.setText(TranslationHelper.translateTextDirect("DROPOFF ORDER"));
+        btnSignIn.setText(TranslationHelper.translateTextDirect("SIGN IN"));
+        btnSignOut.setText(TranslationHelper.translateTextDirect("SIGN OUT"));
+        btnBreakIn.setText(TranslationHelper.translateTextDirect("BREAK IN"));
+        btnBreakOut.setText(TranslationHelper.translateTextDirect("BREAK OUT"));
+        btnViewHistory.setText(TranslationHelper.translateTextDirect("VIEW HISTORY"));
+        btnLogout.setText(TranslationHelper.translateTextDirect("LOGOUT"));
     }
 
     @Override
@@ -127,7 +106,7 @@ public class DeliveryActivity extends BaseActivity {
         pendingEventType = eventType;
         pendingEventName = eventName;
 
-        if (eventType.equals(TranslationHelper.translateTextDirect("sign_in"))) {
+        if (eventType.equals("sign_in")) {
             showLateDialog();
         } else {
             pendingComment = "";
@@ -215,14 +194,14 @@ public class DeliveryActivity extends BaseActivity {
         AttendanceRequest request = new AttendanceRequest(session.getUserId(), session.getUsername(), session.getFullName(),
                 session.getDepartment(), pendingEventType, pendingEventName, currentLatitude, currentLongitude, location);
 
-        if (pendingEventType.equals(TranslationHelper.translateTextDirect("sign_in")) && !pendingComment.isEmpty()) {
+        if (pendingEventType.equals("sign_in") && !pendingComment.isEmpty()) {
             request.setComment(pendingComment);
         }
 
-        if (pendingEventType.equals(TranslationHelper.translateTextDirect("pickup_order"))) {
-            request.setOrderType(TranslationHelper.translateTextDirect("pickup"));
-        } else if (pendingEventType.equals(TranslationHelper.translateTextDirect("dropoff_order"))) {
-            request.setOrderType(TranslationHelper.translateTextDirect("dropoff"));
+        if (pendingEventType.equals("pickup_order")) {
+            request.setOrderType("pickup");
+        } else if (pendingEventType.equals("dropoff_order")) {
+            request.setOrderType("dropoff");
         }
 
         ApiClient.getApiService().recordAttendance(request).enqueue(new Callback<AttendanceResponse>() {

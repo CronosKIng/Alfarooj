@@ -52,7 +52,7 @@ public class LoginActivity extends BaseActivity {
         setContentView(R.layout.activity_login);
 
         session = new SessionManager(this);
-
+        
         if (session.isLoggedIn()) {
             navigateToDashboard();
             return;
@@ -263,18 +263,21 @@ public class LoginActivity extends BaseActivity {
 
     private void navigateToDashboard() {
         String role = session.getRole();
+        String department = session.getDepartment();
         Intent intent;
         try {
             if (role.equals("super_admin")) {
                 intent = new Intent(this, SuperAdminActivity.class);
             } else if (role.equals("admin")) {
                 intent = new Intent(this, AdminActivity.class);
-            } else if (department.equals("kitchen")) {
+            } else if (department != null && department.equals("kitchen")) {
                 intent = new Intent(this, KitchenActivity.class);
-            } else if (department.equals("waiter")) {
+            } else if (department != null && department.equals("waiter")) {
                 intent = new Intent(this, WaiterActivity.class);
-            } else if (department.equals("delivery")) {
+            } else if (department != null && department.equals("delivery")) {
                 intent = new Intent(this, DeliveryActivity.class);
+            } else if (department != null && department.equals("manager")) {
+                intent = new Intent(this, ManagerActivity.class);
             } else {
                 intent = new Intent(this, ManagerActivity.class);
             }
