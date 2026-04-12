@@ -41,7 +41,6 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         LanguageUtils.applyLanguage(this);
         TranslationHelper.loadLanguage(this);
-        updateUIText();
     }
 
     protected void setupLanguages() {
@@ -67,16 +66,11 @@ public class BaseActivity extends AppCompatActivity {
         languageCodes.add("uk"); languageNames.add("Ukrainian");
     }
 
-    protected void updateUIText() {
-        // Override in child classes
-    }
-
     protected void showCommentDialog(Runnable onSuccess) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness / Comment"));
         final EditText input = new EditText(this);
         input.setHint(TranslationHelper.translateTextDirect("Enter your reason here..."));
-        input.setPadding(50, 30, 50, 30);
         builder.setView(input);
         builder.setPositiveButton(TranslationHelper.translateTextDirect("Submit"), (dialog, which) -> {
             onSuccess.run();
@@ -92,26 +86,13 @@ public class BaseActivity extends AppCompatActivity {
 
         builder.setItems(languages, (dialog, which) -> {
             String selectedCode = languageCodes.get(which);
-            String selectedName = languages[which];
-            
-            // Badilisha lugha
             TranslationHelper.setCurrentLanguage(selectedCode);
             TranslationHelper.saveLanguage(this, selectedCode);
             LanguageUtils.setLocale(this, selectedCode);
-            
-            // Update UI mara moja - HAKUNA RECREATE!
-            updateUIText();
-            
-            // Refresh spinner ikiwa ipo
-            refreshSpinnerIfNeeded();
-            
-            Toast.makeText(this, TranslationHelper.translateTextDirect("Language changed to ") + selectedName, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, TranslationHelper.translateTextDirect("Language changed to ") + languages[which], Toast.LENGTH_SHORT).show();
+            recreate();
         });
         builder.show();
-    }
-    
-    protected void refreshSpinnerIfNeeded() {
-        // Override in activities that have spinners
     }
 
     @Override

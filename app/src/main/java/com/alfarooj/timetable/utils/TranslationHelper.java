@@ -8,8 +8,6 @@ import com.alfarooj.timetable.models.TranslateRequest;
 import com.alfarooj.timetable.models.TranslateResponse;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -24,7 +22,6 @@ public class TranslationHelper {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_LANGUAGE, langCode).apply();
         currentLanguage = langCode;
-        translationCache.clear();
     }
 
     public static void loadLanguage(Context context) {
@@ -34,14 +31,13 @@ public class TranslationHelper {
 
     public static void setCurrentLanguage(String langCode) {
         currentLanguage = langCode;
-        translationCache.clear();
     }
 
     public static String getCurrentLanguage() {
         return currentLanguage;
     }
 
-    // TRANSLATION DIRECT - inarudisha tafsiri mara moja (synchronous)
+    // DIRECT TRANSLATION - inarudisha String moja kwa moja (synchronous)
     public static String translateTextDirect(String text) {
         if (text == null || text.isEmpty()) return text;
         if (currentLanguage.equals("en")) return text;
@@ -50,34 +46,45 @@ public class TranslationHelper {
         if (translationCache.containsKey(cacheKey)) {
             return translationCache.get(cacheKey);
         }
-        
-        // Jaribu kupata tafsiri kutoka API
-        try {
-            final String[] translated = {text};
-            final CountDownLatch latch = new CountDownLatch(1);
-            
-            ApiClient.getApiService().translateText(new TranslateRequest(text, currentLanguage))
-                .enqueue(new Callback<TranslateResponse>() {
-                    @Override
-                    public void onResponse(Call<TranslateResponse> call, Response<TranslateResponse> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            translated[0] = response.body().getTranslated();
-                            translationCache.put(cacheKey, translated[0]);
-                        }
-                        latch.countDown();
-                    }
-                    
-                    @Override
-                    public void onFailure(Call<TranslateResponse> call, Throwable t) {
-                        latch.countDown();
-                    }
-                });
-            
-            latch.await(3, TimeUnit.SECONDS);
-            return translated[0];
-        } catch (Exception e) {
-            return text;
+        return text;
+    }
+
+    // ASYNC TRANSLATION - kwa callback
+    public static void translateText(String text, TranslationCallback callback) {
+        if (text == null || text.isEmpty()) {
+            if (callback != null) callback.onSuccess(text);
+            return;
         }
+
+        if (currentLanguage.equals("en")) {
+            if (callback != null) callback.onSuccess(text);
+            return;
+        }
+
+        String cacheKey = text + "_" + currentLanguage;
+        if (translationCache.containsKey(cacheKey)) {
+            if (callback != null) callback.onSuccess(translationCache.get(cacheKey));
+            return;
+        }
+
+        ApiClient.getApiService().translateText(new TranslateRequest(text, currentLanguage))
+            .enqueue(new Callback<TranslateResponse>() {
+                @Override
+                public void onResponse(Call<TranslateResponse> call, Response<TranslateResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        String translated = response.body().getTranslated();
+                        translationCache.put(cacheKey, translated);
+                        if (callback != null) callback.onSuccess(translated);
+                    } else {
+                        if (callback != null) callback.onError("Translation failed");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<TranslateResponse> call, Throwable t) {
+                    if (callback != null) callback.onError(t.getMessage());
+                }
+            });
     }
 
     public static void translateTextView(TextView textView, String originalText) {
