@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <item
+        android:id="@+id/action_pickup"
+        android:title="PICKUP ORDER"
+        android:icon="@android:drawable/ic_menu_upload"
+        app:showAsAction="ifRoom"/>
+    
+    <item
+        android:id="@+id/action_dropoff"
+        android:title="DROPOFF ORDER"
+        android:icon="@android:drawable/ic_menu_save"
+        app:showAsAction="ifRoom"/>
+    
+    <item
+        android:id="@+id/action_signin"
+        android:title="SIGN IN"
+        android:icon="@android:drawable/ic_menu_edit"
+        app:showAsAction="ifRoom"/>
+    
+    <item
+        android:id="@+id/action_signout"
+        android:title="SIGN OUT"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
+        app:showAsAction="ifRoom"/>
+    
+    <item
+        android:id="@+id/action_breakin"
+        android:title="BREAK IN"
+        android:icon="@android:drawable/ic_menu_agenda"
+        app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/action_breakout"
+        android:title="BREAK OUT"
+        android:icon="@android:drawable/ic_menu_revert"
+        app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/action_history"
+        android:title="VIEW HISTORY"
+        android:icon="@android:drawable/ic_menu_info_details"
+        app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/action_logout"
+        android:title="LOGOUT"
+        android:icon="@android:drawable/ic_lock_power_off"
+        app:showAsAction="never"/>
+    
+</menu>
