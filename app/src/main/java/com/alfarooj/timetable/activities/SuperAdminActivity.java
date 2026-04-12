@@ -73,7 +73,6 @@ public class SuperAdminActivity extends BaseActivity {
             String title = TranslationHelper.translateTextDirect("Super Admin Dashboard");
             setTitle(title);
 
-            // Translate navigation menu titles
             Menu navMenu = navigationView.getMenu();
             for (int i = 0; i < navMenu.size(); i++) {
                 MenuItem item = navMenu.getItem(i);
@@ -129,7 +128,6 @@ public class SuperAdminActivity extends BaseActivity {
         String title = TranslationHelper.translateTextDirect("Super Admin Dashboard");
         setTitle(title);
         
-        // Re-translate navigation menu titles
         Menu navMenu = navigationView.getMenu();
         for (int i = 0; i < navMenu.size(); i++) {
             MenuItem item = navMenu.getItem(i);

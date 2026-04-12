@@ -1,113 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:orientation="vertical"
+    android:padding="8dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvWelcome"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:padding="5dp"/>
 
-        <TextView
-            android:id="@+id/tvWelcome"
-            android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="5dp"
+        android:textSize="12sp"/>
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:alignmentMode="alignMargins"
+        android:layout_marginTop="10dp"
+        android:rowCount="4">
+
+        <Button
+            android:id="@+id/btnPickupOrder"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:layout_columnWeight="1"
+            android:layout_margin="4dp"
+            android:padding="8dp"
+            android:text="PICKUP"
+            android:backgroundTint="#FF9800"
+            android:textColor="#FFFFFF"
             android:textStyle="bold"
-            android:gravity="center"
-            android:padding="10dp"/>
+            android:textSize="12sp"/>
 
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/btnDropoffOrder"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="10dp"/>
+            android:layout_columnWeight="1"
+            android:layout_margin="4dp"
+            android:padding="8dp"
+            android:text="DROPOFF"
+            android:backgroundTint="#FF9800"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="12sp"/>
 
-        <GridLayout
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/btnSignIn"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:columnCount="2"
-            android:alignmentMode="alignMargins"
-            android:layout_marginTop="20dp">
+            android:layout_columnWeight="1"
+            android:layout_margin="4dp"
+            android:padding="8dp"
+            android:text="SIGN IN"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="12sp"/>
 
-            <Button
-                android:id="@+id/btnSignIn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="SIGN IN"/>
+        <Button
+            android:id="@+id/btnSignOut"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="4dp"
+            android:padding="8dp"
+            android:text="SIGN OUT"
+            android:backgroundTint="#F44336"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="12sp"/>
 
-            <Button
-                android:id="@+id/btnSignOut"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="SIGN OUT"/>
+        <Button
+            android:id="@+id/btnBreakIn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="4dp"
+            android:padding="8dp"
+            android:text="BREAK IN"
+            android:backgroundTint="#2196F3"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="12sp"/>
 
-            <Button
-                android:id="@+id/btnBreakIn"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="BREAK IN"/>
+        <Button
+            android:id="@+id/btnBreakOut"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="4dp"
+            android:padding="8dp"
+            android:text="BREAK OUT"
+            android:backgroundTint="#9C27B0"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="12sp"/>
 
-            <Button
-                android:id="@+id/btnBreakOut"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="BREAK OUT"/>
+        <Button
+            android:id="@+id/btnViewHistory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="4dp"
+            android:padding="8dp"
+            android:text="HISTORY"
+            android:backgroundTint="#607D8B"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="12sp"/>
 
-            <Button
-                android:id="@+id/btnPickupOrder"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="PICKUP ORDER"
-                android:backgroundTint="#FF9800"/>
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="4dp"
+            android:padding="8dp"
+            android:text="LOGOUT"
+            android:backgroundTint="#795548"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="12sp"/>
 
-            <Button
-                android:id="@+id/btnDropoffOrder"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="DROPOFF ORDER"
-                android:backgroundTint="#FF9800"/>
+    </GridLayout>
 
-            <Button
-                android:id="@+id/btnViewHistory"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="VIEW HISTORY"/>
-
-            <Button
-                android:id="@+id/btnLogout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                android:padding="16dp"
-                android:text="LOGOUT"/>
-
-        </GridLayout>
-
-    </LinearLayout>
-</ScrollView>
+</LinearLayout>
