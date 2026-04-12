@@ -89,12 +89,26 @@ public class BaseActivity extends AppCompatActivity {
         String[] languages = languageNames.toArray(new String[0]);
         builder.setItems(languages, (dialog, which) -> {
             String selectedCode = languageCodes.get(which);
+            String selectedName = languages[which];
+            
+            // Badilisha lugha
             TranslationHelper.setCurrentLanguage(selectedCode);
             TranslationHelper.saveLanguage(this, selectedCode);
-            Toast.makeText(this, TranslationHelper.translateTextDirect("Language changed to ") + languages[which], Toast.LENGTH_SHORT).show();
-            recreate();
+            LanguageUtils.setLocale(this, selectedCode);
+            
+            // Update UI ya activity ya sasa
+            updateUIText();
+            
+            // Refresh spinner ikiwa ipo
+            refreshSpinnerIfNeeded();
+            
+            Toast.makeText(this, TranslationHelper.translateTextDirect("Language changed to ") + selectedName, Toast.LENGTH_SHORT).show();
         });
         builder.show();
+    }
+    
+    protected void refreshSpinnerIfNeeded() {
+        // Override in activities that have spinners
     }
 
     @Override
