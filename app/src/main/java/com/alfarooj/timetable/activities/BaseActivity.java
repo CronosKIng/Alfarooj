@@ -76,6 +76,7 @@ public class BaseActivity extends AppCompatActivity {
         builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness / Comment"));
         final EditText input = new EditText(this);
         input.setHint(TranslationHelper.translateTextDirect("Enter your reason here..."));
+        input.setPadding(50, 30, 50, 30);
         builder.setView(input);
         builder.setPositiveButton(TranslationHelper.translateTextDirect("Submit"), (dialog, which) -> {
             onSuccess.run();
@@ -88,6 +89,7 @@ public class BaseActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(TranslationHelper.translateTextDirect("Select Language / Chagua Lugha"));
         String[] languages = languageNames.toArray(new String[0]);
+
         builder.setItems(languages, (dialog, which) -> {
             String selectedCode = languageCodes.get(which);
             String selectedName = languages[which];
@@ -97,7 +99,7 @@ public class BaseActivity extends AppCompatActivity {
             TranslationHelper.saveLanguage(this, selectedCode);
             LanguageUtils.setLocale(this, selectedCode);
             
-            // Update UI mara moja
+            // Update UI mara moja - HAKUNA RECREATE!
             updateUIText();
             
             // Refresh spinner ikiwa ipo

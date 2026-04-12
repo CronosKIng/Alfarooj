@@ -24,7 +24,6 @@ public class TranslationHelper {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_LANGUAGE, langCode).apply();
         currentLanguage = langCode;
-        // Clear cache when language changes for fresh translations
         translationCache.clear();
     }
 
@@ -35,7 +34,6 @@ public class TranslationHelper {
 
     public static void setCurrentLanguage(String langCode) {
         currentLanguage = langCode;
-        // Clear cache when language changes
         translationCache.clear();
     }
 
@@ -43,32 +41,17 @@ public class TranslationHelper {
         return currentLanguage;
     }
 
-    // INSTANT TRANSLATION - inarudisha tafsiri mara moja
+    // TRANSLATION DIRECT - inarudisha tafsiri mara moja (synchronous)
     public static String translateTextDirect(String text) {
         if (text == null || text.isEmpty()) return text;
         if (currentLanguage.equals("en")) return text;
         
-        // Angalia cache kwanza
         String cacheKey = text + "_" + currentLanguage;
         if (translationCache.containsKey(cacheKey)) {
             return translationCache.get(cacheKey);
         }
         
-        // Jaribu kupata tafsiri kutoka cache ya pending
-        // Kama haipo, rudisha text asili kwa sasa (itatafsiriwa baadaye)
-        return text;
-    }
-    
-    // Tafsiri ya synchronous (inangoja mpaka tafsiri ipatikane)
-    public static String translateTextSync(String text) {
-        if (text == null || text.isEmpty()) return text;
-        if (currentLanguage.equals("en")) return text;
-        
-        String cacheKey = text + "_" + currentLanguage;
-        if (translationCache.containsKey(cacheKey)) {
-            return translationCache.get(cacheKey);
-        }
-        
+        // Jaribu kupata tafsiri kutoka API
         try {
             final String[] translated = {text};
             final CountDownLatch latch = new CountDownLatch(1);
@@ -90,7 +73,7 @@ public class TranslationHelper {
                     }
                 });
             
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(3, TimeUnit.SECONDS);
             return translated[0];
         } catch (Exception e) {
             return text;
@@ -101,46 +84,18 @@ public class TranslationHelper {
         if (textView == null) return;
         String translated = translateTextDirect(originalText);
         textView.setText(translated);
-        
-        // Ikiwa haijatafsiriwa na lugha si English, jaribu synchronous
-        if (!currentLanguage.equals("en") && translated.equals(originalText)) {
-            new Thread(() -> {
-                String synced = translateTextSync(originalText);
-                if (textView != null && !synced.equals(originalText)) {
-                    textView.post(() -> textView.setText(synced));
-                }
-            }).start();
-        }
     }
 
     public static void translateButtonText(android.widget.Button button, String originalText) {
         if (button == null) return;
         String translated = translateTextDirect(originalText);
         button.setText(translated);
-        
-        if (!currentLanguage.equals("en") && translated.equals(originalText)) {
-            new Thread(() -> {
-                String synced = translateTextSync(originalText);
-                if (button != null && !synced.equals(originalText)) {
-                    button.post(() -> button.setText(synced));
-                }
-            }).start();
-        }
     }
 
     public static void translateHint(TextView textView, String originalHint) {
         if (textView == null) return;
         String translated = translateTextDirect(originalHint);
         textView.setHint(translated);
-        
-        if (!currentLanguage.equals("en") && translated.equals(originalHint)) {
-            new Thread(() -> {
-                String synced = translateTextSync(originalHint);
-                if (textView != null && !synced.equals(originalHint)) {
-                    textView.post(() -> textView.setHint(synced));
-                }
-            }).start();
-        }
     }
 
     public interface TranslationCallback {
