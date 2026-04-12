@@ -41,7 +41,6 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         LanguageUtils.applyLanguage(this);
         TranslationHelper.loadLanguage(this);
-        // Refresh UI when returning to activity
         updateUIText();
     }
 
@@ -69,7 +68,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void updateUIText() {
-        // Override in child classes if needed
+        // Override in child classes
     }
 
     protected void showCommentDialog(Runnable onSuccess) {
@@ -98,7 +97,7 @@ public class BaseActivity extends AppCompatActivity {
             TranslationHelper.saveLanguage(this, selectedCode);
             LanguageUtils.setLocale(this, selectedCode);
             
-            // Update UI ya activity ya sasa
+            // Update UI mara moja
             updateUIText();
             
             // Refresh spinner ikiwa ipo
