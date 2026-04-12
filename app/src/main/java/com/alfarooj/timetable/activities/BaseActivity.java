@@ -7,7 +7,11 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.alfarooj.timetable.utils.LanguageUtils;
@@ -15,7 +19,6 @@ import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -34,6 +37,7 @@ public class BaseActivity extends AppCompatActivity {
         LanguageUtils.applyLanguage(this);
         TranslationHelper.loadLanguage(this);
         setupLanguages();
+        // Hakuna recreate, tutatafsiri UI baada ya kuwekwa
     }
 
     @Override
@@ -41,6 +45,8 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         LanguageUtils.applyLanguage(this);
         TranslationHelper.loadLanguage(this);
+        // Tafsiri UI yote kila inaporudi (ili kuhakikisha iko current)
+        translateAllUIElements();
     }
 
     protected void setupLanguages() {
@@ -66,6 +72,32 @@ public class BaseActivity extends AppCompatActivity {
         languageCodes.add("uk"); languageNames.add("Ukrainian");
     }
 
+    // Tafsiri UI yote kwa kutumia API - neno kwa neno
+    protected void translateAllUIElements() {
+        translateViewGroup((ViewGroup) findViewById(android.R.id.content));
+    }
+
+    private void translateViewGroup(ViewGroup viewGroup) {
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View child = viewGroup.getChildAt(i);
+            if (child instanceof TextView && !(child instanceof EditText)) {
+                TextView tv = (TextView) child;
+                String text = tv.getText().toString();
+                if (text != null && !text.isEmpty()) {
+                    TranslationHelper.translateTextView(tv, text);
+                }
+            } else if (child instanceof Button) {
+                Button btn = (Button) child;
+                String text = btn.getText().toString();
+                if (text != null && !text.isEmpty()) {
+                    TranslationHelper.translateButtonText(btn, text);
+                }
+            } else if (child instanceof ViewGroup) {
+                translateViewGroup((ViewGroup) child);
+            }
+        }
+    }
+
     protected void showCommentDialog(Runnable onSuccess) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness / Comment"));
@@ -89,8 +121,9 @@ public class BaseActivity extends AppCompatActivity {
             TranslationHelper.setCurrentLanguage(selectedCode);
             TranslationHelper.saveLanguage(this, selectedCode);
             LanguageUtils.setLocale(this, selectedCode);
+            // Badala ya recreate, tafsiri UI yote tena (neno kwa neno)
+            translateAllUIElements();
             Toast.makeText(this, TranslationHelper.translateTextDirect("Language changed to ") + languages[which], Toast.LENGTH_SHORT).show();
-            recreate();
         });
         builder.show();
     }

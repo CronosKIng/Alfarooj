@@ -73,6 +73,7 @@ public class LoginActivity extends BaseActivity {
 
         setupLanguages();
         setupLanguageSpinner();
+        translateAllUIElements();
         updateUIText();
 
         btnTogglePassword.setOnClickListener(v -> {
