@@ -26,7 +26,6 @@ public class TranslationHelper {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_LANGUAGE, langCode).apply();
         currentLanguage = langCode;
-        // Usifute cache ili tafsiri zilizopo zibaki, lakini kwa lugha mpya cache itajaza upya.
     }
 
     public static void loadLanguage(Context context) {
@@ -42,11 +41,26 @@ public class TranslationHelper {
         return currentLanguage;
     }
 
-    // Tafsiri ya moja kwa moja (synchronous) - inatumia cache au API, lakini inaweza kusubiri kidogo.
-    // Sasa tutatumia toleo la async kwa UI.
-    
-    // Tafsiri ya async - inaita callback mara tafsiri ikipatikana (kutoka cache au API)
-    public static void translateText(String text, TranslationCallback callback) {
+    // ★★★ HII NDIYO METHOD INAYOKOSEKANA ★★★
+    // Synchronous translation - inarudisha original text kama hakuna tafsiri
+    public static String translateTextDirect(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        if (currentLanguage.equals("en")) {
+            return text;
+        }
+        String cacheKey = text + "_" + currentLanguage;
+        if (translationCache.containsKey(cacheKey)) {
+            return translationCache.get(cacheKey);
+        }
+        // Kama haipo kwenye cache, rudisha original na uanze kutafsiri background
+        translateTextAsync(text, null);
+        return text;
+    }
+
+    // Tafsiri ya async - inaita callback mara tafsiri ikipatikana
+    private static void translateTextAsync(String text, TranslationCallback callback) {
         if (text == null || text.isEmpty()) {
             if (callback != null) callback.onSuccess(text);
             return;
@@ -80,13 +94,16 @@ public class TranslationHelper {
             });
     }
 
+    // Public method ya async translation
+    public static void translateText(String text, TranslationCallback callback) {
+        translateTextAsync(text, callback);
+    }
+
     // Tafsiri ya TextView na kuupdate mara tu tafsiri inapofika
     public static void translateTextView(TextView textView, String originalText) {
         if (textView == null) return;
-        // Onyesha text asili mara moja (ili isionekane tupu)
         textView.setText(originalText);
-        // Kisha omba tafsiri na uupdate
-        translateText(originalText, new TranslationCallback() {
+        translateTextAsync(originalText, new TranslationCallback() {
             @Override
             public void onSuccess(String translatedText) {
                 if (textView != null && !translatedText.equals(originalText)) {
@@ -103,7 +120,7 @@ public class TranslationHelper {
     public static void translateButtonText(Button button, String originalText) {
         if (button == null) return;
         button.setText(originalText);
-        translateText(originalText, new TranslationCallback() {
+        translateTextAsync(originalText, new TranslationCallback() {
             @Override
             public void onSuccess(String translatedText) {
                 if (button != null && !translatedText.equals(originalText)) {
@@ -118,7 +135,7 @@ public class TranslationHelper {
     public static void translateHint(TextView textView, String originalHint) {
         if (textView == null) return;
         textView.setHint(originalHint);
-        translateText(originalHint, new TranslationCallback() {
+        translateTextAsync(originalHint, new TranslationCallback() {
             @Override
             public void onSuccess(String translatedText) {
                 if (textView != null && !translatedText.equals(originalHint)) {

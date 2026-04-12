@@ -37,7 +37,6 @@ public class BaseActivity extends AppCompatActivity {
         LanguageUtils.applyLanguage(this);
         TranslationHelper.loadLanguage(this);
         setupLanguages();
-        // Hakuna recreate, tutatafsiri UI baada ya kuwekwa
     }
 
     @Override
@@ -45,7 +44,7 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         LanguageUtils.applyLanguage(this);
         TranslationHelper.loadLanguage(this);
-        // Tafsiri UI yote kila inaporudi (ili kuhakikisha iko current)
+        // Tafsiri UI yote kila inaporudi
         translateAllUIElements();
     }
 
@@ -74,7 +73,10 @@ public class BaseActivity extends AppCompatActivity {
 
     // Tafsiri UI yote kwa kutumia API - neno kwa neno
     protected void translateAllUIElements() {
-        translateViewGroup((ViewGroup) findViewById(android.R.id.content));
+        View rootView = findViewById(android.R.id.content);
+        if (rootView instanceof ViewGroup) {
+            translateViewGroup((ViewGroup) rootView);
+        }
     }
 
     private void translateViewGroup(ViewGroup viewGroup) {
@@ -85,6 +87,10 @@ public class BaseActivity extends AppCompatActivity {
                 String text = tv.getText().toString();
                 if (text != null && !text.isEmpty()) {
                     TranslationHelper.translateTextView(tv, text);
+                }
+                String hint = tv.getHint() != null ? tv.getHint().toString() : "";
+                if (!hint.isEmpty()) {
+                    TranslationHelper.translateHint(tv, hint);
                 }
             } else if (child instanceof Button) {
                 Button btn = (Button) child;
@@ -98,19 +104,6 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
-    protected void showCommentDialog(Runnable onSuccess) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(TranslationHelper.translateTextDirect("Reason for lateness / Comment"));
-        final EditText input = new EditText(this);
-        input.setHint(TranslationHelper.translateTextDirect("Enter your reason here..."));
-        builder.setView(input);
-        builder.setPositiveButton(TranslationHelper.translateTextDirect("Submit"), (dialog, which) -> {
-            onSuccess.run();
-        });
-        builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
-        builder.show();
-    }
-
     protected void showLanguageDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(TranslationHelper.translateTextDirect("Select Language / Chagua Lugha"));
@@ -121,7 +114,7 @@ public class BaseActivity extends AppCompatActivity {
             TranslationHelper.setCurrentLanguage(selectedCode);
             TranslationHelper.saveLanguage(this, selectedCode);
             LanguageUtils.setLocale(this, selectedCode);
-            // Badala ya recreate, tafsiri UI yote tena (neno kwa neno)
+            // Badala ya recreate, tafsiri UI yote tena
             translateAllUIElements();
             Toast.makeText(this, TranslationHelper.translateTextDirect("Language changed to ") + languages[which], Toast.LENGTH_SHORT).show();
         });
