@@ -100,22 +100,22 @@ public class SuperAdminActivity extends BaseActivity {
                 currentView = "attendance";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("All History"));
                 loadAttendanceLogs(null);
-            } else if (id == R.id.nav_kitchen) {
+            } else if (id == R.id.nav_kitchen_history) {
                 currentView = "attendance";
                 currentDepartment = "kitchen";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Kitchen History"));
                 loadAttendanceLogs("kitchen");
-            } else if (id == R.id.nav_waiter) {
+            } else if (id == R.id.nav_waiter_history) {
                 currentView = "attendance";
                 currentDepartment = "waiter";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Waiter History"));
                 loadAttendanceLogs("waiter");
-            } else if (id == R.id.nav_delivery) {
+            } else if (id == R.id.nav_delivery_history) {
                 currentView = "attendance";
                 currentDepartment = "delivery";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Delivery History"));
                 loadAttendanceLogs("delivery");
-            } else if (id == R.id.nav_manager) {
+            } else if (id == R.id.nav_manager_history) {
                 currentView = "attendance";
                 currentDepartment = "manager";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Manager History"));
@@ -370,7 +370,7 @@ public class SuperAdminActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.super_admin_menu, menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         TranslationHelper.translateMenu(menu);
         return true;
     }
@@ -378,20 +378,7 @@ public class SuperAdminActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_refresh) {
-            if (currentView.equals("users")) {
-                loadUsers();
-            } else {
-                if (currentDepartment != null) {
-                    loadAttendanceLogs(currentDepartment);
-                } else {
-                    loadAttendanceLogs(null);
-                }
-            }
-            return true;
-            showDatePicker();
-            return true;
-        } else if (id == R.id.action_language) {
+        if (id == R.id.action_language) {
             showLanguageDialog();
             return true;
         }
