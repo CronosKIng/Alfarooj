@@ -60,11 +60,13 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
             holder.tvOrderType.setVisibility(View.GONE);
         }
 
-        holder.if (btnDelete != null) btnDelete.setOnClickListener(v -> {
-            if (deleteClickListener != null) {
-                deleteClickListener.onDeleteClick(log);
-            }
-        });
+        if (holder.btnDelete != null) {
+            holder.btnDelete.setOnClickListener(v -> {
+                if (deleteClickListener != null) {
+                    deleteClickListener.onDeleteClick(log);
+                }
+            });
+        }
     }
 
     @Override
