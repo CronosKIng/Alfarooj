@@ -1,5 +1,7 @@
 package com.alfarooj.timetable.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class AttendanceLog {
     private int id;
     private int userId;
@@ -13,10 +15,18 @@ public class AttendanceLog {
     private double longitude;
     private String timestamp;
     
-    // Constructor with all fields
-    public AttendanceLog(int id, int userId, String username, String fullName, 
-                         String department, String eventType, String eventName, 
-                         String location, double latitude, double longitude, String timestamp) {
+    @SerializedName("comment")
+    private String comment;
+    
+    @SerializedName("order_type")
+    private String orderType;
+
+    public AttendanceLog() {}
+
+    public AttendanceLog(int id, int userId, String username, String fullName,
+                         String department, String eventType, String eventName,
+                         String location, double latitude, double longitude,
+                         String timestamp, String comment, String orderType) {
         this.id = id;
         this.userId = userId;
         this.username = username;
@@ -28,11 +38,10 @@ public class AttendanceLog {
         this.latitude = latitude;
         this.longitude = longitude;
         this.timestamp = timestamp;
+        this.comment = comment;
+        this.orderType = orderType;
     }
-    
-    // Default constructor
-    public AttendanceLog() {}
-    
+
     // Getters
     public int getId() { return id; }
     public int getUserId() { return userId; }
@@ -45,7 +54,9 @@ public class AttendanceLog {
     public double getLatitude() { return latitude; }
     public double getLongitude() { return longitude; }
     public String getTimestamp() { return timestamp; }
-    
+    public String getComment() { return comment; }
+    public String getOrderType() { return orderType; }
+
     // Setters
     public void setId(int id) { this.id = id; }
     public void setUserId(int userId) { this.userId = userId; }
@@ -58,4 +69,6 @@ public class AttendanceLog {
     public void setLatitude(double latitude) { this.latitude = latitude; }
     public void setLongitude(double longitude) { this.longitude = longitude; }
     public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+    public void setComment(String comment) { this.comment = comment; }
+    public void setOrderType(String orderType) { this.orderType = orderType; }
 }

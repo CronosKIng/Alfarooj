@@ -39,42 +39,35 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         AttendanceLog log = logs.get(position);
         
-        holder.tvUsername.setText(log.getUsername());
         holder.tvFullName.setText(log.getFullName());
+        holder.tvUsername.setText("@" + log.getUsername());
         holder.tvEvent.setText(TranslationHelper.translateTextDirect(log.getEventName()));
+        holder.tvDepartment.setText(log.getDepartment() != null ? log.getDepartment() : "");
         holder.tvTimestamp.setText(log.getTimestamp());
         
-        // Comment na OrderType zinaweza kuwa null
-        try {
-            String comment = log.getComment();
-            if (comment != null && !comment.isEmpty()) {
-                holder.tvComment.setText("💬 " + comment);
-                holder.tvComment.setVisibility(View.VISIBLE);
-            } else {
-                holder.tvComment.setVisibility(View.GONE);
-            }
-        } catch (Exception e) {
+        // Comment
+        String comment = log.getComment();
+        if (comment != null && !comment.isEmpty()) {
+            holder.tvComment.setText("💬 " + comment);
+            holder.tvComment.setVisibility(View.VISIBLE);
+        } else {
             holder.tvComment.setVisibility(View.GONE);
         }
         
-        try {
-            String orderType = log.getOrderType();
-            if (orderType != null && !orderType.isEmpty()) {
-                holder.tvOrderType.setText("📦 " + orderType);
-                holder.tvOrderType.setVisibility(View.VISIBLE);
-            } else {
-                holder.tvOrderType.setVisibility(View.GONE);
-            }
-        } catch (Exception e) {
+        // Order Type
+        String orderType = log.getOrderType();
+        if (orderType != null && !orderType.isEmpty()) {
+            String displayOrder = orderType.equals("pickup") ? "📦 Pickup" : 
+                                  orderType.equals("dropoff") ? "✅ Dropoff" : orderType;
+            holder.tvOrderType.setText(displayOrder);
+            holder.tvOrderType.setVisibility(View.VISIBLE);
+        } else {
             holder.tvOrderType.setVisibility(View.GONE);
         }
-
-        if (holder.btnDelete != null) {
-            holder.btnDelete.setOnClickListener(v -> {
-                if (deleteClickListener != null) {
-                    deleteClickListener.onDeleteClick(log);
-                }
-            });
+        
+        // Delete button
+        if (holder.btnDelete != null && deleteClickListener != null) {
+            holder.btnDelete.setOnClickListener(v -> deleteClickListener.onDeleteClick(log));
         }
     }
 
@@ -84,17 +77,18 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvUsername, tvFullName, tvEvent, tvTimestamp, tvComment, tvOrderType;
+        TextView tvFullName, tvUsername, tvEvent, tvDepartment, tvComment, tvOrderType, tvTimestamp;
         ImageButton btnDelete;
 
         ViewHolder(View itemView) {
             super(itemView);
-            tvUsername = itemView.findViewById(R.id.tvUsername);
             tvFullName = itemView.findViewById(R.id.tvFullName);
+            tvUsername = itemView.findViewById(R.id.tvUsername);
             tvEvent = itemView.findViewById(R.id.tvEvent);
-            tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
+            tvDepartment = itemView.findViewById(R.id.tvDepartment);
             tvComment = itemView.findViewById(R.id.tvComment);
             tvOrderType = itemView.findViewById(R.id.tvOrderType);
+            tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }

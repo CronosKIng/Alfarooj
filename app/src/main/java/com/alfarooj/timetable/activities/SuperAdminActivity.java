@@ -24,6 +24,7 @@ import com.alfarooj.timetable.adapters.UserAdapter;
 import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.AttendanceLog;
 import com.alfarooj.timetable.models.CreateUserRequest;
+import com.alfarooj.timetable.models.SimpleResponse;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.utils.SessionManager;
 import com.alfarooj.timetable.utils.TranslationHelper;
@@ -144,9 +145,7 @@ public class SuperAdminActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<com.alfarooj.timetable.models.UsersResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, 
-                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
-                    Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -167,9 +166,7 @@ public class SuperAdminActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, 
-                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
-                    Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -197,9 +194,7 @@ public class SuperAdminActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, 
-                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
-                    Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -215,14 +210,13 @@ public class SuperAdminActivity extends BaseActivity {
                     logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
                         log -> showDeleteLogDialog(log));
                     recyclerView.setAdapter(logAdapter);
+                    toolbar.setTitle(TranslationHelper.translateTextDirect("Attendance for ") + date);
                 }
             }
 
             @Override
             public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, 
-                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
-                    Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -239,14 +233,11 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void deleteAttendanceLog(int logId) {
-        ApiClient.getApiService().deleteAttendanceLog(logId).enqueue(new Callback<com.alfarooj.timetable.models.SimpleResponse>() {
+        ApiClient.getApiService().deleteAttendanceLog(logId).enqueue(new Callback<SimpleResponse>() {
             @Override
-            public void onResponse(Call<com.alfarooj.timetable.models.SimpleResponse> call,
-                                   Response<com.alfarooj.timetable.models.SimpleResponse> response) {
+            public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(SuperAdminActivity.this, 
-                        TranslationHelper.translateTextDirect("✅ Imefutwa"), 
-                        Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SuperAdminActivity.this, "✅ Imefutwa", Toast.LENGTH_SHORT).show();
                     if (currentView.equals("attendance")) {
                         if (currentDepartment != null) {
                             loadAttendanceLogs(currentDepartment);
@@ -255,17 +246,13 @@ public class SuperAdminActivity extends BaseActivity {
                         }
                     }
                 } else {
-                    Toast.makeText(SuperAdminActivity.this, 
-                        TranslationHelper.translateTextDirect("❌ Imeshindwa"), 
-                        Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SuperAdminActivity.this, "❌ Imeshindwa", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<com.alfarooj.timetable.models.SimpleResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, 
-                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
-                    Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<SimpleResponse> call, Throwable t) {
+                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -276,7 +263,6 @@ public class SuperAdminActivity extends BaseActivity {
                 selectedDate.set(year, month, dayOfMonth);
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                 String dateStr = sdf.format(selectedDate.getTime());
-                toolbar.setTitle(TranslationHelper.translateTextDirect("Attendance for ") + dateStr);
                 loadAttendanceByDate(dateStr);
             },
             selectedDate.get(Calendar.YEAR),
@@ -306,8 +292,7 @@ public class SuperAdminActivity extends BaseActivity {
             TranslationHelper.translateTextDirect("Delivery"),
             TranslationHelper.translateTextDirect("Manager")
         };
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
-            android.R.layout.simple_spinner_item, deptNames);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, deptNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDepartment.setAdapter(adapter);
 
@@ -320,35 +305,26 @@ public class SuperAdminActivity extends BaseActivity {
             String department = departments[pos];
 
             if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, 
-                    TranslationHelper.translateTextDirect("Please fill all fields"), 
-                    Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, TranslationHelper.translateTextDirect("Please fill all fields"), Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            CreateUserRequest request = new CreateUserRequest(
-                fullName, username, password, role, department, session.getUserId());
+            CreateUserRequest request = new CreateUserRequest(fullName, username, password, role, department, session.getUserId());
             ApiClient.getApiService().createUser(request).enqueue(new Callback<com.alfarooj.timetable.models.CreateUserResponse>() {
                 @Override
                 public void onResponse(Call<com.alfarooj.timetable.models.CreateUserResponse> call,
                                        Response<com.alfarooj.timetable.models.CreateUserResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        Toast.makeText(SuperAdminActivity.this, 
-                            TranslationHelper.translateTextDirect("✅ User created"), 
-                            Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SuperAdminActivity.this, "✅ User created", Toast.LENGTH_SHORT).show();
                         if (currentView.equals("users")) loadUsers();
                     } else {
-                        Toast.makeText(SuperAdminActivity.this, 
-                            TranslationHelper.translateTextDirect("❌ Failed"), 
-                            Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SuperAdminActivity.this, "❌ Failed", Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<com.alfarooj.timetable.models.CreateUserResponse> call, Throwable t) {
-                    Toast.makeText(SuperAdminActivity.this, 
-                        TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
-                        Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
                 }
             });
         });
@@ -358,7 +334,7 @@ public class SuperAdminActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        getMenuInflater().inflate(R.menu.super_admin_menu, menu);
         TranslationHelper.translateMenu(menu);
         return true;
     }
@@ -366,7 +342,21 @@ public class SuperAdminActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_language) {
+        if (id == R.id.action_refresh) {
+            if (currentView.equals("users")) {
+                loadUsers();
+            } else {
+                if (currentDepartment != null) {
+                    loadAttendanceLogs(currentDepartment);
+                } else {
+                    loadAttendanceLogs(null);
+                }
+            }
+            return true;
+        } else if (id == R.id.action_calendar) {
+            showDatePicker();
+            return true;
+        } else if (id == R.id.action_language) {
             showLanguageDialog();
             return true;
         }

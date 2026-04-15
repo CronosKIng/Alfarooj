@@ -64,9 +64,7 @@ public class HistoryActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
-                Toast.makeText(HistoryActivity.this, 
-                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
-                    Toast.LENGTH_SHORT).show();
+                Toast.makeText(HistoryActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
             }
         });
     }
