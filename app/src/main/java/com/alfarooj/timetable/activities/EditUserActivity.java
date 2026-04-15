@@ -9,7 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.alfarooj.timetable.api.ApiClient;
-import com.alfarooj.timetable.models.UpdateDepartmentResponse;
+import com.alfarooj.timetable.models.SimpleResponse;
 import com.alfarooj.timetable.models.UpdateDepartmentRequest;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.utils.LanguageUtils;
@@ -113,9 +113,9 @@ public class EditUserActivity extends AppCompatActivity {
             UpdateDepartmentRequest request = new UpdateDepartmentRequest(user.getId(), newDepartment);
             
             ApiClient.getApiService().updateUserDepartment(request)
-                .enqueue(new Callback<UpdateDepartmentResponse>() {
+                .enqueue(new Callback<SimpleResponse>() {
                     @Override
-                    public void onResponse(Call<UpdateDepartmentResponse> call, Response<UpdateDepartmentResponse> response) {
+                    public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
                         btnUpdate.setText(TranslationHelper.translateTextDirect("UPDATE DEPARTMENT"));
                         btnUpdate.setEnabled(true);
                         
@@ -136,7 +136,7 @@ public class EditUserActivity extends AppCompatActivity {
                     }
                     
                     @Override
-                    public void onFailure(Call<UpdateDepartmentResponse> call, Throwable t) {
+                    public void onFailure(Call<SimpleResponse> call, Throwable t) {
                         btnUpdate.setText(TranslationHelper.translateTextDirect("UPDATE DEPARTMENT"));
                         btnUpdate.setEnabled(true);
                         

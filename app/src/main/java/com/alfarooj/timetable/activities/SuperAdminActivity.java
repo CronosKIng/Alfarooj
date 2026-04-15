@@ -389,7 +389,6 @@ public class SuperAdminActivity extends BaseActivity {
                 }
             }
             return true;
-        } else if (id == R.id.action_calendar) {
             showDatePicker();
             return true;
         } else if (id == R.id.action_language) {

@@ -251,7 +251,6 @@ public class DeliveryActivity extends BaseActivity {
         if (id == R.id.action_language) {
             showLanguageDialog();
             return true;
-        } else if (id == R.id.action_refresh) {
             updateUI();
             translateAllUIElements();
             return true;
