@@ -8,8 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -36,7 +34,6 @@ import retrofit2.Response;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 public class SuperAdminActivity extends BaseActivity {
@@ -90,40 +87,39 @@ public class SuperAdminActivity extends BaseActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             currentDepartment = null;
+            
             if (id == R.id.nav_users) {
                 currentView = "users";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Manage Users"));
                 loadUsers();
             } else if (id == R.id.nav_today_attendance) {
                 currentView = "attendance";
-                selectedDate = Calendar.getInstance();
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Today Attendance"));
-                loadAttendanceLogs(null, true);
+                loadTodayAttendance();
             } else if (id == R.id.nav_all_history) {
                 currentView = "attendance";
-                currentDepartment = null;
                 toolbar.setTitle(TranslationHelper.translateTextDirect("All History"));
-                loadAttendanceLogs(null, false);
+                loadAttendanceLogs(null);
             } else if (id == R.id.nav_kitchen) {
                 currentView = "attendance";
                 currentDepartment = "kitchen";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Kitchen History"));
-                loadAttendanceLogs("kitchen", false);
+                loadAttendanceLogs("kitchen");
             } else if (id == R.id.nav_waiter) {
                 currentView = "attendance";
                 currentDepartment = "waiter";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Waiter History"));
-                loadAttendanceLogs("waiter", false);
+                loadAttendanceLogs("waiter");
             } else if (id == R.id.nav_delivery) {
                 currentView = "attendance";
                 currentDepartment = "delivery";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Delivery History"));
-                loadAttendanceLogs("delivery", false);
+                loadAttendanceLogs("delivery");
             } else if (id == R.id.nav_manager) {
                 currentView = "attendance";
                 currentDepartment = "manager";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Manager History"));
-                loadAttendanceLogs("manager", false);
+                loadAttendanceLogs("manager");
             } else if (id == R.id.nav_create_user) {
                 showCreateUserDialog("user");
             } else if (id == R.id.nav_create_admin) {
@@ -160,12 +156,36 @@ public class SuperAdminActivity extends BaseActivity {
         });
     }
 
-    private void loadAttendanceLogs(String department, boolean todayOnly) {
+    private void loadTodayAttendance() {
         tvEmpty.setVisibility(View.GONE);
+        ApiClient.getApiService().getTodayAttendance().enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
+            @Override
+            public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
+                                   Response<com.alfarooj.timetable.models.AttendanceLogsResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    logList.clear();
+                    logList.addAll(response.body().getLogs());
+                    logAdapter = new LogAdapter(logList, SuperAdminActivity.this, 
+                        log -> showDeleteLogDialog(log));
+                    recyclerView.setAdapter(logAdapter);
+                    tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
+                Toast.makeText(SuperAdminActivity.this, 
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
+                    Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadAttendanceLogs(String department) {
+        tvEmpty.setVisibility(View.GONE);
+        
         Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call;
-        if (todayOnly) {
-            call = ApiClient.getApiService().getTodayAttendance();
-        } else if (department != null) {
+        if (department != null) {
             call = ApiClient.getApiService().getAttendanceLogs(department);
         } else {
             call = ApiClient.getApiService().getAttendanceLogs(null);
@@ -178,7 +198,32 @@ public class SuperAdminActivity extends BaseActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     logList.clear();
                     logList.addAll(response.body().getLogs());
-                    logAdapter = new LogAdapter(logList, SuperAdminActivity.this, 
+                    logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
+                        log -> showDeleteLogDialog(log));
+                    recyclerView.setAdapter(logAdapter);
+                    tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
+                Toast.makeText(SuperAdminActivity.this, 
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
+                    Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadAttendanceByDate(String date) {
+        tvEmpty.setVisibility(View.GONE);
+        ApiClient.getApiService().getAttendanceByDate(date).enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
+            @Override
+            public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
+                                   Response<com.alfarooj.timetable.models.AttendanceLogsResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    logList.clear();
+                    logList.addAll(response.body().getLogs());
+                    logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
                         log -> showDeleteLogDialog(log));
                     recyclerView.setAdapter(logAdapter);
                     tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
@@ -214,11 +259,12 @@ public class SuperAdminActivity extends BaseActivity {
                     Toast.makeText(SuperAdminActivity.this, 
                         TranslationHelper.translateTextDirect("✅ Imefutwa"), 
                         Toast.LENGTH_SHORT).show();
-                    // Reload current view
-                    if (currentView.equals("users")) {
-                        loadUsers();
-                    } else {
-                        loadAttendanceLogs(currentDepartment, false);
+                    if (currentView.equals("attendance")) {
+                        if (currentDepartment != null) {
+                            loadAttendanceLogs(currentDepartment);
+                        } else {
+                            loadAttendanceLogs(null);
+                        }
                     }
                 } else {
                     Toast.makeText(SuperAdminActivity.this, 
@@ -240,39 +286,15 @@ public class SuperAdminActivity extends BaseActivity {
         DatePickerDialog datePicker = new DatePickerDialog(this,
             (view, year, month, dayOfMonth) -> {
                 selectedDate.set(year, month, dayOfMonth);
-                loadAttendanceByDate();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                String dateStr = sdf.format(selectedDate.getTime());
+                toolbar.setTitle(TranslationHelper.translateTextDirect("Attendance for ") + dateStr);
+                loadAttendanceByDate(dateStr);
             },
             selectedDate.get(Calendar.YEAR),
             selectedDate.get(Calendar.MONTH),
             selectedDate.get(Calendar.DAY_OF_MONTH));
         datePicker.show();
-    }
-
-    private void loadAttendanceByDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        String dateStr = sdf.format(selectedDate.getTime());
-        
-        ApiClient.getApiService().getAttendanceByDate(dateStr).enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
-            @Override
-            public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
-                                   Response<com.alfarooj.timetable.models.AttendanceLogsResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    logList.clear();
-                    logList.addAll(response.body().getLogs());
-                    logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
-                        log -> showDeleteLogDialog(log));
-                    recyclerView.setAdapter(logAdapter);
-                    tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, 
-                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
-                    Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void showCreateUserDialog(String role) {
@@ -360,7 +382,11 @@ public class SuperAdminActivity extends BaseActivity {
             if (currentView.equals("users")) {
                 loadUsers();
             } else {
-                loadAttendanceLogs(currentDepartment, false);
+                if (currentDepartment != null) {
+                    loadAttendanceLogs(currentDepartment);
+                } else {
+                    loadAttendanceLogs(null);
+                }
             }
             return true;
         } else if (id == R.id.action_calendar) {

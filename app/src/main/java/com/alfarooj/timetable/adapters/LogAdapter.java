@@ -1,71 +1,95 @@
 package com.alfarooj.timetable.adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
-import com.alfarooj.timetable.models.AttendanceLog;
 import com.alfarooj.timetable.R;
+import com.alfarooj.timetable.models.AttendanceLog;
+import com.alfarooj.timetable.utils.TranslationHelper;
 import java.util.ArrayList;
+import java.util.List;
 
 public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
-    private ArrayList<AttendanceLog> logList;
+    private List<AttendanceLog> logs;
+    private Context context;
+    private OnDeleteClickListener deleteClickListener;
 
-    public LogAdapter(ArrayList<AttendanceLog> logList) {
-        this.logList = logList;
+    public interface OnDeleteClickListener {
+        void onDeleteClick(AttendanceLog log);
+    }
+
+    public LogAdapter(List<AttendanceLog> logs, Context context, OnDeleteClickListener listener) {
+        this.logs = logs != null ? logs : new ArrayList<>();
+        this.context = context;
+        this.deleteClickListener = listener;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_log, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_log, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        AttendanceLog log = logList.get(position);
+        AttendanceLog log = logs.get(position);
         
-        String departmentDisplay = "";
-        switch(log.getDepartment()) {
-            case "kitchen":
-                departmentDisplay = "Kitchen";
-                break;
-            case "waiter":
-                departmentDisplay = "Waiter";
-                break;
-            case "delivery":
-                departmentDisplay = "Delivery";
-                break;
-            case "manager":
-                departmentDisplay = "Manager";
-                break;
-            default:
-                departmentDisplay = log.getDepartment();
+        holder.tvUsername.setText(log.getUsername());
+        holder.tvFullName.setText(log.getFullName());
+        holder.tvEvent.setText(TranslationHelper.translateTextDirect(log.getEventName()));
+        holder.tvTimestamp.setText(log.getTimestamp());
+        
+        String comment = log.getComment();
+        if (comment != null && !comment.isEmpty()) {
+            holder.tvComment.setText("💬 " + comment);
+            holder.tvComment.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvComment.setVisibility(View.GONE);
         }
         
-        holder.tvFullName.setText("Name: " + log.getFullName());
-        holder.tvUsername.setText("Username: " + log.getUsername());
-        holder.tvEvent.setText("Event: " + log.getEventName());
-        holder.tvDepartment.setText("Department: " + departmentDisplay);
-        holder.tvTime.setText("Time: " + log.getTimestamp());
+        String orderType = log.getOrderType();
+        if (orderType != null && !orderType.isEmpty()) {
+            holder.tvOrderType.setText("📦 " + orderType);
+            holder.tvOrderType.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvOrderType.setVisibility(View.GONE);
+        }
+
+        holder.btnDelete.setOnClickListener(v -> {
+            if (deleteClickListener != null) {
+                deleteClickListener.onDeleteClick(log);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return logList.size();
+        return logs.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvFullName, tvUsername, tvEvent, tvDepartment, tvTime;
-        
-        public ViewHolder(View itemView) {
+    public void updateData(List<AttendanceLog> newLogs) {
+        this.logs = newLogs != null ? newLogs : new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvUsername, tvFullName, tvEvent, tvTimestamp, tvComment, tvOrderType;
+        ImageButton btnDelete;
+
+        ViewHolder(View itemView) {
             super(itemView);
-            tvFullName = itemView.findViewById(R.id.tvFullName);
             tvUsername = itemView.findViewById(R.id.tvUsername);
+            tvFullName = itemView.findViewById(R.id.tvFullName);
             tvEvent = itemView.findViewById(R.id.tvEvent);
-            tvDepartment = itemView.findViewById(R.id.tvDepartment);
-            tvTime = itemView.findViewById(R.id.tvTime);
+            tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
+            tvComment = itemView.findViewById(R.id.tvComment);
+            tvOrderType = itemView.findViewById(R.id.tvOrderType);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
 }
