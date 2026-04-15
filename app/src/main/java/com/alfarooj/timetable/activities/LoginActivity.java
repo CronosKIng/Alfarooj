@@ -101,27 +101,27 @@ public class LoginActivity extends BaseActivity {
             tvError.setVisibility(View.GONE);
 
             if (username.isEmpty()) {
-                tvError.setText(TranslationHelper.translateTextDirect("Please enter username"));
+                tvError.setText(TranslationHelper.translateTextDirect("📝 Weka jina"));
                 tvError.setVisibility(View.VISIBLE);
                 etUsername.requestFocus();
                 return;
             }
 
             if (password.isEmpty()) {
-                tvError.setText(TranslationHelper.translateTextDirect("Please enter password"));
+                tvError.setText(TranslationHelper.translateTextDirect("🔐 Weka nywila"));
                 tvError.setVisibility(View.VISIBLE);
                 etPassword.requestFocus();
                 return;
             }
 
-            btnLogin.setText(TranslationHelper.translateTextDirect("LOGGING IN..."));
+            btnLogin.setText(TranslationHelper.translateTextDirect("INAINGIA..."));
             btnLogin.setEnabled(false);
 
             ApiClient.getApiService().login(new LoginRequest(username, password))
                 .enqueue(new Callback<LoginResponse>() {
                     @Override
                     public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                        btnLogin.setText(TranslationHelper.translateTextDirect("LOGIN"));
+                        btnLogin.setText(TranslationHelper.translateTextDirect("INGIA"));
                         btnLogin.setEnabled(true);
 
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
@@ -129,11 +129,13 @@ public class LoginActivity extends BaseActivity {
                             if (user != null) {
                                 session.createLoginSession(user.getId(), user.getUsername(),
                                     user.getFullName(), user.getRole(), user.getDepartment());
-                                Toast.makeText(LoginActivity.this, TranslationHelper.translateTextDirect("Welcome ") + user.getFullName() + "!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(LoginActivity.this, 
+                                    TranslationHelper.translateTextDirect("✅ Karibu ") + user.getFullName() + "!", 
+                                    Toast.LENGTH_SHORT).show();
                                 navigateToDashboard();
                             }
                         } else {
-                            tvError.setText(TranslationHelper.translateTextDirect("Invalid username or password!"));
+                            tvError.setText(TranslationHelper.translateTextDirect("❌ Jina au nywila si sahihi"));
                             tvError.setVisibility(View.VISIBLE);
                             etPassword.setText("");
                             etPassword.requestFocus();
@@ -142,9 +144,9 @@ public class LoginActivity extends BaseActivity {
 
                     @Override
                     public void onFailure(Call<LoginResponse> call, Throwable t) {
-                        btnLogin.setText(TranslationHelper.translateTextDirect("LOGIN"));
+                        btnLogin.setText(TranslationHelper.translateTextDirect("INGIA"));
                         btnLogin.setEnabled(true);
-                        tvError.setText(TranslationHelper.translateTextDirect("Network error: ") + t.getMessage());
+                        tvError.setText(TranslationHelper.translateTextDirect("📡 Hakuna mtandao"));
                         tvError.setVisibility(View.VISIBLE);
                     }
                 });
@@ -157,62 +159,22 @@ public class LoginActivity extends BaseActivity {
         tvUsernameLabel.setText(TranslationHelper.translateTextDirect("Username:"));
         tvPasswordLabel.setText(TranslationHelper.translateTextDirect("Password:"));
         tvLanguageLabel.setText(TranslationHelper.translateTextDirect("Select Language:"));
-        btnLogin.setText(TranslationHelper.translateTextDirect("LOGIN"));
-
-        String currentUsername = etUsername.getText().toString();
-        if (currentUsername.isEmpty() || currentUsername.equals("Enter username") || currentUsername.equals(TranslationHelper.translateTextDirect("Enter username"))) {
-            etUsername.setHint(TranslationHelper.translateTextDirect("Enter username"));
-            if (currentUsername.equals("Enter username")) {
-                etUsername.setText("");
-            }
-        }
-
-        String currentPassword = etPassword.getText().toString();
-        if (currentPassword.isEmpty() || currentPassword.equals("Enter password") || currentPassword.equals(TranslationHelper.translateTextDirect("Enter password"))) {
-            etPassword.setHint(TranslationHelper.translateTextDirect("Enter password"));
-            if (currentPassword.equals("Enter password")) {
-                etPassword.setText("");
-            }
-        }
+        btnLogin.setText(TranslationHelper.translateTextDirect("INGIA"));
     }
 
     protected void setupLanguages() {
         languageCodes.clear();
         languageNames.clear();
+        
+        // Lugha 8
         languageCodes.add("en"); languageNames.add("English");
+        languageCodes.add("bn"); languageNames.add("Bengali");
         languageCodes.add("sw"); languageNames.add("Kiswahili");
         languageCodes.add("ar"); languageNames.add("Arabic");
-        languageCodes.add("fr"); languageNames.add("French");
-        languageCodes.add("es"); languageNames.add("Spanish");
-        languageCodes.add("de"); languageNames.add("German");
-        languageCodes.add("it"); languageNames.add("Italian");
-        languageCodes.add("pt"); languageNames.add("Portuguese");
-        languageCodes.add("ru"); languageNames.add("Russian");
-        languageCodes.add("zh"); languageNames.add("Chinese");
-        languageCodes.add("ja"); languageNames.add("Japanese");
-        languageCodes.add("ko"); languageNames.add("Korean");
         languageCodes.add("hi"); languageNames.add("Hindi");
-        languageCodes.add("tr"); languageNames.add("Turkish");
-        languageCodes.add("nl"); languageNames.add("Dutch");
-        languageCodes.add("el"); languageNames.add("Greek");
-        languageCodes.add("vi"); languageNames.add("Vietnamese");
-        languageCodes.add("th"); languageNames.add("Thai");
-        languageCodes.add("pl"); languageNames.add("Polish");
-        languageCodes.add("uk"); languageNames.add("Ukrainian");
-    }
-
-    protected void refreshSpinnerIfNeeded() {
-        List<String> translatedNames = new ArrayList<>();
-        for (String langName : languageNames) {
-            translatedNames.add(TranslationHelper.translateTextDirect(langName));
-        }
-        if (spinnerAdapter != null) {
-            spinnerAdapter.clear();
-            for (String name : translatedNames) {
-                spinnerAdapter.add(name);
-            }
-            spinnerAdapter.notifyDataSetChanged();
-        }
+        languageCodes.add("ur"); languageNames.add("Urdu");
+        languageCodes.add("ne"); languageNames.add("Nepali");
+        languageCodes.add("am"); languageNames.add("Amharic");
     }
 
     protected void setupLanguageSpinner() {
@@ -239,9 +201,17 @@ public class LoginActivity extends BaseActivity {
                     TranslationHelper.setCurrentLanguage(newLang);
                     TranslationHelper.saveLanguage(LoginActivity.this, newLang);
                     LanguageUtils.setLocale(LoginActivity.this, newLang);
+                    
+                    // Update UI ya LoginActivity
                     updateUIText();
-                    refreshSpinnerIfNeeded();
-                    Toast.makeText(LoginActivity.this, TranslationHelper.translateTextDirect("Language changed to ") + TranslationHelper.translateTextDirect(languageNames.get(position)), Toast.LENGTH_SHORT).show();
+                    
+                    // Tafsiri UI yote upya
+                    translateAllUIElements();
+                    
+                    Toast.makeText(LoginActivity.this, 
+                        TranslationHelper.translateTextDirect("✅ Lugha imebadilishwa kuwa ") + 
+                        TranslationHelper.translateTextDirect(languageNames.get(position)), 
+                        Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
@@ -254,9 +224,9 @@ public class LoginActivity extends BaseActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, TranslationHelper.translateTextDirect("Location permission granted"), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, TranslationHelper.translateTextDirect("✅ Ruhusa imetolewa"), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, TranslationHelper.translateTextDirect("Location permission required!"), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, TranslationHelper.translateTextDirect("📍 Ruhusa ya mahali inahitajika!"), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -279,13 +249,13 @@ public class LoginActivity extends BaseActivity {
             } else if (department != null && department.equals("manager")) {
                 intent = new Intent(this, ManagerActivity.class);
             } else {
-                intent = new Intent(this, ManagerActivity.class);
+                intent = new Intent(this, UserActivity.class);
             }
             startActivity(intent);
             finish();
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, TranslationHelper.translateTextDirect("Error: ") + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, TranslationHelper.translateTextDirect("❌ Hitilafu: ") + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 }
