@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -42,7 +41,6 @@ public class SuperAdminActivity extends BaseActivity {
     private NavigationView navigationView;
     private Toolbar toolbar;
     private RecyclerView recyclerView;
-    private TextView tvEmpty;
     private SessionManager session;
     private ArrayList<User> userList = new ArrayList<>();
     private ArrayList<AttendanceLog> logList = new ArrayList<>();
@@ -63,7 +61,6 @@ public class SuperAdminActivity extends BaseActivity {
         navigationView = findViewById(R.id.navView);
         toolbar = findViewById(R.id.toolbar);
         recyclerView = findViewById(R.id.recyclerView);
-        // tvEmpty = findViewById(R.id.tvEmpty);
 
         setSupportActionBar(toolbar);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -133,7 +130,6 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadUsers() {
-        tvEmpty != null ? tvEmpty.setVisibility : null;(View.GONE);
         ApiClient.getApiService().getUsers().enqueue(new Callback<com.alfarooj.timetable.models.UsersResponse>() {
             @Override
             public void onResponse(Call<com.alfarooj.timetable.models.UsersResponse> call, 
@@ -143,7 +139,6 @@ public class SuperAdminActivity extends BaseActivity {
                     userList.addAll(response.body().getUsers());
                     userAdapter = new UserAdapter(userList, SuperAdminActivity.this, () -> loadUsers());
                     recyclerView.setAdapter(userAdapter);
-                    tvEmpty != null ? tvEmpty.setVisibility : null;(userList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -157,7 +152,6 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadTodayAttendance() {
-        tvEmpty != null ? tvEmpty.setVisibility : null;(View.GONE);
         ApiClient.getApiService().getTodayAttendance().enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
             @Override
             public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
@@ -168,7 +162,6 @@ public class SuperAdminActivity extends BaseActivity {
                     logAdapter = new LogAdapter(logList, SuperAdminActivity.this, 
                         log -> showDeleteLogDialog(log));
                     recyclerView.setAdapter(logAdapter);
-                    tvEmpty != null ? tvEmpty.setVisibility : null;(logList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -182,8 +175,6 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadAttendanceLogs(String department) {
-        tvEmpty != null ? tvEmpty.setVisibility : null;(View.GONE);
-        
         Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call;
         if (department != null) {
             call = ApiClient.getApiService().getAttendanceLogs(department);
@@ -201,7 +192,6 @@ public class SuperAdminActivity extends BaseActivity {
                     logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
                         log -> showDeleteLogDialog(log));
                     recyclerView.setAdapter(logAdapter);
-                    tvEmpty != null ? tvEmpty.setVisibility : null;(logList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -215,7 +205,6 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadAttendanceByDate(String date) {
-        tvEmpty != null ? tvEmpty.setVisibility : null;(View.GONE);
         ApiClient.getApiService().getAttendanceByDate(date).enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
             @Override
             public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
@@ -226,7 +215,6 @@ public class SuperAdminActivity extends BaseActivity {
                     logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
                         log -> showDeleteLogDialog(log));
                     recyclerView.setAdapter(logAdapter);
-                    tvEmpty != null ? tvEmpty.setVisibility : null;(logList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 

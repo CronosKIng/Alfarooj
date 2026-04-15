@@ -1,8 +1,6 @@
 package com.alfarooj.timetable.activities;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,7 +19,6 @@ import java.util.List;
 
 public class HistoryActivity extends BaseActivity {
     private RecyclerView recyclerView;
-    private TextView tvEmpty;
     private SessionManager session;
     private List<AttendanceLog> logList = new ArrayList<>();
     private LogAdapter adapter;
@@ -41,7 +38,6 @@ public class HistoryActivity extends BaseActivity {
         }
 
         recyclerView = findViewById(R.id.recyclerView);
-        // tvEmpty = findViewById(R.id.tvEmpty);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         loadHistory();
@@ -49,15 +45,12 @@ public class HistoryActivity extends BaseActivity {
     }
 
     private void loadHistory() {
-        if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
-        
         ApiClient.getApiService().getAttendanceLogs(null).enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
             @Override
             public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
                                    Response<com.alfarooj.timetable.models.AttendanceLogsResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     logList.clear();
-                    // Filter kwa mtumiaji wa sasa
                     String currentUsername = session.getUsername();
                     for (AttendanceLog log : response.body().getLogs()) {
                         if (log.getUsername().equals(currentUsername)) {
@@ -66,7 +59,6 @@ public class HistoryActivity extends BaseActivity {
                     }
                     adapter = new LogAdapter(logList, HistoryActivity.this, null);
                     recyclerView.setAdapter(adapter);
-                    if (tvEmpty != null) tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -75,7 +67,6 @@ public class HistoryActivity extends BaseActivity {
                 Toast.makeText(HistoryActivity.this, 
                     TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
                     Toast.LENGTH_SHORT).show();
-                if (tvEmpty != null) tvEmpty.setVisibility(View.VISIBLE);
             }
         });
     }
