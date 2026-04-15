@@ -2,18 +2,14 @@ package com.alfarooj.timetable.activities;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import com.google.android.material.navigation.NavigationView;
 import com.alfarooj.timetable.utils.LanguageUtils;
 import com.alfarooj.timetable.utils.TranslationHelper;
 import com.alfarooj.timetable.R;
@@ -44,86 +40,41 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         LanguageUtils.applyLanguage(this);
         TranslationHelper.loadLanguage(this);
-        // Tafsiri UI yote kila inaporudi
         translateAllUIElements();
     }
 
     protected void setupLanguages() {
+        languageCodes.clear();
+        languageNames.clear();
         languageCodes.add("en"); languageNames.add("English");
+        languageCodes.add("bn"); languageNames.add("Bengali");
         languageCodes.add("sw"); languageNames.add("Kiswahili");
         languageCodes.add("ar"); languageNames.add("Arabic");
-        languageCodes.add("fr"); languageNames.add("French");
-        languageCodes.add("es"); languageNames.add("Spanish");
-        languageCodes.add("de"); languageNames.add("German");
-        languageCodes.add("it"); languageNames.add("Italian");
-        languageCodes.add("pt"); languageNames.add("Portuguese");
-        languageCodes.add("ru"); languageNames.add("Russian");
-        languageCodes.add("zh"); languageNames.add("Chinese");
-        languageCodes.add("ja"); languageNames.add("Japanese");
-        languageCodes.add("ko"); languageNames.add("Korean");
         languageCodes.add("hi"); languageNames.add("Hindi");
-        languageCodes.add("tr"); languageNames.add("Turkish");
-        languageCodes.add("nl"); languageNames.add("Dutch");
-        languageCodes.add("el"); languageNames.add("Greek");
-        languageCodes.add("vi"); languageNames.add("Vietnamese");
-        languageCodes.add("th"); languageNames.add("Thai");
-        languageCodes.add("pl"); languageNames.add("Polish");
-        languageCodes.add("uk"); languageNames.add("Ukrainian");
+        languageCodes.add("ur"); languageNames.add("Urdu");
+        languageCodes.add("ne"); languageNames.add("Nepali");
+        languageCodes.add("am"); languageNames.add("Amharic");
     }
 
-    // Tafsiri UI yote kwa kutumia API - neno kwa neno
     protected void translateAllUIElements() {
-        View rootView = findViewById(android.R.id.content);
-        if (rootView instanceof ViewGroup) {
-            translateViewGroup((ViewGroup) rootView);
+        ViewGroup rootView = findViewById(android.R.id.content);
+        if (rootView != null) {
+            TranslationHelper.translateViewGroup(rootView);
         }
     }
 
-    private void translateViewGroup(ViewGroup viewGroup) {
-        for (int i = 0; i < viewGroup.getChildCount(); i++) {
-            View child = viewGroup.getChildAt(i);
-            if (child instanceof TextView && !(child instanceof EditText)) {
-                TextView tv = (TextView) child;
-                String text = tv.getText().toString();
-                if (text != null && !text.isEmpty()) {
-                    TranslationHelper.translateTextView(tv, text);
-                }
-                String hint = tv.getHint() != null ? tv.getHint().toString() : "";
-                if (!hint.isEmpty()) {
-                    TranslationHelper.translateHint(tv, hint);
-                }
-            } else if (child instanceof Button) {
-                Button btn = (Button) child;
-                String text = btn.getText().toString();
-                if (text != null && !text.isEmpty()) {
-                    TranslationHelper.translateButtonText(btn, text);
-                }
-            } else if (child instanceof ViewGroup) {
-                translateViewGroup((ViewGroup) child);
-            }
-        }
+    protected void translateToolbar(Toolbar toolbar) {
+        TranslationHelper.translateToolbar(toolbar);
     }
 
-    protected void showLanguageDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(TranslationHelper.translateTextDirect("Select Language / Chagua Lugha"));
-        String[] languages = languageNames.toArray(new String[0]);
-
-        builder.setItems(languages, (dialog, which) -> {
-            String selectedCode = languageCodes.get(which);
-            TranslationHelper.setCurrentLanguage(selectedCode);
-            TranslationHelper.saveLanguage(this, selectedCode);
-            LanguageUtils.setLocale(this, selectedCode);
-            // Badala ya recreate, tafsiri UI yote tena
-            translateAllUIElements();
-            Toast.makeText(this, TranslationHelper.translateTextDirect("Language changed to ") + languages[which], Toast.LENGTH_SHORT).show();
-        });
-        builder.show();
+    protected void translateNavigationView(NavigationView navView) {
+        TranslationHelper.translateNavigationView(navView);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        TranslationHelper.translateMenu(menu);
         return true;
     }
 
@@ -134,5 +85,27 @@ public class BaseActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    protected void showLanguageDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(TranslationHelper.translateTextDirect("Select Language"));
+        String[] languages = languageNames.toArray(new String[0]);
+        for (int i = 0; i < languages.length; i++) {
+            languages[i] = TranslationHelper.translateTextDirect(languages[i]);
+        }
+
+        builder.setItems(languages, (dialog, which) -> {
+            String selectedCode = languageCodes.get(which);
+            TranslationHelper.clearCache(); // Futa cache ya lugha ya zamani
+            TranslationHelper.setCurrentLanguage(selectedCode);
+            TranslationHelper.saveLanguage(this, selectedCode);
+            LanguageUtils.setLocale(this, selectedCode);
+            translateAllUIElements();
+            Toast.makeText(this, 
+                TranslationHelper.translateTextDirect("Language changed to ") + languageNames.get(which), 
+                Toast.LENGTH_SHORT).show();
+        });
+        builder.show();
     }
 }

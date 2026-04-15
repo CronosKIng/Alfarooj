@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Looper;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -73,15 +75,16 @@ public class DeliveryActivity extends BaseActivity {
         btnBreakOut.setOnClickListener(v -> checkLocation("break_out", "Break Out"));
         btnViewHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
         btnLogout.setOnClickListener(v -> logout());
+
+        translateAllUIElements();
     }
 
     private void updateUI() {
         String dept = session.getDepartment();
         String icon = "🚗";
-        tvWelcome.setText("User: " + session.getFullName() + " (" + dept + ") " + icon);
+        tvWelcome.setText(TranslationHelper.translateTextDirect("User: ") + session.getFullName() + " (" + dept + ") " + icon);
         tvStatus.setText(TranslationHelper.translateTextDirect("Ready"));
         
-        // Translate button texts
         btnPickup.setText(TranslationHelper.translateTextDirect("PICKUP ORDER"));
         btnDropoff.setText(TranslationHelper.translateTextDirect("DROPOFF ORDER"));
         btnSignIn.setText(TranslationHelper.translateTextDirect("SIGN IN"));
@@ -96,11 +99,14 @@ public class DeliveryActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         updateUI();
+        translateAllUIElements();
     }
 
     private void checkLocation(String eventType, String eventName) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, TranslationHelper.translateTextDirect("Location permission required!"), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, 
+                TranslationHelper.translateTextDirect("📍 Ruhusa ya mahali inahitajika"), 
+                Toast.LENGTH_LONG).show();
             return;
         }
         pendingEventType = eventType;
@@ -128,7 +134,10 @@ public class DeliveryActivity extends BaseActivity {
             startLocationCheck();
         });
 
-        builder.show();
+        AlertDialog dialog = builder.show();
+        // Tafsiri buttons za dialog
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(TranslationHelper.translateTextDirect("Yes, I'm late"));
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setText(TranslationHelper.translateTextDirect("No, I'm on time"));
     }
 
     private void showCommentDialog() {
@@ -154,7 +163,8 @@ public class DeliveryActivity extends BaseActivity {
 
     private void startLocationCheck() {
         tvStatus.setText(TranslationHelper.translateTextDirect("Getting location..."));
-        LocationRequest request = new LocationRequest.Builder(10000).setPriority(Priority.PRIORITY_HIGH_ACCURACY).build();
+        LocationRequest request = new LocationRequest.Builder(10000)
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY).build();
         LocationCallback callback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult result) {
@@ -172,7 +182,8 @@ public class DeliveryActivity extends BaseActivity {
     }
 
     private void validateLocation() {
-        com.alfarooj.timetable.models.LocationRequest req = new com.alfarooj.timetable.models.LocationRequest(currentLatitude, currentLongitude);
+        com.alfarooj.timetable.models.LocationRequest req = 
+            new com.alfarooj.timetable.models.LocationRequest(currentLatitude, currentLongitude);
         ApiClient.getApiService().validateLocation(req).enqueue(new Callback<LocationResponse>() {
             @Override
             public void onResponse(Call<LocationResponse> call, Response<LocationResponse> response) {
@@ -191,8 +202,10 @@ public class DeliveryActivity extends BaseActivity {
 
     private void recordAttendance() {
         String location = "Lat: " + currentLatitude + ", Lon: " + currentLongitude;
-        AttendanceRequest request = new AttendanceRequest(session.getUserId(), session.getUsername(), session.getFullName(),
-                session.getDepartment(), pendingEventType, pendingEventName, currentLatitude, currentLongitude, location);
+        AttendanceRequest request = new AttendanceRequest(
+            session.getUserId(), session.getUsername(), session.getFullName(),
+            session.getDepartment(), pendingEventType, pendingEventName, 
+            currentLatitude, currentLongitude, location);
 
         if (pendingEventType.equals("sign_in") && !pendingComment.isEmpty()) {
             request.setComment(pendingComment);
@@ -209,7 +222,9 @@ public class DeliveryActivity extends BaseActivity {
             public void onResponse(Call<AttendanceResponse> call, Response<AttendanceResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     tvStatus.setText(pendingEventName + " " + TranslationHelper.translateTextDirect("recorded"));
-                    Toast.makeText(DeliveryActivity.this, pendingEventName + " " + TranslationHelper.translateTextDirect("Success!"), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DeliveryActivity.this, 
+                        TranslationHelper.translateTextDirect("Success!"), 
+                        Toast.LENGTH_SHORT).show();
                     pendingComment = "";
                 } else {
                     tvStatus.setText(TranslationHelper.translateTextDirect("Failed"));
@@ -221,6 +236,27 @@ public class DeliveryActivity extends BaseActivity {
                 tvStatus.setText(TranslationHelper.translateTextDirect("Network error"));
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.delivery_menu, menu);
+        TranslationHelper.translateMenu(menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_language) {
+            showLanguageDialog();
+            return true;
+        } else if (id == R.id.action_refresh) {
+            updateUI();
+            translateAllUIElements();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void logout() {

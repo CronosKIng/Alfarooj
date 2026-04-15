@@ -1,7 +1,7 @@
 package com.alfarooj.timetable.activities;
 
 import android.app.AlertDialog;
-import android.content.Context;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -9,350 +9,373 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.alfarooj.timetable.adapters.UserAdapter;
+import com.google.android.material.navigation.NavigationView;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.core.view.GravityCompat;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import com.alfarooj.timetable.R;
 import com.alfarooj.timetable.adapters.LogAdapter;
+import com.alfarooj.timetable.adapters.UserAdapter;
 import com.alfarooj.timetable.api.ApiClient;
 import com.alfarooj.timetable.models.AttendanceLog;
-import com.alfarooj.timetable.models.AttendanceLogsResponse;
 import com.alfarooj.timetable.models.CreateUserRequest;
-import com.alfarooj.timetable.models.CreateUserResponse;
 import com.alfarooj.timetable.models.User;
-import com.alfarooj.timetable.models.UsersResponse;
-import com.alfarooj.timetable.utils.LanguageUtils;
 import com.alfarooj.timetable.utils.SessionManager;
 import com.alfarooj.timetable.utils.TranslationHelper;
-import com.alfarooj.timetable.R;
-import com.google.android.material.navigation.NavigationView;
-import java.util.ArrayList;
-import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 
 public class SuperAdminActivity extends BaseActivity {
+
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private Toolbar toolbar;
-    private FrameLayout contentFrame;
-    private SessionManager session;
     private RecyclerView recyclerView;
-    private ArrayList<User> userList;
-    private ArrayList<AttendanceLog> logList;
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        LanguageUtils.applyLanguage(newBase);
-        super.attachBaseContext(newBase);
-    }
+    private TextView tvEmpty;
+    private SessionManager session;
+    private ArrayList<User> userList = new ArrayList<>();
+    private ArrayList<AttendanceLog> logList = new ArrayList<>();
+    private UserAdapter userAdapter;
+    private LogAdapter logAdapter;
+    private String currentView = "users";
+    private String currentDepartment = null;
+    private Calendar selectedDate = Calendar.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_super_admin);
 
-        try {
-            session = new SessionManager(this);
-            drawerLayout = findViewById(R.id.drawerLayout);
-            navigationView = findViewById(R.id.navView);
-            toolbar = findViewById(R.id.toolbar);
-            contentFrame = findViewById(R.id.contentFrame);
-            
-            setSupportActionBar(toolbar);
-            
-            String title = TranslationHelper.translateTextDirect("Super Admin Dashboard");
-            setTitle(title);
+        session = new SessionManager(this);
+        
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navView);
+        toolbar = findViewById(R.id.toolbar);
+        recyclerView = findViewById(R.id.recyclerView);
+        tvEmpty = findViewById(R.id.tvEmpty);
 
-            Menu navMenu = navigationView.getMenu();
-            for (int i = 0; i < navMenu.size(); i++) {
-                MenuItem item = navMenu.getItem(i);
-                String originalTitle = item.getTitle().toString();
-                item.setTitle(TranslationHelper.translateTextDirect(originalTitle));
-            }
-
-            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        setSupportActionBar(toolbar);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar,
                 R.string.navigation_drawer_open,
                 R.string.navigation_drawer_close);
-            drawerLayout.addDrawerListener(toggle);
-            toggle.syncState();
-            
-            navigationView.setNavigationItemSelectedListener(item -> {
-                int id = item.getItemId();
-                if (id == R.id.nav_today_attendance) {
-                    loadTodayAttendance();
-                } else if (id == R.id.nav_all_history) {
-                    loadAllHistory();
-                } else if (id == R.id.nav_kitchen_history) {
-                    loadHistoryByDepartment("kitchen");
-                } else if (id == R.id.nav_waiter_history) {
-                    loadHistoryByDepartment("waiter");
-                } else if (id == R.id.nav_delivery_history) {
-                    loadHistoryByDepartment("delivery");
-                } else if (id == R.id.nav_manager_history) {
-                    loadHistoryByDepartment("manager");
-                } else if (id == R.id.nav_create_admin) {
-                    showCreateUserDialog("admin");
-                } else if (id == R.id.nav_create_user) {
-                    showCreateUserDialog("user");
-                } else if (id == R.id.nav_users) {
-                    loadUsers();
-                } else if (id == R.id.nav_logout) {
-                    session.logout();
-                    startActivity(new Intent(SuperAdminActivity.this, LoginActivity.class));
-                    finish();
-                }
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            });
-            loadUsers();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, TranslationHelper.translateTextDirect("Error: ") + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String title = TranslationHelper.translateTextDirect("Super Admin Dashboard");
-        setTitle(title);
-        
-        Menu navMenu = navigationView.getMenu();
-        for (int i = 0; i < navMenu.size(); i++) {
-            MenuItem item = navMenu.getItem(i);
-            String originalTitle = item.getTitle().toString();
-            item.setTitle(TranslationHelper.translateTextDirect(originalTitle));
-        }
-        
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        setupNavigationView();
         loadUsers();
+
+        translateAllUIElements();
+        translateToolbar(toolbar);
+        translateNavigationView(navigationView);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        for (int i = 0; i < menu.size(); i++) {
-            MenuItem item = menu.getItem(i);
-            item.setTitle(TranslationHelper.translateTextDirect(item.getTitle().toString()));
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_language) {
-            showLanguageDialog();
+    private void setupNavigationView() {
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            currentDepartment = null;
+            if (id == R.id.nav_users) {
+                currentView = "users";
+                toolbar.setTitle(TranslationHelper.translateTextDirect("Manage Users"));
+                loadUsers();
+            } else if (id == R.id.nav_today_attendance) {
+                currentView = "attendance";
+                selectedDate = Calendar.getInstance();
+                toolbar.setTitle(TranslationHelper.translateTextDirect("Today Attendance"));
+                loadAttendanceLogs(null, true);
+            } else if (id == R.id.nav_all_history) {
+                currentView = "attendance";
+                currentDepartment = null;
+                toolbar.setTitle(TranslationHelper.translateTextDirect("All History"));
+                loadAttendanceLogs(null, false);
+            } else if (id == R.id.nav_kitchen) {
+                currentView = "attendance";
+                currentDepartment = "kitchen";
+                toolbar.setTitle(TranslationHelper.translateTextDirect("Kitchen History"));
+                loadAttendanceLogs("kitchen", false);
+            } else if (id == R.id.nav_waiter) {
+                currentView = "attendance";
+                currentDepartment = "waiter";
+                toolbar.setTitle(TranslationHelper.translateTextDirect("Waiter History"));
+                loadAttendanceLogs("waiter", false);
+            } else if (id == R.id.nav_delivery) {
+                currentView = "attendance";
+                currentDepartment = "delivery";
+                toolbar.setTitle(TranslationHelper.translateTextDirect("Delivery History"));
+                loadAttendanceLogs("delivery", false);
+            } else if (id == R.id.nav_manager) {
+                currentView = "attendance";
+                currentDepartment = "manager";
+                toolbar.setTitle(TranslationHelper.translateTextDirect("Manager History"));
+                loadAttendanceLogs("manager", false);
+            } else if (id == R.id.nav_create_user) {
+                showCreateUserDialog("user");
+            } else if (id == R.id.nav_create_admin) {
+                showCreateUserDialog("admin");
+            } else if (id == R.id.nav_logout) {
+                logout();
+            }
+            drawerLayout.closeDrawer(GravityCompat.START);
             return true;
+        });
+    }
+
+    private void loadUsers() {
+        tvEmpty.setVisibility(View.GONE);
+        ApiClient.getApiService().getUsers().enqueue(new Callback<com.alfarooj.timetable.models.UsersResponse>() {
+            @Override
+            public void onResponse(Call<com.alfarooj.timetable.models.UsersResponse> call, 
+                                   Response<com.alfarooj.timetable.models.UsersResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    userList.clear();
+                    userList.addAll(response.body().getUsers());
+                    userAdapter = new UserAdapter(userList, SuperAdminActivity.this, () -> loadUsers());
+                    recyclerView.setAdapter(userAdapter);
+                    tvEmpty.setVisibility(userList.isEmpty() ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.alfarooj.timetable.models.UsersResponse> call, Throwable t) {
+                Toast.makeText(SuperAdminActivity.this, 
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
+                    Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadAttendanceLogs(String department, boolean todayOnly) {
+        tvEmpty.setVisibility(View.GONE);
+        Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call;
+        if (todayOnly) {
+            call = ApiClient.getApiService().getTodayAttendance();
+        } else if (department != null) {
+            call = ApiClient.getApiService().getAttendanceLogs(department);
+        } else {
+            call = ApiClient.getApiService().getAttendanceLogs(null);
         }
-        return super.onOptionsItemSelected(item);
+
+        call.enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
+            @Override
+            public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
+                                   Response<com.alfarooj.timetable.models.AttendanceLogsResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    logList.clear();
+                    logList.addAll(response.body().getLogs());
+                    logAdapter = new LogAdapter(logList, SuperAdminActivity.this, 
+                        log -> showDeleteLogDialog(log));
+                    recyclerView.setAdapter(logAdapter);
+                    tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
+                Toast.makeText(SuperAdminActivity.this, 
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
+                    Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showDeleteLogDialog(AttendanceLog log) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(TranslationHelper.translateTextDirect("Delete Record"));
+        builder.setMessage(TranslationHelper.translateTextDirect("Delete this attendance record?"));
+        builder.setPositiveButton(TranslationHelper.translateTextDirect("Delete"), (dialog, which) -> {
+            deleteAttendanceLog(log.getId());
+        });
+        builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
+        builder.show();
+    }
+
+    private void deleteAttendanceLog(int logId) {
+        ApiClient.getApiService().deleteAttendanceLog(logId).enqueue(new Callback<com.alfarooj.timetable.models.SimpleResponse>() {
+            @Override
+            public void onResponse(Call<com.alfarooj.timetable.models.SimpleResponse> call,
+                                   Response<com.alfarooj.timetable.models.SimpleResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Toast.makeText(SuperAdminActivity.this, 
+                        TranslationHelper.translateTextDirect("✅ Imefutwa"), 
+                        Toast.LENGTH_SHORT).show();
+                    // Reload current view
+                    if (currentView.equals("users")) {
+                        loadUsers();
+                    } else {
+                        loadAttendanceLogs(currentDepartment, false);
+                    }
+                } else {
+                    Toast.makeText(SuperAdminActivity.this, 
+                        TranslationHelper.translateTextDirect("❌ Imeshindwa"), 
+                        Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.alfarooj.timetable.models.SimpleResponse> call, Throwable t) {
+                Toast.makeText(SuperAdminActivity.this, 
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
+                    Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showDatePicker() {
+        DatePickerDialog datePicker = new DatePickerDialog(this,
+            (view, year, month, dayOfMonth) -> {
+                selectedDate.set(year, month, dayOfMonth);
+                loadAttendanceByDate();
+            },
+            selectedDate.get(Calendar.YEAR),
+            selectedDate.get(Calendar.MONTH),
+            selectedDate.get(Calendar.DAY_OF_MONTH));
+        datePicker.show();
+    }
+
+    private void loadAttendanceByDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String dateStr = sdf.format(selectedDate.getTime());
+        
+        ApiClient.getApiService().getAttendanceByDate(dateStr).enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
+            @Override
+            public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
+                                   Response<com.alfarooj.timetable.models.AttendanceLogsResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    logList.clear();
+                    logList.addAll(response.body().getLogs());
+                    logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
+                        log -> showDeleteLogDialog(log));
+                    recyclerView.setAdapter(logAdapter);
+                    tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
+                Toast.makeText(SuperAdminActivity.this, 
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
+                    Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void showCreateUserDialog(String role) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        String title = role.equals("admin") ? TranslationHelper.translateTextDirect("Create Admin") : TranslationHelper.translateTextDirect("Create User");
-        builder.setTitle(title);
+        builder.setTitle(TranslationHelper.translateTextDirect(role.equals("admin") ? "Create Admin" : "Create User"));
 
         View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
         EditText etFullName = view.findViewById(R.id.etFullName);
         EditText etUsername = view.findViewById(R.id.etUsername);
         EditText etPassword = view.findViewById(R.id.etPassword);
         Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
-        
+
         etFullName.setHint(TranslationHelper.translateTextDirect("Full Name"));
         etUsername.setHint(TranslationHelper.translateTextDirect("Username"));
         etPassword.setHint(TranslationHelper.translateTextDirect("Password"));
-        
+
         String[] departments = {"kitchen", "waiter", "delivery", "manager"};
-        String[] departmentNames = {
+        String[] deptNames = {
             TranslationHelper.translateTextDirect("Kitchen"),
             TranslationHelper.translateTextDirect("Waiter"),
             TranslationHelper.translateTextDirect("Delivery"),
             TranslationHelper.translateTextDirect("Manager")
         };
-        
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, departmentNames);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
+            android.R.layout.simple_spinner_item, deptNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDepartment.setAdapter(adapter);
-        
+
         builder.setView(view);
-        
         builder.setPositiveButton(TranslationHelper.translateTextDirect("Create"), (dialog, which) -> {
-            createUserLogic(etFullName, etUsername, etPassword, spinnerDepartment, departments, role);
+            String fullName = etFullName.getText().toString().trim();
+            String username = etUsername.getText().toString().trim();
+            String password = etPassword.getText().toString().trim();
+            int pos = spinnerDepartment.getSelectedItemPosition();
+            String department = departments[pos];
+
+            if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, 
+                    TranslationHelper.translateTextDirect("Please fill all fields"), 
+                    Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            CreateUserRequest request = new CreateUserRequest(
+                fullName, username, password, role, department, session.getUserId());
+            ApiClient.getApiService().createUser(request).enqueue(new Callback<com.alfarooj.timetable.models.CreateUserResponse>() {
+                @Override
+                public void onResponse(Call<com.alfarooj.timetable.models.CreateUserResponse> call,
+                                       Response<com.alfarooj.timetable.models.CreateUserResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        Toast.makeText(SuperAdminActivity.this, 
+                            TranslationHelper.translateTextDirect("✅ User created"), 
+                            Toast.LENGTH_SHORT).show();
+                        if (currentView.equals("users")) loadUsers();
+                    } else {
+                        Toast.makeText(SuperAdminActivity.this, 
+                            TranslationHelper.translateTextDirect("❌ Failed"), 
+                            Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<com.alfarooj.timetable.models.CreateUserResponse> call, Throwable t) {
+                    Toast.makeText(SuperAdminActivity.this, 
+                        TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
+                        Toast.LENGTH_SHORT).show();
+                }
+            });
         });
-        
         builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
         builder.show();
     }
-    
-    private void createUserLogic(EditText etFullName, EditText etUsername, EditText etPassword, 
-                                  Spinner spinnerDepartment, String[] departments, String role) {
-        String fullName = etFullName.getText().toString().trim();
-        String username = etUsername.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-        int selectedPos = spinnerDepartment.getSelectedItemPosition();
-        String department = departments[selectedPos];
-        
-        if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("Please fill all fields"), Toast.LENGTH_SHORT).show();
-            return;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.super_admin_menu, menu);
+        TranslationHelper.translateMenu(menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_refresh) {
+            if (currentView.equals("users")) {
+                loadUsers();
+            } else {
+                loadAttendanceLogs(currentDepartment, false);
+            }
+            return true;
+        } else if (id == R.id.action_calendar) {
+            showDatePicker();
+            return true;
+        } else if (id == R.id.action_language) {
+            showLanguageDialog();
+            return true;
         }
-        
-        CreateUserRequest request = new CreateUserRequest(
-            fullName, username, password, role, department, session.getUserId());
-
-        ApiClient.getApiService().createUser(request)
-            .enqueue(new Callback<CreateUserResponse>() {
-                @Override
-                public void onResponse(Call<CreateUserResponse> call, Response<CreateUserResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("User created successfully!"), Toast.LENGTH_SHORT).show();
-                        loadUsers();
-                    } else {
-                        Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("Error: Username already exists"), Toast.LENGTH_SHORT).show();
-                    }
-                }
-                
-                @Override
-                public void onFailure(Call<CreateUserResponse> call, Throwable t) {
-                    Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("Network error: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
-    
-    private void loadUsers() {
-        setTitle(TranslationHelper.translateTextDirect("Loading users..."));
-        
-        ApiClient.getApiService().getUsers()
-            .enqueue(new Callback<UsersResponse>() {
-                @Override
-                public void onResponse(Call<UsersResponse> call, Response<UsersResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        userList = new ArrayList<>();
-                        List<User> apiUsers = response.body().getUsers();
-                        for (User apiUser : apiUsers) {
-                            userList.add(apiUser);
-                        }
-                        displayUsers();
-                        setTitle(TranslationHelper.translateTextDirect("Manage Users (") + userList.size() + " " + TranslationHelper.translateTextDirect("users") + ")");
-                    } else {
-                        setTitle(TranslationHelper.translateTextDirect("Failed to load users"));
-                    }
-                }
-                
-                @Override
-                public void onFailure(Call<UsersResponse> call, Throwable t) {
-                    Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("Network error: ") + t.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
+        return super.onOptionsItemSelected(item);
     }
 
-    private void displayUsers() {
-        if (contentFrame.getChildCount() > 0) {
-            contentFrame.removeAllViews();
-        }
-
-        View view = getLayoutInflater().inflate(R.layout.fragment_user_list, null);
-        recyclerView = view.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        UserAdapter userAdapter = new UserAdapter(userList, this, () -> loadUsers());
-        recyclerView.setAdapter(userAdapter);
-        contentFrame.addView(view);
-    }
-
-    private void loadTodayAttendance() {
-        setTitle(TranslationHelper.translateTextDirect("Today's Attendance"));
-        
-        ApiClient.getApiService().getTodayAttendance()
-            .enqueue(new Callback<AttendanceLogsResponse>() {
-                @Override
-                public void onResponse(Call<AttendanceLogsResponse> call, Response<AttendanceLogsResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        logList = new ArrayList<>(response.body().getLogs());
-                        if (logList.isEmpty()) {
-                            Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("No attendance records for today"), Toast.LENGTH_SHORT).show();
-                        }
-                        showHistoryList();
-                    }
-                }
-                
-                @Override
-                public void onFailure(Call<AttendanceLogsResponse> call, Throwable t) {
-                    Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("Failed to load attendance"), Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
-
-    private void loadAllHistory() {
-        setTitle(TranslationHelper.translateTextDirect("All History"));
-        
-        ApiClient.getApiService().getAttendanceLogs(null)
-            .enqueue(new Callback<AttendanceLogsResponse>() {
-                @Override
-                public void onResponse(Call<AttendanceLogsResponse> call, Response<AttendanceLogsResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        logList = new ArrayList<>(response.body().getLogs());
-                        showHistoryList();
-                    }
-                }
-                
-                @Override
-                public void onFailure(Call<AttendanceLogsResponse> call, Throwable t) {
-                    Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("Failed to load history"), Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
-
-    private void loadHistoryByDepartment(String department) {
-        String title = "";
-        switch(department) {
-            case "kitchen": title = TranslationHelper.translateTextDirect("Kitchen History"); break;
-            case "waiter": title = TranslationHelper.translateTextDirect("Waiter History"); break;
-            case "delivery": title = TranslationHelper.translateTextDirect("Delivery History"); break;
-            case "manager": title = TranslationHelper.translateTextDirect("Manager History"); break;
-        }
-        final String finalTitle = title;
-        setTitle(finalTitle);
-        
-        ApiClient.getApiService().getAttendanceLogs(department)
-            .enqueue(new Callback<AttendanceLogsResponse>() {
-                @Override
-                public void onResponse(Call<AttendanceLogsResponse> call, Response<AttendanceLogsResponse> response) {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        logList = new ArrayList<>(response.body().getLogs());
-                        if (logList.isEmpty()) {
-                            Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("No ") + finalTitle + " " + TranslationHelper.translateTextDirect("records found"), Toast.LENGTH_SHORT).show();
-                        }
-                        showHistoryList();
-                    }
-                }
-                
-                @Override
-                public void onFailure(Call<AttendanceLogsResponse> call, Throwable t) {
-                    Toast.makeText(SuperAdminActivity.this, TranslationHelper.translateTextDirect("Failed to load history"), Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
-
-    private void showHistoryList() {
-        if (contentFrame.getChildCount() > 0) {
-            contentFrame.removeAllViews();
-        }
-
-        View view = getLayoutInflater().inflate(R.layout.fragment_history_list, null);
-        recyclerView = view.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        LogAdapter logAdapter = new LogAdapter(logList);
-        recyclerView.setAdapter(logAdapter);
-        contentFrame.addView(view);
+    private void logout() {
+        session.logout();
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
     }
 }
