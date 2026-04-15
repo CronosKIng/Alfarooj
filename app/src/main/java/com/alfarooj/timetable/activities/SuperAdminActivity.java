@@ -63,7 +63,7 @@ public class SuperAdminActivity extends BaseActivity {
         navigationView = findViewById(R.id.navView);
         toolbar = findViewById(R.id.toolbar);
         recyclerView = findViewById(R.id.recyclerView);
-        tvEmpty = findViewById(R.id.tvEmpty);
+        // tvEmpty = findViewById(R.id.tvEmpty);
 
         setSupportActionBar(toolbar);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -133,7 +133,7 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadUsers() {
-        tvEmpty.setVisibility(View.GONE);
+        tvEmpty != null ? tvEmpty.setVisibility : null;(View.GONE);
         ApiClient.getApiService().getUsers().enqueue(new Callback<com.alfarooj.timetable.models.UsersResponse>() {
             @Override
             public void onResponse(Call<com.alfarooj.timetable.models.UsersResponse> call, 
@@ -143,7 +143,7 @@ public class SuperAdminActivity extends BaseActivity {
                     userList.addAll(response.body().getUsers());
                     userAdapter = new UserAdapter(userList, SuperAdminActivity.this, () -> loadUsers());
                     recyclerView.setAdapter(userAdapter);
-                    tvEmpty.setVisibility(userList.isEmpty() ? View.VISIBLE : View.GONE);
+                    tvEmpty != null ? tvEmpty.setVisibility : null;(userList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -157,7 +157,7 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadTodayAttendance() {
-        tvEmpty.setVisibility(View.GONE);
+        tvEmpty != null ? tvEmpty.setVisibility : null;(View.GONE);
         ApiClient.getApiService().getTodayAttendance().enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
             @Override
             public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
@@ -168,7 +168,7 @@ public class SuperAdminActivity extends BaseActivity {
                     logAdapter = new LogAdapter(logList, SuperAdminActivity.this, 
                         log -> showDeleteLogDialog(log));
                     recyclerView.setAdapter(logAdapter);
-                    tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
+                    tvEmpty != null ? tvEmpty.setVisibility : null;(logList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -182,7 +182,7 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadAttendanceLogs(String department) {
-        tvEmpty.setVisibility(View.GONE);
+        tvEmpty != null ? tvEmpty.setVisibility : null;(View.GONE);
         
         Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call;
         if (department != null) {
@@ -201,7 +201,7 @@ public class SuperAdminActivity extends BaseActivity {
                     logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
                         log -> showDeleteLogDialog(log));
                     recyclerView.setAdapter(logAdapter);
-                    tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
+                    tvEmpty != null ? tvEmpty.setVisibility : null;(logList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -215,7 +215,7 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void loadAttendanceByDate(String date) {
-        tvEmpty.setVisibility(View.GONE);
+        tvEmpty != null ? tvEmpty.setVisibility : null;(View.GONE);
         ApiClient.getApiService().getAttendanceByDate(date).enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
             @Override
             public void onResponse(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call,
@@ -226,7 +226,7 @@ public class SuperAdminActivity extends BaseActivity {
                     logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
                         log -> showDeleteLogDialog(log));
                     recyclerView.setAdapter(logAdapter);
-                    tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
+                    tvEmpty != null ? tvEmpty.setVisibility : null;(logList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 

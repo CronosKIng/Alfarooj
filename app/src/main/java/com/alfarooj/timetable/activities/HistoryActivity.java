@@ -41,7 +41,7 @@ public class HistoryActivity extends BaseActivity {
         }
 
         recyclerView = findViewById(R.id.recyclerView);
-        tvEmpty = findViewById(R.id.tvEmpty);
+        // tvEmpty = findViewById(R.id.tvEmpty);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         loadHistory();
@@ -49,7 +49,7 @@ public class HistoryActivity extends BaseActivity {
     }
 
     private void loadHistory() {
-        tvEmpty.setVisibility(View.GONE);
+        if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
         
         ApiClient.getApiService().getAttendanceLogs(null).enqueue(new Callback<com.alfarooj.timetable.models.AttendanceLogsResponse>() {
             @Override
@@ -66,7 +66,7 @@ public class HistoryActivity extends BaseActivity {
                     }
                     adapter = new LogAdapter(logList, HistoryActivity.this, null);
                     recyclerView.setAdapter(adapter);
-                    tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
+                    if (tvEmpty != null) tvEmpty.setVisibility(logList.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -75,7 +75,7 @@ public class HistoryActivity extends BaseActivity {
                 Toast.makeText(HistoryActivity.this, 
                     TranslationHelper.translateTextDirect("📡 Hakuna mtandao"), 
                     Toast.LENGTH_SHORT).show();
-                tvEmpty.setVisibility(View.VISIBLE);
+                if (tvEmpty != null) tvEmpty.setVisibility(View.VISIBLE);
             }
         });
     }

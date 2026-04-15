@@ -44,19 +44,28 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
         holder.tvEvent.setText(TranslationHelper.translateTextDirect(log.getEventName()));
         holder.tvTimestamp.setText(log.getTimestamp());
         
-        String comment = log.getComment();
-        if (comment != null && !comment.isEmpty()) {
-            holder.tvComment.setText("💬 " + comment);
-            holder.tvComment.setVisibility(View.VISIBLE);
-        } else {
+        // Comment na OrderType zinaweza kuwa null
+        try {
+            String comment = log.getComment();
+            if (comment != null && !comment.isEmpty()) {
+                holder.tvComment.setText("💬 " + comment);
+                holder.tvComment.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvComment.setVisibility(View.GONE);
+            }
+        } catch (Exception e) {
             holder.tvComment.setVisibility(View.GONE);
         }
         
-        String orderType = log.getOrderType();
-        if (orderType != null && !orderType.isEmpty()) {
-            holder.tvOrderType.setText("📦 " + orderType);
-            holder.tvOrderType.setVisibility(View.VISIBLE);
-        } else {
+        try {
+            String orderType = log.getOrderType();
+            if (orderType != null && !orderType.isEmpty()) {
+                holder.tvOrderType.setText("📦 " + orderType);
+                holder.tvOrderType.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvOrderType.setVisibility(View.GONE);
+            }
+        } catch (Exception e) {
             holder.tvOrderType.setVisibility(View.GONE);
         }
 
@@ -72,11 +81,6 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
     @Override
     public int getItemCount() {
         return logs.size();
-    }
-
-    public void updateData(List<AttendanceLog> newLogs) {
-        this.logs = newLogs != null ? newLogs : new ArrayList<>();
-        notifyDataSetChanged();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

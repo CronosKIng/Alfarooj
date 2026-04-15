@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alfarooj.timetable.activities.EditUserActivity;
 import com.alfarooj.timetable.api.ApiClient;
-import com.alfarooj.timetable.models.DeleteUserResponse;
+import com.alfarooj.timetable.models.SimpleResponse;
 import com.alfarooj.timetable.models.User;
 import com.alfarooj.timetable.R;
 import java.util.ArrayList;
@@ -76,9 +76,9 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             Toast.makeText(context, "Deleting user...", Toast.LENGTH_SHORT).show();
             
             ApiClient.getApiService().deleteUser(user.getId())
-                .enqueue(new Callback<DeleteUserResponse>() {
+                .enqueue(new Callback<SimpleResponse>() {
                     @Override
-                    public void onResponse(Call<DeleteUserResponse> call, Response<DeleteUserResponse> response) {
+                    public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                             Toast.makeText(context, "User deleted successfully", Toast.LENGTH_SHORT).show();
                             userList.remove(position);
@@ -90,7 +90,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                     }
                     
                     @Override
-                    public void onFailure(Call<DeleteUserResponse> call, Throwable t) {
+                    public void onFailure(Call<SimpleResponse> call, Throwable t) {
                         Toast.makeText(context, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
