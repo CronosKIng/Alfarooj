@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.appcompat.widget.Toolbar;
 import com.alfarooj.timetable.api.ApiClient;
@@ -136,54 +135,24 @@ public class TranslationHelper {
                 TextView tv = (TextView) child;
                 String text = tv.getText().toString();
                 String hint = tv.getHint() != null ? tv.getHint().toString() : "";
-                if (!TextUtils.isEmpty(text)) {
-                    translateText(text, new TranslationCallback() {
-                        @Override
-                        public void onSuccess(String translated) {
-                            tv.setText(translated);
-                        }
-                        @Override
-                        public void onError(String error) {}
-                    });
+                if (!TextUtils.isEmpty(text) && !text.startsWith("📝") && !text.startsWith("🔐")) {
+                    translateText(text, translated -> tv.setText(translated));
                 }
                 if (!TextUtils.isEmpty(hint)) {
-                    translateText(hint, new TranslationCallback() {
-                        @Override
-                        public void onSuccess(String translated) {
-                            tv.setHint(translated);
-                        }
-                        @Override
-                        public void onError(String error) {}
-                    });
+                    translateText(hint, translated -> tv.setHint(translated));
                 }
             } else if (child instanceof Button) {
                 Button btn = (Button) child;
                 String text = btn.getText().toString();
                 if (!TextUtils.isEmpty(text)) {
-                    translateText(text, new TranslationCallback() {
-                        @Override
-                        public void onSuccess(String translated) {
-                            btn.setText(translated);
-                        }
-                        @Override
-                        public void onError(String error) {}
-                    });
+                    translateText(text, translated -> btn.setText(translated));
                 }
             } else if (child instanceof EditText) {
                 EditText et = (EditText) child;
                 String hint = et.getHint() != null ? et.getHint().toString() : "";
                 if (!TextUtils.isEmpty(hint)) {
-                    translateText(hint, new TranslationCallback() {
-                        @Override
-                        public void onSuccess(String translated) {
-                            et.setHint(translated);
-                        }
-                        @Override
-                        public void onError(String error) {}
-                    });
+                    translateText(hint, translated -> et.setHint(translated));
                 }
-            } else if (child instanceof Spinner) {
-                // Spinner inashughulikiwa tofauti
             } else if (child instanceof ViewGroup) {
                 translateViewGroup((ViewGroup) child);
             }
@@ -194,14 +163,7 @@ public class TranslationHelper {
     public static void translateToolbar(Toolbar toolbar) {
         if (toolbar != null && toolbar.getTitle() != null) {
             String title = toolbar.getTitle().toString();
-            translateText(title, new TranslationCallback() {
-                @Override
-                public void onSuccess(String translated) {
-                    toolbar.setTitle(translated);
-                }
-                @Override
-                public void onError(String error) {}
-            });
+            translateText(title, translated -> toolbar.setTitle(translated));
         }
     }
 
@@ -209,34 +171,23 @@ public class TranslationHelper {
     public static void translateNavigationView(NavigationView navView) {
         if (navView == null) return;
         android.view.Menu menu = navView.getMenu();
-        for (int i = 0; i < menu.size(); i++) {
-            android.view.MenuItem item = menu.getItem(i);
-            String title = item.getTitle().toString();
-            translateText(title, new TranslationCallback() {
-                @Override
-                public void onSuccess(String translated) {
-                    item.setTitle(translated);
-                }
-                @Override
-                public void onError(String error) {}
-            });
-        }
+        translateMenu(menu);
     }
 
-    // Tafsiri Menu ya Options
+    // Tafsiri Menu
     public static void translateMenu(android.view.Menu menu) {
         if (menu == null) return;
         for (int i = 0; i < menu.size(); i++) {
             android.view.MenuItem item = menu.getItem(i);
-            String title = item.getTitle() != null ? item.getTitle().toString() : "";
-            if (!TextUtils.isEmpty(title)) {
-                translateText(title, new TranslationCallback() {
-                    @Override
-                    public void onSuccess(String translated) {
-                        item.setTitle(translated);
-                    }
-                    @Override
-                    public void onError(String error) {}
+            if (item != null && item.getTitle() != null) {
+                String title = item.getTitle().toString();
+                // Ondoa emoji kwa tafsiri
+                String cleanTitle = title.replaceAll("[\\uD83D-\\uDBFF\\uDC00-\\uDFFF]", "").trim();
+                if (cleanTitle.isEmpty()) continue;
+                translateText(cleanTitle, translated -> {
+                    // Weka emoji tena
+                    String emoji = title.replaceAll("[^\\uD83D-\\uDBFF\\uDC00-\\uDFFF]", "");
+                    item.setTitle((emoji.isEmpty() ? "" : emoji + " ") + translated);
                 });
             }
         }
@@ -244,6 +195,6 @@ public class TranslationHelper {
 
     public interface TranslationCallback {
         void onSuccess(String translatedText);
-        void onError(String error);
+        default void onError(String error) {}
     }
 }

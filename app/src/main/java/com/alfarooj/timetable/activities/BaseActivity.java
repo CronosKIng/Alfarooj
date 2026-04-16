@@ -97,13 +97,28 @@ public class BaseActivity extends AppCompatActivity {
 
         builder.setItems(languages, (dialog, which) -> {
             String selectedCode = languageCodes.get(which);
-            TranslationHelper.clearCache(); // Futa cache ya lugha ya zamani
+            TranslationHelper.clearCache();
             TranslationHelper.setCurrentLanguage(selectedCode);
             TranslationHelper.saveLanguage(this, selectedCode);
             LanguageUtils.setLocale(this, selectedCode);
+            
+            // Refresh UI
             translateAllUIElements();
+            
+            // Refresh NavigationView if exists
+            NavigationView navView = findViewById(R.id.navView);
+            if (navView != null) {
+                translateNavigationView(navView);
+            }
+            
+            // Refresh Toolbar if exists
+            Toolbar toolbar = findViewById(R.id.toolbar);
+            if (toolbar != null) {
+                translateToolbar(toolbar);
+            }
+            
             Toast.makeText(this, 
-                TranslationHelper.translateTextDirect("Language changed to ") + languageNames.get(which), 
+                TranslationHelper.translateTextDirect("✅ Lugha imebadilishwa"), 
                 Toast.LENGTH_SHORT).show();
         });
         builder.show();

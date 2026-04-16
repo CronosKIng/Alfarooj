@@ -8,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -84,19 +83,6 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void setupNavigationView() {
-        // Tafsiri menu items
-        Menu menu = navigationView.getMenu();
-        menu.findItem(R.id.nav_users).setTitle(TranslationHelper.translateTextDirect("👥 Manage Users"));
-        menu.findItem(R.id.nav_today_attendance).setTitle(TranslationHelper.translateTextDirect("📋 Today Attendance"));
-        menu.findItem(R.id.nav_all_history).setTitle(TranslationHelper.translateTextDirect("📖 All History"));
-        menu.findItem(R.id.nav_kitchen_history).setTitle(TranslationHelper.translateTextDirect("🧑‍🍳 Kitchen History"));
-        menu.findItem(R.id.nav_waiter_history).setTitle(TranslationHelper.translateTextDirect("🍱 Waiter History"));
-        menu.findItem(R.id.nav_delivery_history).setTitle(TranslationHelper.translateTextDirect("🚗 Delivery History"));
-        menu.findItem(R.id.nav_manager_history).setTitle(TranslationHelper.translateTextDirect("💼 Manager History"));
-        menu.findItem(R.id.nav_create_admin).setTitle(TranslationHelper.translateTextDirect("👑 Create Admin"));
-        menu.findItem(R.id.nav_create_user).setTitle(TranslationHelper.translateTextDirect("👤 Create User"));
-        menu.findItem(R.id.nav_logout).setTitle(TranslationHelper.translateTextDirect("🚪 Logout"));
-
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             currentDepartment = null;
@@ -252,13 +238,7 @@ public class SuperAdminActivity extends BaseActivity {
             deleteAttendanceLog(log.getId());
         });
         builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
-        
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        
-        // Tafsiri buttons baada ya dialog kuonyeshwa
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(TranslationHelper.translateTextDirect("Delete"));
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setText(TranslationHelper.translateTextDirect("Cancel"));
+        builder.show();
     }
 
     private void deleteAttendanceLog(int logId) {
@@ -319,7 +299,6 @@ public class SuperAdminActivity extends BaseActivity {
         EditText etPassword = view.findViewById(R.id.etPassword);
         Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
 
-        // Tafsiri placeholders
         etFullName.setHint(TranslationHelper.translateTextDirect("Full Name"));
         etUsername.setHint(TranslationHelper.translateTextDirect("Username"));
         etPassword.setHint(TranslationHelper.translateTextDirect("Password"));
@@ -376,24 +355,13 @@ public class SuperAdminActivity extends BaseActivity {
             });
         });
         builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
-        
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        
-        // Tafsiri buttons
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(TranslationHelper.translateTextDirect("Create"));
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setText(TranslationHelper.translateTextDirect("Cancel"));
+        builder.show();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.super_admin_menu, menu);
-        
-        // Tafsiri menu ya juu
-        menu.findItem(R.id.action_refresh).setTitle(TranslationHelper.translateTextDirect("Refresh"));
-        menu.findItem(R.id.action_calendar).setTitle(TranslationHelper.translateTextDirect("Pick Date"));
-        menu.findItem(R.id.action_language).setTitle(TranslationHelper.translateTextDirect("Language"));
-        
+        TranslationHelper.translateMenu(menu);
         return true;
     }
 
@@ -416,6 +384,13 @@ public class SuperAdminActivity extends BaseActivity {
             return true;
         } else if (id == R.id.action_language) {
             showLanguageDialog();
+            // Refresh navigation after language change
+            if (navigationView != null) {
+                translateNavigationView(navigationView);
+            }
+            if (toolbar != null) {
+                translateToolbar(toolbar);
+            }
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -431,30 +406,17 @@ public class SuperAdminActivity extends BaseActivity {
             finish();
         });
         builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
-        
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(TranslationHelper.translateTextDirect("Yes"));
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setText(TranslationHelper.translateTextDirect("Cancel"));
+        builder.show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh translations
         if (navigationView != null) {
-            Menu menu = navigationView.getMenu();
-            menu.findItem(R.id.nav_users).setTitle(TranslationHelper.translateTextDirect("👥 Manage Users"));
-            menu.findItem(R.id.nav_today_attendance).setTitle(TranslationHelper.translateTextDirect("📋 Today Attendance"));
-            menu.findItem(R.id.nav_all_history).setTitle(TranslationHelper.translateTextDirect("📖 All History"));
-            menu.findItem(R.id.nav_kitchen_history).setTitle(TranslationHelper.translateTextDirect("🧑‍🍳 Kitchen History"));
-            menu.findItem(R.id.nav_waiter_history).setTitle(TranslationHelper.translateTextDirect("🍱 Waiter History"));
-            menu.findItem(R.id.nav_delivery_history).setTitle(TranslationHelper.translateTextDirect("🚗 Delivery History"));
-            menu.findItem(R.id.nav_manager_history).setTitle(TranslationHelper.translateTextDirect("💼 Manager History"));
-            menu.findItem(R.id.nav_create_admin).setTitle(TranslationHelper.translateTextDirect("👑 Create Admin"));
-            menu.findItem(R.id.nav_create_user).setTitle(TranslationHelper.translateTextDirect("👤 Create User"));
-            menu.findItem(R.id.nav_logout).setTitle(TranslationHelper.translateTextDirect("🚪 Logout"));
+            translateNavigationView(navigationView);
+        }
+        if (toolbar != null) {
+            translateToolbar(toolbar);
         }
     }
 }
