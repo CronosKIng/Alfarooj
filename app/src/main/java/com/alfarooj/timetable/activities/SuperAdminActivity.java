@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -57,7 +58,7 @@ public class SuperAdminActivity extends BaseActivity {
         setContentView(R.layout.activity_super_admin);
 
         session = new SessionManager(this);
-        
+
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navView);
         toolbar = findViewById(R.id.toolbar);
@@ -76,16 +77,30 @@ public class SuperAdminActivity extends BaseActivity {
         setupNavigationView();
         loadUsers();
 
+        // Tafsiri kila kitu
         translateAllUIElements();
         translateToolbar(toolbar);
         translateNavigationView(navigationView);
     }
 
     private void setupNavigationView() {
+        // Tafsiri menu items
+        Menu menu = navigationView.getMenu();
+        menu.findItem(R.id.nav_users).setTitle(TranslationHelper.translateTextDirect("👥 Manage Users"));
+        menu.findItem(R.id.nav_today_attendance).setTitle(TranslationHelper.translateTextDirect("📋 Today Attendance"));
+        menu.findItem(R.id.nav_all_history).setTitle(TranslationHelper.translateTextDirect("📖 All History"));
+        menu.findItem(R.id.nav_kitchen_history).setTitle(TranslationHelper.translateTextDirect("🧑‍🍳 Kitchen History"));
+        menu.findItem(R.id.nav_waiter_history).setTitle(TranslationHelper.translateTextDirect("🍱 Waiter History"));
+        menu.findItem(R.id.nav_delivery_history).setTitle(TranslationHelper.translateTextDirect("🚗 Delivery History"));
+        menu.findItem(R.id.nav_manager_history).setTitle(TranslationHelper.translateTextDirect("💼 Manager History"));
+        menu.findItem(R.id.nav_create_admin).setTitle(TranslationHelper.translateTextDirect("👑 Create Admin"));
+        menu.findItem(R.id.nav_create_user).setTitle(TranslationHelper.translateTextDirect("👤 Create User"));
+        menu.findItem(R.id.nav_logout).setTitle(TranslationHelper.translateTextDirect("🚪 Logout"));
+
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             currentDepartment = null;
-            
+
             if (id == R.id.nav_users) {
                 currentView = "users";
                 toolbar.setTitle(TranslationHelper.translateTextDirect("Manage Users"));
@@ -133,7 +148,7 @@ public class SuperAdminActivity extends BaseActivity {
     private void loadUsers() {
         ApiClient.getApiService().getUsers().enqueue(new Callback<com.alfarooj.timetable.models.UsersResponse>() {
             @Override
-            public void onResponse(Call<com.alfarooj.timetable.models.UsersResponse> call, 
+            public void onResponse(Call<com.alfarooj.timetable.models.UsersResponse> call,
                                    Response<com.alfarooj.timetable.models.UsersResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     userList.clear();
@@ -145,7 +160,9 @@ public class SuperAdminActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<com.alfarooj.timetable.models.UsersResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this,
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"),
+                    Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -158,7 +175,7 @@ public class SuperAdminActivity extends BaseActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     logList.clear();
                     logList.addAll(response.body().getLogs());
-                    logAdapter = new LogAdapter(logList, SuperAdminActivity.this, 
+                    logAdapter = new LogAdapter(logList, SuperAdminActivity.this,
                         log -> showDeleteLogDialog(log));
                     recyclerView.setAdapter(logAdapter);
                 }
@@ -166,7 +183,9 @@ public class SuperAdminActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this,
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"),
+                    Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -194,7 +213,9 @@ public class SuperAdminActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this,
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"),
+                    Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -216,7 +237,9 @@ public class SuperAdminActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<com.alfarooj.timetable.models.AttendanceLogsResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this,
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"),
+                    Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -229,7 +252,13 @@ public class SuperAdminActivity extends BaseActivity {
             deleteAttendanceLog(log.getId());
         });
         builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
-        builder.show();
+        
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        
+        // Tafsiri buttons baada ya dialog kuonyeshwa
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(TranslationHelper.translateTextDirect("Delete"));
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setText(TranslationHelper.translateTextDirect("Cancel"));
     }
 
     private void deleteAttendanceLog(int logId) {
@@ -237,7 +266,9 @@ public class SuperAdminActivity extends BaseActivity {
             @Override
             public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(SuperAdminActivity.this, "✅ Imefutwa", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SuperAdminActivity.this,
+                        TranslationHelper.translateTextDirect("✅ Imefutwa"),
+                        Toast.LENGTH_SHORT).show();
                     if (currentView.equals("attendance")) {
                         if (currentDepartment != null) {
                             loadAttendanceLogs(currentDepartment);
@@ -246,13 +277,17 @@ public class SuperAdminActivity extends BaseActivity {
                         }
                     }
                 } else {
-                    Toast.makeText(SuperAdminActivity.this, "❌ Imeshindwa", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SuperAdminActivity.this,
+                        TranslationHelper.translateTextDirect("❌ Imeshindwa"),
+                        Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<SimpleResponse> call, Throwable t) {
-                Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SuperAdminActivity.this,
+                    TranslationHelper.translateTextDirect("📡 Hakuna mtandao"),
+                    Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -273,7 +308,10 @@ public class SuperAdminActivity extends BaseActivity {
 
     private void showCreateUserDialog(String role) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(TranslationHelper.translateTextDirect(role.equals("admin") ? "Create Admin" : "Create User"));
+        String title = role.equals("admin") ? 
+            TranslationHelper.translateTextDirect("Create Admin") : 
+            TranslationHelper.translateTextDirect("Create User");
+        builder.setTitle(title);
 
         View view = getLayoutInflater().inflate(R.layout.dialog_create_user, null);
         EditText etFullName = view.findViewById(R.id.etFullName);
@@ -281,6 +319,7 @@ public class SuperAdminActivity extends BaseActivity {
         EditText etPassword = view.findViewById(R.id.etPassword);
         Spinner spinnerDepartment = view.findViewById(R.id.spinnerDepartment);
 
+        // Tafsiri placeholders
         etFullName.setHint(TranslationHelper.translateTextDirect("Full Name"));
         etUsername.setHint(TranslationHelper.translateTextDirect("Username"));
         etPassword.setHint(TranslationHelper.translateTextDirect("Password"));
@@ -305,7 +344,9 @@ public class SuperAdminActivity extends BaseActivity {
             String department = departments[pos];
 
             if (fullName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, TranslationHelper.translateTextDirect("Please fill all fields"), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,
+                    TranslationHelper.translateTextDirect("Please fill all fields"),
+                    Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -315,27 +356,44 @@ public class SuperAdminActivity extends BaseActivity {
                 public void onResponse(Call<com.alfarooj.timetable.models.CreateUserResponse> call,
                                        Response<com.alfarooj.timetable.models.CreateUserResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        Toast.makeText(SuperAdminActivity.this, "✅ User created", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SuperAdminActivity.this,
+                            TranslationHelper.translateTextDirect("✅ User created"),
+                            Toast.LENGTH_SHORT).show();
                         if (currentView.equals("users")) loadUsers();
                     } else {
-                        Toast.makeText(SuperAdminActivity.this, "❌ Failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SuperAdminActivity.this,
+                            TranslationHelper.translateTextDirect("❌ Failed"),
+                            Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<com.alfarooj.timetable.models.CreateUserResponse> call, Throwable t) {
-                    Toast.makeText(SuperAdminActivity.this, "📡 Hakuna mtandao", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SuperAdminActivity.this,
+                        TranslationHelper.translateTextDirect("📡 Hakuna mtandao"),
+                        Toast.LENGTH_SHORT).show();
                 }
             });
         });
         builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
-        builder.show();
+        
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        
+        // Tafsiri buttons
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(TranslationHelper.translateTextDirect("Create"));
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setText(TranslationHelper.translateTextDirect("Cancel"));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.super_admin_menu, menu);
-        TranslationHelper.translateMenu(menu);
+        
+        // Tafsiri menu ya juu
+        menu.findItem(R.id.action_refresh).setTitle(TranslationHelper.translateTextDirect("Refresh"));
+        menu.findItem(R.id.action_calendar).setTitle(TranslationHelper.translateTextDirect("Pick Date"));
+        menu.findItem(R.id.action_language).setTitle(TranslationHelper.translateTextDirect("Language"));
+        
         return true;
     }
 
@@ -364,8 +422,39 @@ public class SuperAdminActivity extends BaseActivity {
     }
 
     private void logout() {
-        session.logout();
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(TranslationHelper.translateTextDirect("Logout"));
+        builder.setMessage(TranslationHelper.translateTextDirect("Are you sure you want to logout?"));
+        builder.setPositiveButton(TranslationHelper.translateTextDirect("Yes"), (dialog, which) -> {
+            session.logout();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        });
+        builder.setNegativeButton(TranslationHelper.translateTextDirect("Cancel"), null);
+        
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(TranslationHelper.translateTextDirect("Yes"));
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setText(TranslationHelper.translateTextDirect("Cancel"));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh translations
+        if (navigationView != null) {
+            Menu menu = navigationView.getMenu();
+            menu.findItem(R.id.nav_users).setTitle(TranslationHelper.translateTextDirect("👥 Manage Users"));
+            menu.findItem(R.id.nav_today_attendance).setTitle(TranslationHelper.translateTextDirect("📋 Today Attendance"));
+            menu.findItem(R.id.nav_all_history).setTitle(TranslationHelper.translateTextDirect("📖 All History"));
+            menu.findItem(R.id.nav_kitchen_history).setTitle(TranslationHelper.translateTextDirect("🧑‍🍳 Kitchen History"));
+            menu.findItem(R.id.nav_waiter_history).setTitle(TranslationHelper.translateTextDirect("🍱 Waiter History"));
+            menu.findItem(R.id.nav_delivery_history).setTitle(TranslationHelper.translateTextDirect("🚗 Delivery History"));
+            menu.findItem(R.id.nav_manager_history).setTitle(TranslationHelper.translateTextDirect("💼 Manager History"));
+            menu.findItem(R.id.nav_create_admin).setTitle(TranslationHelper.translateTextDirect("👑 Create Admin"));
+            menu.findItem(R.id.nav_create_user).setTitle(TranslationHelper.translateTextDirect("👤 Create User"));
+            menu.findItem(R.id.nav_logout).setTitle(TranslationHelper.translateTextDirect("🚪 Logout"));
+        }
     }
 }
