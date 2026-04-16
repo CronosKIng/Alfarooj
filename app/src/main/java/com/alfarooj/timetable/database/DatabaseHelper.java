@@ -151,7 +151,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             AttendanceLog log = new AttendanceLog(
                 cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
                 cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7),
-                cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)
+                cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10), cursor.getString(11), cursor.getString(12)
             );
             logs.add(log);
         }
@@ -170,7 +170,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             AttendanceLog log = new AttendanceLog(
                 cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
                 cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7),
-                cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)
+                cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10), cursor.getString(11), cursor.getString(12)
             );
             logs.add(log);
         }
@@ -190,7 +190,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             AttendanceLog log = new AttendanceLog(
                 cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3),
                 cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7),
-                cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10)
+                cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10), cursor.getString(11), cursor.getString(12)
             );
             logs.add(log);
         }
