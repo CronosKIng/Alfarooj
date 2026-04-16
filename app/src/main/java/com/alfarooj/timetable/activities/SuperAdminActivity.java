@@ -134,16 +134,16 @@ public class SuperAdminActivity extends BaseActivity {
         if (navigationView == null) return;
         Menu menu = navigationView.getMenu();
         
-        menu.findItem(R.id.nav_today_attendance).setTitle(TranslationHelper.translateTextDirect("📋 Today Attendance"));
-        menu.findItem(R.id.nav_all_history).setTitle(TranslationHelper.translateTextDirect("📖 All History"));
-        menu.findItem(R.id.nav_kitchen_history).setTitle(TranslationHelper.translateTextDirect("🧑‍🍳 Kitchen History"));
-        menu.findItem(R.id.nav_waiter_history).setTitle(TranslationHelper.translateTextDirect("🍱 Waiter History"));
-        menu.findItem(R.id.nav_delivery_history).setTitle(TranslationHelper.translateTextDirect("🚗 Delivery History"));
-        menu.findItem(R.id.nav_manager_history).setTitle(TranslationHelper.translateTextDirect("💼 Manager History"));
-        menu.findItem(R.id.nav_create_admin).setTitle(TranslationHelper.translateTextDirect("👑 Create Admin"));
-        menu.findItem(R.id.nav_create_user).setTitle(TranslationHelper.translateTextDirect("👤 Create User"));
-        menu.findItem(R.id.nav_users).setTitle(TranslationHelper.translateTextDirect("👥 Manage Users"));
-        menu.findItem(R.id.nav_logout).setTitle(TranslationHelper.translateTextDirect("🚪 Logout"));
+        menu.findItem(R.id.nav_today_attendance).setTitle("📋 " + TranslationHelper.translateTextDirect("Today Attendance"));
+        menu.findItem(R.id.nav_all_history).setTitle("📖 " + TranslationHelper.translateTextDirect("All History"));
+        menu.findItem(R.id.nav_kitchen_history).setTitle("🧑‍🍳 " + TranslationHelper.translateTextDirect("Kitchen History"));
+        menu.findItem(R.id.nav_waiter_history).setTitle("🍱 " + TranslationHelper.translateTextDirect("Waiter History"));
+        menu.findItem(R.id.nav_delivery_history).setTitle("🚗 " + TranslationHelper.translateTextDirect("Delivery History"));
+        menu.findItem(R.id.nav_manager_history).setTitle("💼 " + TranslationHelper.translateTextDirect("Manager History"));
+        menu.findItem(R.id.nav_create_admin).setTitle("👑 " + TranslationHelper.translateTextDirect("Create Admin"));
+        menu.findItem(R.id.nav_create_user).setTitle("👤 " + TranslationHelper.translateTextDirect("Create User"));
+        menu.findItem(R.id.nav_users).setTitle("👥 " + TranslationHelper.translateTextDirect("Manage Users"));
+        menu.findItem(R.id.nav_logout).setTitle("🚪 " + TranslationHelper.translateTextDirect("Logout"));
     }
 
     private void loadUsers() {
